@@ -31,7 +31,6 @@ paths:
                 policyName:
                   type: string
                   description: Name of the policy
-                  default: "My Policy"
                 policyType:
                   $ref: "#/components/schemas/PolicyType"
                   description: Type of the policy. Supported values are `sponsorship` and `bundler_sponsorship` for sponsoring gas on EVM networks, `erc20` for enabling users to pay gas with any ERC-20 token on EVM networks, and `solana` for sponsoring fees and rent on Solana.
@@ -39,7 +38,6 @@ paths:
                   type: string
                   description: |
                     ID for the app associated with the new policy.
-                  default: "6d834x9k1yh4dx6z"
                 networks:
                   description: |
                     Networks to be enabled for the policy. Required for `sponsorship`, `bundler_sponsorship`, and `solana` policy types. Example: `ETH_MAINNET`. For Solana policies, valid values are `SOLANA_MAINNET` and `SOLANA_DEVNET`. For `erc20` policies, networks are specified in `erc20Rules.tokens` and this field is ignored.
@@ -91,7 +89,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
       responses:
         "200":
           description: Policy fetched successfully
@@ -124,7 +121,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "6d834x9k1yh4dx6z"
       responses:
         "200":
           description: "`200` - Policy deleted successfully"
@@ -147,7 +143,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
       requestBody:
         content:
           application/json:
@@ -157,7 +152,6 @@ paths:
                 policyName:
                   type: string
                   description: Name of the policy
-                  default: "My Policy"
                 rules:
                   $ref: "#/components/schemas/Rules"
                   description: Rules for `sponsorship` and `bundler_sponsorship` policy types. Omit for other policy types.
@@ -206,7 +200,6 @@ paths:
             An optional app id to filter results by policies associated with that app.
           schema:
             type: string
-            default: "6d834x9k1yh4dx6z"
         - name: limit
           in: query
           description: An optional parameter to limit the number of results per page.
@@ -270,7 +263,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
       requestBody:
         content:
           application/json:
@@ -283,7 +275,6 @@ paths:
                   description: The new status of the policy
                   type: string
                   enum: [active, inactive]
-                  default: active
       responses:
         "200":
           description: Policy status updated successfully
@@ -317,7 +308,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
       responses:
         "200":
           description: Policy stats fetched successfully
@@ -334,19 +324,14 @@ paths:
                         properties:
                           signaturesMined:
                             type: integer
-                            default: 0
                           signaturesExpired:
                             type: integer
-                            default: 0
                           signaturesPending:
                             type: integer
-                            default: 0
                           usdPending:
                             type: number
-                            default: 0.0
                           usdMined:
                             type: number
-                            default: 0.0
                       policyNetworkStats:
                         type: array
                         items:
@@ -354,31 +339,22 @@ paths:
                           properties:
                             network:
                               type: string
-                              default: "MATIC_MAINNET"
                             signaturesMined:
                               type: integer
-                              default: 0
                             signaturesExpired:
                               type: integer
-                              default: 0
                             signaturesPending:
                               type: integer
-                              default: 0
                             usdPending:
                               type: number
-                              default: 0.0
                             usdMined:
                               type: number
-                              default: 0.0
                             pendingNativeToken:
                               type: integer
-                              default: 0
                             minedNativeToken:
                               type: integer
-                              default: 0
                             currency:
                               type: string
-                              default: "ETH"
                             erc20Stats:
                               type: array
                               items:
@@ -403,7 +379,6 @@ paths:
           description: ID of the policy.
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
         - name: limit
           in: query
           description: Limits the number of sponsorships returned.
@@ -464,7 +439,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
       responses:
         "200":
           description: Webhook signing key fetched successfully
@@ -495,7 +469,6 @@ paths:
           required: true
           schema:
             type: string
-            default: "a844e221-3c13-40c6-95db-d2db390e14b5"
       responses:
         "200":
           description: Webhook signing key reset successfully
@@ -520,31 +493,23 @@ components:
         maxSpendUsd:
           type: number
           description: Maximum amount of USD that can be sponsored
-          default: 5000.0
         maxSpendPerSenderUsd:
           type: number
           description: Maximum amount of USD that can be sponsored for a single sender (not enforced on testnets)
-          default: 100.0
         maxSpendPerUoUsd:
           type: number
           description: Maximum amount of USD that can be sponsored for a single userOperation (not enforced on testnets)
-          default: 20.0
         maxCount:
           type: integer
           description: Maximum number of userOperations that can be sponsored
-          default: 100
         maxCountPerSender:
           type: integer
           description: Maximum number of userOperations that can be sponsored for a single sender
-          default: 2
         senderAllowlist:
           type: array
           items:
             type: string
           description: List of addresses that are eligible for sponsorship
-          default:
-            - "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-            - "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
         senderBlocklist:
           type: array
           items:
@@ -553,11 +518,9 @@ components:
         startTimeUnix:
           type: string
           description: Unix timestamp of when the policy starts
-          default: "1674228753"
         endTimeUnix:
           type: string
           description: Unix timestamp of when the policy ends
-          default: "1679340742"
         sponsorshipExpiryMs:
           type: string
           description: Milliseconds after the sponsorship is issued that it expires
@@ -587,23 +550,18 @@ components:
         maxSpendUsd:
           type: number
           description: Maximum amount of USD that can be sponsored
-          default: 6500.0
         maxSpendPerTxnUsd:
           type: number
           description: Maximum amount of USD that can be sponsored per transaction (not enforced on testnet)
-          default: 30.0
         maxCount:
           type: integer
           description: Maximum number of transactions that can be sponsored
-          default: 200
         startTimeUnix:
           type: string
           description: Unix timestamp of when the policy starts
-          default: "1674228753"
         endTimeUnix:
           type: string
           description: Unix timestamp of when the policy ends
-          default: "1679340742"
       required:
         - startTimeUnix
 
@@ -611,7 +569,6 @@ components:
       type: string
       enum: [sponsorship, bundler_sponsorship, erc20, solana]
       description: Type of the policy. Supported values are `sponsorship` and `bundler_sponsorship` for sponsoring gas on EVM networks, `erc20` for enabling users to pay gas with any ERC-20 token on EVM networks, and `solana` for sponsoring fees and rent on Solana.
-      default: "sponsorship"
 
     PolicyStatus:
       type: string
@@ -674,11 +631,9 @@ components:
         policyId:
           type: string
           description: String ID of the policy
-          default: "0x1234567890abcdef"
         appId:
           type: string
           description: String ID of the app
-          default: "0x1234567890abcdef"
         status:
           $ref: "#/components/schemas/PolicyStatus"
         rules:
@@ -687,22 +642,18 @@ components:
         policyName:
           type: string
           description: Name of the policy
-          default: "Gas Manager Policy"
         lastUpdatedUnix:
           type: string
           description: Unix timestamp of when the policy was last updated
-          default: "1674228753"
         policyVersion:
           type: integer
           description: Version of the policy
-          default: 0
         policyType:
           $ref: "#/components/schemas/PolicyType"
           description: Type of the policy.
         policyState:
           type: string
           description: State of the policy
-          default: "ongoing"
         networks:
           type: array
           items:
