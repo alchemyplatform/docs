@@ -5,6 +5,17 @@ subtitle: Get started building on Base using Flashblocks
 slug: reference/base-flashblocks-api-quickstart
 ---
 
+<Warning>
+  Base Mainnet will undergo the scheduled **Denim hardfork on Thursday, November 5 at 18:00 UTC**.
+
+  Key changes include:
+
+  * **Block time reduced from 2s to 200ms**
+  * **Flashblocks removed**
+
+  After the upgrade, Flashblocks subscriptions and the `"pending"` block tag will no longer provide preconfirmation data on Base Mainnet. Use **canonical blocks and state** instead. See the migration steps below.
+</Warning>
+
 ## What are Flashblocks
 
 Flashblocks on Base are a transaction preconfirmation feature that provides near-instant transaction feedback by streaming partial block updates every 200 milliseconds. This significantly reduces the effective block time from Base's standard 2 seconds to 200 milliseconds, a 10x improvement.
@@ -13,12 +24,26 @@ Flashblocks is great for developers who demand instant UX such as decentralized 
 
 ## Supported networks
 
-Flashblocks is currently supported on both Base testnet and mainnet and can be accessed using your existing **Alchemy Base** RPC.
-
 | Network       | Flashblocks Availability |
 |---------------|---------------------------|
-| Base Sepolia  | ✅                        |
-| Base Mainnet  | ✅                        |
+| Base Sepolia  | ❌ Denim activated on Base Sepolia on October 21, 2026, replacing Flashblocks with canonical 200ms blocks. |
+| Base Mainnet  | ✅ Supported until November 5, 2026 at 18:00 UTC. |
+
+## Migrate from Flashblocks to canonical blocks and state
+
+| **Existing integration to update** | Action for Denim |
+| --- | --- |
+| **`eth_subscribe("newFlashblocks")`** | Use **`eth_subscribe("newHeads")`**. |
+| **`eth_subscribe("pendingLogs")`** | Use **`eth_subscribe("logs")`**. |
+| **`eth_subscribe("newFlashblockTransactions")`** | Use **`eth_subscribe("newHeads")`**, then fetch transactions for each canonical block. |
+| **`"pending"` in `eth_getBalance`, `eth_getTransactionCount`, `eth_call`, `eth_estimateGas`, `eth_simulateV1`, `eth_getBlockByNumber`, `eth_getBlockTransactionCountByNumber`** | Use normal RPC calls to read the **`"latest"`** canonical state / blocks. |
+| **`eth_getLogs`** with a range ending at **`"pending"`** | Query through **`"latest"`** or a specific canonical block number. |
+
+<Warning>
+  The **`"pending"`** block tag and Flashblocks preconfirmation state have no direct equivalent after Denim. The replacements above return canonical data from 200ms blocks, not preconfirmed or pending data.
+</Warning>
+
+Check the [Base Flashblocks migration guide](https://docs.base.org/upgrades/denim/migrate-from-flashblocks) for more information.
 
 ## Query Flashblocks with JSON-RPC
 
