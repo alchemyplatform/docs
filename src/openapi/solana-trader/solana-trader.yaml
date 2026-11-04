@@ -136,23 +136,13 @@ paths:
             Wallet that pays transaction costs (fees, Jito tip, token-account
             rent) for `taker`; the taker still signs and pays the trade
             amount. Any public key can be used; no effect if equal to `taker`.
-            Unfunded payer returns `errorCode: 2`. Does not change `mode`.
+            See `errorCode` for funding failures. Does not change `mode`.
           schema:
             type: string
         - name: referralFee
           in: query
           required: false
-          description: >
-            Integrator fee in basis points. Must be an integer in the range
-            50-255 and must be sent together with `referralAccount`.
-
-            Errors:
-
-            * Out of range or not a number: `400 {"error":"referralFee must be
-              a number between 50 and 255"}`.
-            * One of `referralFee` / `referralAccount` without the other:
-              `400 {"error":"referralFee and referralAccount must be provided
-              together"}`.
+          description: "Integrator fee in basis points (50–255), paid to `referralAccount`. Both must be sent together."
           schema:
             type: integer
             minimum: 50
