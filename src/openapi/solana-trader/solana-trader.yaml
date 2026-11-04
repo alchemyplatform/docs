@@ -151,26 +151,11 @@ paths:
           in: query
           required: false
           description: >
-            Referral project account used to derive the destination fee token
-            account. Must be sent together with `referralFee`.
-
-            The fee is deposited into the PDA
-            `["referral_ata", referralAccount, feeMint]` under
-            `REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3`. The fee mint is the
-            output mint on `ExactIn` and the input mint on `ExactOut`. That
-            token account must already exist; this API cannot create it.
-
-            Errors:
-
-            * Missing (uninitialized) fee account:
-              `400 {"error":"referral account is not initialized"}`.
-            * One of `referralFee` / `referralAccount` without the other:
-              `400 {"error":"referralFee and referralAccount must be provided
-              together"}`.
-            * Malformed key: `400 {"error":"Invalid referralAccount"}`.
-
-            When both parameters are accepted, the response includes optional
-            `feeBps`, `feeMint`, and `platformFee` fields.
+            Referral account in Jupiter’s referral program. Must be sent with
+            `referralFee`. The fee is charged in the output token on `ExactIn`
+            and in the input token on `ExactOut`, and is paid into that mint’s
+            fee token account under this referral account. That account must
+            already exist.
           schema:
             type: string
       responses:
