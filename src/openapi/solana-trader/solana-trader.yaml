@@ -369,20 +369,11 @@ paths:
           in: query
           required: false
           description: >
-            Optional public key of a sponsor. Rewrites rent and
-            account-creation instructions onto the sponsor using the same
-            rules as `/order`'s `payer`: the trade itself stays with the taker
-            (`inAmount` on `ExactIn`), and a native SOL debit moves to the
-            sponsor only when it is exactly one token-account's rent (or is
-            split when it is the trade plus exactly that rent). Any other
-            taker SOL debit produces a `502`.
-
-            `/build` does NOT default `payer` to `taker`, and `payer` does not
-            pay signature or priority fees — the caller still chooses account
-            zero when they compile the transaction, so gas stays with whoever
-            they put there. A `payer` equal to `taker` therefore changes
-            nothing. Malformed key: `400 {"error":"Invalid payer"}`. The
-            `/build` response has no `gasless` field and no fee-payer fields.
+            Wallet that sponsors rent and account creation for `taker`. The
+            taker still signs and pays the trade amount. To have this wallet
+            also pay signature and priority fees, set it as the fee payer when
+            you assemble the transaction. Any valid public key can be used; it
+            has no effect when equal to `taker`.
           schema:
             type: string
         - name: slippageBps
