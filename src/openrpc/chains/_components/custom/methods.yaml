@@ -168,6 +168,201 @@ components:
             name: Uncle count
             value: "0x1"
 
+    eth_getBlockAccessListByBlockHash:
+      name: eth_getBlockAccessListByBlockHash
+      description: >-
+        Returns the [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928)
+        block-level access list (BAL) for a block identified by its hash. The
+        BAL records every account and storage slot accessed during block
+        execution together with the post-execution values of writes, enabling
+        parallel transaction validation and executionless state updates.
+
+
+        Returns `null` when the block is unknown. The node returns a JSON-RPC
+        error when the BAL is unavailable, for example on pre-Amsterdam blocks
+        or when local history has been pruned.
+      x-compute-units: 20
+      params:
+        - name: Block hash
+          required: true
+          description: The 32-byte hash of the block to retrieve the access list for.
+          schema:
+            $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      result:
+        name: Block access list
+        description: >-
+          An array of per-account access entries describing every address and
+          storage slot accessed during block execution, or `null` when the
+          block is not found.
+        schema:
+          oneOf:
+            - $ref: "../evm/base-types.yaml#/components/schemas/notFound"
+            - title: Block access list
+              type: array
+              items:
+                title: Account access
+                type: object
+                additionalProperties: false
+                required:
+                  - address
+                properties:
+                  address:
+                    title: Address
+                    description: The address of the account accessed during block execution.
+                    $ref: "../evm/base-types.yaml#/components/schemas/address"
+                  balanceChanges:
+                    title: Balance changes
+                    description: >-
+                      Post-execution balance updates for the account, each
+                      tagged with the block access index at which the change
+                      occurred.
+                    type: array
+                    items:
+                      title: Balance change
+                      type: object
+                      additionalProperties: false
+                      required:
+                        - index
+                        - value
+                      properties:
+                        index:
+                          title: Block access index
+                          description: >-
+                            Index into the block execution timeline: `0` for
+                            pre-execution system contracts, `1..n` for
+                            transactions (1-indexed), and `n+1` for
+                            post-execution (withdrawals and post-block system
+                            calls).
+                          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                        value:
+                          title: Post-execution balance
+                          description: The account balance in wei after the change.
+                          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  codeChanges:
+                    title: Code changes
+                    description: >-
+                      Code deployments for the account, each tagged with the
+                      block access index at which the deployment occurred.
+                    type: array
+                    items:
+                      title: Code change
+                      type: object
+                      additionalProperties: false
+                      required:
+                        - index
+                        - code
+                      properties:
+                        index:
+                          title: Block access index
+                          description: Block access index at which the code was deployed.
+                          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                        code:
+                          title: Deployed bytecode
+                          description: The bytecode that was deployed at this account.
+                          $ref: "../evm/base-types.yaml#/components/schemas/bytes"
+                  nonceChanges:
+                    title: Nonce changes
+                    description: >-
+                      Post-execution nonce updates for the account, each
+                      tagged with the block access index at which the change
+                      occurred.
+                    type: array
+                    items:
+                      title: Nonce change
+                      type: object
+                      additionalProperties: false
+                      required:
+                        - index
+                        - value
+                      properties:
+                        index:
+                          title: Block access index
+                          description: Block access index at which the nonce changed.
+                          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                        value:
+                          title: Post-execution nonce
+                          description: The account nonce after the change.
+                          $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                  storageChanges:
+                    title: Storage changes
+                    description: >-
+                      Storage slots written during block execution, grouped by
+                      slot key. Each slot carries one or more changes tagged
+                      with the block access index at which the write occurred.
+                    type: array
+                    items:
+                      title: Slot changes
+                      type: object
+                      additionalProperties: false
+                      required:
+                        - key
+                        - changes
+                      properties:
+                        key:
+                          title: Storage slot
+                          description: The 32-byte storage slot key.
+                          $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                        changes:
+                          title: Storage changes
+                          type: array
+                          items:
+                            title: Storage change
+                            type: object
+                            additionalProperties: false
+                            required:
+                              - index
+                              - value
+                            properties:
+                              index:
+                                title: Block access index
+                                description: Block access index at which the slot was written.
+                                $ref: "../evm/base-types.yaml#/components/schemas/uint"
+                              value:
+                                title: Post-execution storage value
+                                description: The 32-byte storage value after the write.
+                                $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+                  storageReads:
+                    title: Storage reads
+                    description: >-
+                      Storage slot keys read (SLOAD) during block execution
+                      without a corresponding write.
+                    type: array
+                    items:
+                      $ref: "../evm/base-types.yaml#/components/schemas/hash32"
+      examples:
+        - name: eth_getBlockAccessListByBlockHash example
+          params:
+            - name: Block hash
+              value: "0xd48332090d1ba618f3d4f27b3316f3eab4700a5a3c1b77ef15a15f1000fc2a63"
+          result:
+            name: Block access list
+            value:
+              - address: "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b"
+                balanceChanges:
+                  - index: "0x0"
+                    value: "0x56bc75e2d63100000"
+                  - index: "0x1"
+                    value: "0x56bc75e2d63000000"
+                codeChanges: []
+                nonceChanges:
+                  - index: "0x0"
+                    value: "0x0"
+                  - index: "0x1"
+                    value: "0x1"
+                storageChanges:
+                  - key: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                    changes:
+                      - index: "0x0"
+                        value: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                      - index: "0x1"
+                        value: "0x0000000000000000000000000000000000000000000000000000000000000100"
+                storageReads: []
+      errors:
+        - code: 4444
+          message: Pruned history unavailable
+        - code: -32001
+          message: Resource not found
+
     eth_getBlockReceipts:
       name: eth_getBlockReceipts
       description: Returns the receipts of a block by number or hash.
