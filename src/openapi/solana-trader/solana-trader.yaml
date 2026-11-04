@@ -51,10 +51,12 @@ paths:
           in: query
           required: false
           description: |
-            How `amount` is interpreted. Allowed values: `ExactIn`, `ExactOut`.
+            How `amount` is interpreted.
 
             Switches `mode` to `manual`.
           schema:
+            type: string
+            enum: [ExactIn, ExactOut]
             oneOf:
               - type: string
                 title: ExactIn
@@ -98,16 +100,20 @@ paths:
         - name: broadcastFeeType
           in: query
           required: false
-          description: >
-            Fee cap strategy applied to the sum of `priorityFeeLamports` +
-            `jitoTipLamports`. `exactFee` sends that sum; `maxCap` sends
-            `min(estimate, sum)`. Sent without at least one of
-            `priorityFeeLamports` or `jitoTipLamports`, this parameter is
-            ignored. Setting this parameter together with either fee parameter
-            switches `mode` to `manual`.
+          description: |
+            How your custom fee (`priorityFeeLamports` + `jitoTipLamports`) is applied.
+
+            When omitted, or sent without `priorityFeeLamports` or `jitoTipLamports`, the fee is estimated automatically. Otherwise, switches `mode` to `manual`.
           schema:
             type: string
             enum: [maxCap, exactFee]
+            oneOf:
+              - type: string
+                title: exactFee
+                description: Use exactly your fee total.
+              - type: string
+                title: maxCap
+                description: Use the automatic estimate, capped at your fee total.
         - name: excludeDexes
           in: query
           required: false
