@@ -346,7 +346,15 @@ paths:
         - $ref: "#/components/parameters/apiKey"
         - $ref: "#/components/parameters/InputMint"
         - $ref: "#/components/parameters/OutputMint"
-        - $ref: "#/components/parameters/Amount"
+        - name: amount
+          in: query
+          required: true
+          description: >
+            Amount of the input token to swap, in its smallest unit (lamports
+            for SOL, base units for SPL tokens).
+          schema:
+            type: string
+          example: "1000000000"
         - name: taker
           in: query
           required: true
@@ -766,7 +774,6 @@ components:
         default, or to the output token when `swapMode` is `ExactOut`.
       schema:
         type: string
-        default: "1000000000"
       example: "1000000000"
   schemas:
     OrderResponse:
