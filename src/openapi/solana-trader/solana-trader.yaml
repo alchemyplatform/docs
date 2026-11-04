@@ -64,14 +64,10 @@ paths:
         - name: slippageBps
           in: query
           required: false
-          description: >
-            Slippage tolerance in basis points (0-10000 integer). Metis
-            defaults to 50 when omitted. Switches `mode` to `manual`; the echoed `slippageBps: 50` on a response is Metis's
-            default and does not by itself indicate the caller set it. The
-            literal string `rtse` is not accepted on `/order`; sending it
-            returns `400 {"error":"slippageBps must be a number between 0 and
-            10000"}` (on `/build` the same string returns `501` — see that
-            operation).
+          description: |
+            Slippage tolerance in basis points, 0–10000 (50 = 0.5%). Defaults to 50. Switches `mode` to `manual`.
+
+            `rtse` (automatic slippage) is not supported.
           schema:
             type: integer
             minimum: 0
