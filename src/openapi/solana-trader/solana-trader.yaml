@@ -416,22 +416,13 @@ paths:
         - name: feeAccount
           in: query
           required: false
-          description: >
-            Token account that receives the integrator fee. Required when
-            `platformFeeBps` is positive. The value is only checked as a valid
-            pubkey — no PDA derivation is performed. Mutually exclusive with
-            `referralFee` / `referralAccount`; sending them together returns
-            `400 {"error":"referralFee and referralAccount are mutually
-            exclusive with platformFeeBps and feeAccount"}`.
+          description: "Token account that receives the integrator fee. Required when `platformFeeBps` is greater than zero. Only validated as a public key. Mutually exclusive with `referralFee` and `referralAccount`."
           schema:
             type: string
         - name: maxAccounts
           in: query
           required: false
-          description: >
-            Upper bound on the number of accounts the swap transaction can
-            reference (1-64). Lower values keep the transaction well within the
-            Solana account limit at the cost of narrower routing.
+          description: "Maximum number of accounts the selected route may use, from 1 to 64. Lower values may restrict available routes."
           schema:
             type: integer
             minimum: 1
