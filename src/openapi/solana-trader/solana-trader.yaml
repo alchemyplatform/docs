@@ -52,20 +52,23 @@ paths:
           description: |
             How `amount` is interpreted.
 
-            - `ExactIn`: spend exactly `amount`; slippage sets the minimum you receive.
-            - `ExactOut`: receive exactly `amount`; slippage sets the maximum you spend.
-
             Switches `mode` to `manual`.
           schema:
-            type: string
-            enum: [ExactIn, ExactOut]
-            default: ExactIn
+            oneOf:
+              - type: string
+                title: ExactIn
+                enum: ["ExactIn"]
+                description: Spend exactly `amount`; slippage sets the minimum you receive.
+              - type: string
+                title: ExactOut
+                enum: ["ExactOut"]
+                description: Receive exactly `amount`; slippage sets the maximum you spend.
         - name: slippageBps
           in: query
           required: false
           description: >
             Slippage tolerance in basis points (0-10000 integer). Metis
-            defaults to 50 when omitted. Switches mode to `manual`; the echoed `slippageBps: 50` on a response is Metis's
+            defaults to 50 when omitted. Switches `mode` to `manual`; the echoed `slippageBps: 50` on a response is Metis's
             default and does not by itself indicate the caller set it. The
             literal string `rtse` is not accepted on `/order`; sending it
             returns `400 {"error":"slippageBps must be a number between 0 and
@@ -121,7 +124,7 @@ paths:
           description: >
             Comma-separated list of DEX labels to exclude from routing. Labels
             are case-sensitive (for example, `Raydium,Orca+V2,Meteora+DLMM`).
-            Switches mode to `manual`.
+            Switches `mode` to `manual`.
           schema:
             type: string
         - name: excludeRouters
