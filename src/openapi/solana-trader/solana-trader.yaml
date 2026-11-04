@@ -455,67 +455,36 @@ paths:
         - name: blockhashSlotsToExpiry
           in: query
           required: false
-          description: >
-            Number of slots the returned blockhash remains valid for (1-300).
-            Metis types this as `uint8`, so values in the 256-300 range return
-            `501` rather than `400`.
+          description: "Number of slots the returned blockhash remains valid for, from 1 to 255."
           schema:
             type: integer
             minimum: 1
-            maximum: 300
+            maximum: 255
         - name: tipAmount
           in: query
           required: false
-          description: >
-            Not supported on `/build`. Any value returns
-            `501 {"error":"tipAmount is not supported; Jupiter's tip is only
-            redeemable through tx.jup.ag"}`. This is a Jupiter-native tip and
-            not a Jito tip; the `tipInstruction` field in the response is
-            always `null`. If you need a Jito tip, request it on `/order` via
-            `jitoTipLamports` and set an appropriate `broadcastFeeType`.
+          description: "Not supported."
           schema:
             type: integer
             minimum: 1
         - name: computeUnitPricePercentile
           in: query
           required: false
-          description: >
-            Priority-fee percentile to target. Accepted string values are
-            `medium`, `high`, and `veryHigh`; the server maps them one rung
-            down from Jupiter's naming: `medium` → 25th percentile, `high` →
-            50th percentile, `veryHigh` → 75th percentile.
-
-            When omitted, the server uses the same Alchemy priority-fee
-            estimate that `/order` uses by default: Medium (50th percentile,
-            which is Jupiter's `high` rung) — omitting this parameter does not
-            leave Metis's own price in place.
-
-            A numeric percentile returns
-            `501 {"error":"numeric computeUnitPricePercentile is not
-            supported; use medium, high, or veryHigh"}`. A failed estimate
-            returns `502`. A zero estimate is still emitted as
-            `SetComputeUnitPrice(0)`. The total priority fee is capped at
-            1,000,000 lamports.
+          description: "Priority-fee level to target: `medium` (25th percentile), `high` (50th), or `veryHigh` (75th). If omitted, the 50th percentile is used. Numeric percentiles are not supported. The total priority fee is capped at 1,000,000 lamports."
           schema:
             type: string
             enum: [medium, high, veryHigh]
         - name: mode
           in: query
           required: false
-          description: >
-            Reserved for future routing modes. Only `fast` is currently valid;
-            any other value returns `400`. Accepting it does not change
-            routing.
+          description: "Only `fast` is accepted; it currently has no effect on routing."
           schema:
             type: string
             enum: [fast]
         - name: forJitoBundle
           in: query
           required: false
-          description: >
-            Set to `true` when you plan to submit the swap inside a Jito
-            bundle. Adjusts instruction ordering and priority-fee handling for
-            bundle inclusion.
+          description: "Set to `true` when quoting a swap intended for a Jito bundle. Forwarded to the routing engine."
           schema:
             type: boolean
         - name: referralFee
