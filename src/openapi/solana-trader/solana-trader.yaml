@@ -143,7 +143,7 @@ paths:
         - name: referralFee
           in: query
           required: false
-          description: "Integrator fee in basis points (50–255), paid to `referralAccount`. Both must be sent together."
+          description: "Integrator fee in basis points (50–255). Must be sent with `referralAccount`."
           schema:
             type: integer
             minimum: 50
@@ -490,24 +490,7 @@ paths:
         - name: referralFee
           in: query
           required: false
-          description: >
-            Integrator fee in basis points. Must be an integer in the range
-            50-255 and must be sent together with `referralAccount`. Mutually
-            exclusive with `platformFeeBps` and `feeAccount`.
-
-            Errors:
-
-            * Out of range or not a number: `400 {"error":"referralFee must be
-              a number between 50 and 255"}`.
-            * One of `referralFee` / `referralAccount` without the other:
-              `400 {"error":"referralFee and referralAccount must be provided
-              together"}`.
-            * Sent together with `platformFeeBps` or `feeAccount`:
-              `400 {"error":"referralFee and referralAccount are mutually
-              exclusive with platformFeeBps and feeAccount"}`.
-
-            The `/build` response does NOT include the `feeBps` or `platformFee`
-            fields returned by `/order`.
+          description: "Integrator fee in basis points (50–255). Must be sent with `referralAccount`. Mutually exclusive with `platformFeeBps` and `feeAccount`."
           schema:
             type: integer
             minimum: 50
@@ -516,28 +499,11 @@ paths:
           in: query
           required: false
           description: >
-            Referral project account used to derive the destination fee token
-            account. Must be sent together with `referralFee`. Mutually
-            exclusive with `platformFeeBps` and `feeAccount`.
-
-            The fee is deposited into the PDA
-            `["referral_ata", referralAccount, feeMint]` under
-            `REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3`. On `/build` the fee
-            mint is always the output mint (Metis's `/build` has no
-            `swapMode`). That token account must already exist; this API cannot
-            create it.
-
-            Errors:
-
-            * Missing (uninitialized) fee account:
-              `400 {"error":"referral account is not initialized"}`.
-            * One of `referralFee` / `referralAccount` without the other:
-              `400 {"error":"referralFee and referralAccount must be provided
-              together"}`.
-            * Malformed key: `400 {"error":"Invalid referralAccount"}`.
-            * Sent together with `platformFeeBps` or `feeAccount`:
-              `400 {"error":"referralFee and referralAccount are mutually
-              exclusive with platformFeeBps and feeAccount"}`.
+            Referral account in Jupiter’s referral program. Must be sent with
+            `referralFee`. The fee is charged in the output token and paid into
+            that mint’s fee token account under this referral account. That
+            token account must already exist. Mutually exclusive with
+            `platformFeeBps` and `feeAccount`.
           schema:
             type: string
       responses:
