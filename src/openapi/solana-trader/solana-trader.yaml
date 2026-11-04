@@ -133,36 +133,10 @@ paths:
           in: query
           required: false
           description: >
-            Optional public key of a sponsor that pays fees on behalf of the
-            taker.
-
-            When `payer` is set and does not equal `taker`, that account is
-            compiled as the fee payer (account zero) and the taker remains a
-            second signer. `signatureFeeLamports` becomes `10000` (two
-            signers), and all three `*FeePayer` fields in the response name
-            the sponsor. The sponsor pays signature, priority, associated-token
-            rent, and the Jito tip. The trade itself stays with the taker:
-            `inAmount` on `ExactIn`, `otherAmountThreshold` on `ExactOut`. A
-            native SOL debit moves to the sponsor only when it is exactly one
-            token-account's rent, or is split when it is the trade amount plus
-            exactly that rent; any other taker SOL debit produces a `502`,
-            not a transaction that still bills the taker.
-
-            `gasless: true` is set only when a ready transaction was actually
-            built with a non-taker `payer`. A `payer` equal to `taker`, a
-            missing `payer`, a quote with no `taker`, or a 200 rejection
-            (`transaction: ""`) is not gasless, and `mode` stays whatever it
-            already was — `payer` does not switch `mode` to `manual`.
-
-            There is no integrator allowlist: any valid pubkey can sponsor.
-            An unfunded sponsor surfaces as `errorCode: 2` on a 200 rejection,
-            not a `400`. A malformed key returns
-            `400 {"error":"Invalid payer"}`.
-
-            With a sponsor, `errorCode: 1` still describes the taker's input
-            side, `errorCode: 2` describes the sponsor's SOL (signature,
-            priority, associated-token rent, and any system lamports assigned
-            to the sponsor), and `errorCode: 3` is still never returned.
+            Wallet that pays transaction costs (fees, Jito tip, token-account
+            rent) for `taker`; the taker still signs and pays the trade
+            amount. Any public key can be used; no effect if equal to `taker`.
+            Unfunded payer returns `errorCode: 2`. Does not change `mode`.
           schema:
             type: string
         - name: referralFee
