@@ -156,7 +156,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Quote, plus an assembled transaction when a `taker` was supplied.
+          description: "Quote, plus an unsigned transaction when a funded `taker` is supplied. Insufficient funding returns `200` with an empty transaction and error fields."
           content:
             application/json:
               schema:
@@ -738,27 +738,20 @@ components:
         swapUsdValue:
           type: number
           description: >
-            USD value of the swap at quote time. Exactly one of the two legs
-            (input or output): a fiat-backed mint wins first (`USDC`, `USDT`,
-            `PYUSD`, `USDS`, `FDUSD`, `EURC`), then SOL, and the input side
-            wins a tie. Omitted (not `null`) when neither leg can be priced.
+            USD value of the swap, equal to either `inUsdValue` or
+            `outUsdValue` depending on the token pair. Omitted when neither
+            side can be priced.
         swapType:
           type: string
-          description: Router category that produced the quote (for example, `aggregator`).
+          description: Quote routing category. Always `aggregator`.
         gasless:
           type: boolean
           description: >
-            `true` only when a ready transaction was actually built with a
-            `payer` that is not the taker. A `payer` equal to `taker`, a
-            missing `payer`, a quote with no `taker`, or a 200 rejection
-            (`transaction: ""`) is not gasless, and `mode` stays whatever it
-            already was.
+            `true` only when a ready transaction uses a `payer` different from
+            the `taker`; otherwise `false`.
         router:
           type: string
-          description: >
-            Router that produced the quote. Alchemy currently serves quotes
-            through Metis only.
-          enum: [metis]
+          description: Router that produced the quote. Always `metis`.
         routePlan:
           type: array
           description: Ordered list of route steps that make up the swap.
@@ -767,10 +760,8 @@ components:
         transaction:
           type: ["string", "null"]
           description: >
-            Base64-encoded, unsigned Solana transaction. Always present. `null`
-            when `taker` was not supplied. Empty string when `taker` was
-            supplied but the router could not build a transaction — inspect
-            `errorCode`, `errorMessage`, and `error` in that case.
+            Base64-encoded unsigned Solana transaction. `null` when no `taker`
+            was supplied; empty when funding was insufficient—see `errorCode`.
         taker:
           type: ["string", "null"]
           description: >
@@ -785,65 +776,55 @@ components:
         signatureFeeLamports:
           type: integer
           description: >
-            Estimated signature fee in lamports. Always present. `0` when
-            `taker` was not supplied or when the transaction was rejected.
-            With a non-taker `payer` (sponsor), this is `10000` because both
-            the sponsor and the taker sign.
+            Estimated signature fee in lamports. `0` without a ready
+            transaction. A sponsored transaction requires two signatures and
+            reports `10000`.
         prioritizationFeeLamports:
           type: integer
           description: >
-            Estimated priority fee plus any Jito tip, in lamports. Always
-            present. `0` when `taker` was not supplied or when the transaction
-            was rejected.
+            Estimated priority fee, including any Jito tip, in lamports. `0`
+            without a ready transaction.
         rentFeeLamports:
           type: integer
           description: >
-            Estimated rent fee in lamports (for example, to open the output
-            token account when it does not already exist). Always present. `0`
-            when `taker` was not supplied or when the transaction was
-            rejected.
+            Estimated token-account rent in lamports. `0` without a ready
+            transaction.
         signatureFeePayer:
           type: ["string", "null"]
           description: >
-            Public key that pays the signature fee. `null` when `taker` was not
-            supplied or when the transaction was rejected. When a non-taker
-            `payer` is set, this names the sponsor.
+            Wallet that pays the signature fee. The sponsor when `payer`
+            differs from `taker`; otherwise the taker. `null` without a ready
+            transaction.
         prioritizationFeePayer:
           type: ["string", "null"]
           description: >
-            Public key that pays the priority fee and any Jito tip. `null` when
-            `taker` was not supplied or when the transaction was rejected. When
-            a non-taker `payer` is set, this names the sponsor.
+            Wallet that pays the priority fee and any Jito tip. The sponsor
+            when `payer` differs from `taker`; otherwise the taker. `null`
+            without a ready transaction.
         rentFeePayer:
           type: ["string", "null"]
           description: >
-            Public key that pays the rent fee. `null` when `taker` was not
-            supplied or when the transaction was rejected. When a non-taker
-            `payer` is set, this names the sponsor.
+            Wallet that pays token-account rent. The sponsor when `payer`
+            differs from `taker`; otherwise the taker. `null` without a ready
+            transaction.
         totalTime:
-          type: integer
-          description: >
-            Time in milliseconds this service spent producing the response.
-            Always present.
+          type: number
+          description: Time in milliseconds spent producing the response.
         feeBps:
           type: integer
           description: >
-            Requested referral fee in basis points, echoed back. Present only
-            when the request included a valid `referralFee` + `referralAccount`
-            pair; omitted otherwise.
+            Referral fee in basis points. Present only when `referralFee` and
+            `referralAccount` were supplied.
         feeMint:
           type: string
           description: >
-            Mint of the token in which the referral fee is charged. On
-            `ExactIn` this is the output mint; on `ExactOut` this is the input
-            mint. Present only when the request included a valid `referralFee`
-            + `referralAccount` pair; omitted otherwise.
+            Mint in which the referral fee is quoted: the output mint on
+            ExactIn or input mint on ExactOut.
         platformFee:
           type: object
           description: >
-            Details of the integrator fee actually charged. Present only when
-            the request included a valid `referralFee` + `referralAccount`
-            pair; omitted otherwise.
+            Quoted referral-fee details. Present only when `referralFee` and
+            `referralAccount` were supplied.
           properties:
             amount:
               type: string
@@ -861,32 +842,19 @@ components:
             - feeBps
         errorCode:
           type: integer
-          description: >
-            Present only on a 200 rejection (`taker` was supplied but
-            `transaction` is the empty string). Match on `errorCode` to
-            identify the failure:
+          description: |
+            Present only when funding is insufficient and `transaction` is empty:
 
-            * `1` — insufficient funds. Always describes the taker's input
-              side, even when a `payer` is set.
-            * `2` — insufficient SOL for gas. Without a sponsor this is the
-              taker's SOL; with a `payer`, it describes the sponsor's SOL
-              (signature, priority, associated-token rent, and any system
-              lamports assigned to the sponsor).
-
-            Code `3` is never returned by this service. Any other unexpected
-            taker SOL debit surfaces as a `502`, not a 200 rejection that
-            still bills the taker.
+            * `1` — insufficient input funds
+            * `2` — insufficient SOL for transaction costs
         errorMessage:
           type: string
           description: >
-            Human-readable error description. Present on a 200 rejection
-            alongside `errorCode`. Match on `errorCode` rather than parsing
-            this string.
+            Human-readable funding error. Present with `errorCode`; match on
+            the code instead of this message.
         error:
           type: string
-          description: >
-            Duplicate of `errorMessage`, kept for compatibility. Present on a
-            200 rejection alongside `errorCode`.
+          description: Duplicate of `errorMessage`, retained for compatibility.
       required:
         - mode
         - inputMint
