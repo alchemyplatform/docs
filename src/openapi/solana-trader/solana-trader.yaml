@@ -948,16 +948,13 @@ components:
         computeBudgetInstructions:
           type: array
           description: >
-            Priority-fee instructions this service assembles for the caller —
-            not Metis's own compute-budget instructions and not a compute-unit
-            limit. The array is exactly one `SetComputeUnitPrice` instruction
-            and never a `SetComputeUnitLimit`. Omitting
-            `computeUnitPricePercentile` on the request does not leave Metis's
-            own price in place: it uses the same Alchemy priority-fee estimate
-            `/order` uses by default (Medium, 50th percentile, Jupiter's `high`
-            rung). A zero estimate is still emitted as
-            `SetComputeUnitPrice(0)`. The total priority fee is capped at
-            1,000,000 lamports.
+            Compute-budget instructions for the caller's transaction. Contains
+            exactly one `SetComputeUnitPrice` and no `SetComputeUnitLimit`;
+            other compute-budget instruction types may be preserved. The price
+            uses the requested priority-fee level, or the 50th percentile when
+            omitted. A zero estimate is emitted as `SetComputeUnitPrice(0)`.
+            The price is capped using an estimated fee ceiling of 1,000,000
+            lamports.
           items:
             $ref: "#/components/schemas/Instruction"
         otherInstructions:
@@ -1020,8 +1017,8 @@ components:
         blockhash:
           type: array
           description: >
-            Blockhash as a 32-byte little-endian array of unsigned integers,
-            NOT base58-encoded.
+            Blockhash as an array of 32 unsigned bytes. It is not
+            base58-encoded.
           minItems: 32
           maxItems: 32
           items:
@@ -1061,7 +1058,7 @@ components:
       properties:
         programId:
           type: string
-          description: Program ID that owns the instruction.
+          description: ID of the program invoked by this instruction.
         accounts:
           type: array
           items:
@@ -1095,17 +1092,19 @@ components:
           $ref: "#/components/schemas/SwapInfo"
         percent:
           type: integer
-          description: Percentage of the total swap routed through this step (0-100).
+          description: Router-assigned percentage for this route step, from 0 to 100.
           minimum: 0
           maximum: 100
         bps:
           type: integer
-          description: Basis-points share of the total swap routed through this step (0-10000).
+          description: Router-assigned share for this route step in basis points, from 0 to 10000.
           minimum: 0
           maximum: 10000
         usdValue:
           type: number
-          description: Optional USD value of this step at quote time.
+          description: >
+            USD value of this step's input amount. Omitted when its input mint
+            cannot be priced.
       required:
         - swapInfo
         - percent
