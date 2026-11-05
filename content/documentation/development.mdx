@@ -1,0 +1,49 @@
+---
+title: "Development"
+description: "From your first local build to production."
+subtitle: "From your first local build to production."
+slug: documentation/development
+---
+
+## Set up environments
+
+Use one [app](/docs/create-an-api-key) and one [access token](/docs/how-to-create-access-keys) per environment, such as development, staging and production. You can then see each one's usage on its own, set separate limits, and rotate a token without touching the others.
+
+Keep tokens out of code. Load them from environment variables, and commit only a placeholder:
+
+```bash .env.example theme={null}
+ALCHEMY_TOKEN=your-access-token
+```
+
+## Build on testnets
+
+Point development and staging at a [testnet](/docs/documentation/chains/testnets), such as `eth-sepolia` or `base-sepolia`. The API is the same, so going live is just a change of network slug. Get test tokens from a [faucet](/docs/documentation/chains/testnets#faucets).
+
+## Handle errors and limits
+
+* **Check the body, not just the status.** JSON-RPC errors often come back with HTTP `200`. See [Errors](/docs/reference/error-reference).
+* **Retry what's retryable.** Retry `429`, `500` and `503` with exponential backoff, and nothing else unchanged.
+* **Batch and multicall.** Fewer requests means less to retry and fewer [compute units](/docs/reference/compute-units). See [Batching](/docs/reference/batch-requests).
+* **Page through lists.** Data endpoints return pages. See Pagination.
+
+## Before you go to production
+
+**1. Scope your tokens**
+
+Give each token only the [permissions](/docs/documentation/account/authentication/permissions) it needs, and lock backend tokens to your servers with an [IP allowlist](/docs/how-to-add-allowlists-to-your-apps-for-enhanced-security).
+
+**2. Pick the right commitment level**
+
+Use `latest` for speed, and `safe` or `finalized` for anything that moves money. See [Commitment Levels](/docs/documentation/architecture/engine/consistency/commitment-levels).
+
+**3. Set limits and alerts**
+
+Cap spend with [limits](/docs/how-to-set-usage-limits-and-alerts-for-your-account), and get notified before you hit them with [alerts](/docs/dashboard-alerts).
+
+**4. Check your throughput**
+
+Make sure your plan's [throughput](/docs/reference/throughput) covers your peak traffic.
+
+**5. Watch status**
+
+Subscribe to [status updates](/docs/documentation/support/incidents) so you hear about incidents first.

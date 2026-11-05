@@ -1,0 +1,20 @@
+---
+title: "Indexes"
+description: "Data the engine answers from directly, without asking a node."
+subtitle: "Data the engine answers from directly, without asking a node."
+slug: documentation/architecture/engine/indexes
+---
+
+A node answers by scanning its own database, block by block. For wide queries that's slow, and for very old data some clients don't keep it at all. So we build our own indexes from the chain, and the engine answers these requests from them instead.
+
+| Index | What it answers | Read more |
+| - | - | - |
+| **Super Logs** | `eth_getLogs` across any block range, from block `0` to `latest` in one request | [Logs](/docs/deep-dive-into-eth_getlogs) |
+| **Data** | An address's balances, collectibles and activity, across networks in one call | [Data](/docs/data) |
+| **Historical storage** | Old blocks, transactions, receipts and traces, back to the first block | [Historical Data](/docs/what-is-archive-data-on-ethereum) |
+
+## Super Logs
+
+Most providers cap each `eth_getLogs` call at a few thousand blocks, because a node has to scan every block in the range. Super Logs keeps every log on a network in a separate index, so wide queries are answered from the index in one request, usually in under a second.
+
+It's on by default on supported networks, with no change to your requests. See [Logs](/docs/deep-dive-into-eth_getlogs) for which networks have it and the limits that apply.

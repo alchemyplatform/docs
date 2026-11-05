@@ -1,0 +1,32 @@
+---
+title: "Philosophy"
+description: "The principles behind how we build the platform."
+subtitle: "The principles behind how we build the platform."
+slug: documentation/platform/philosophy
+---
+
+These principles guide every decision we make, from which clients we run to how an error message reads.
+
+## Standard first
+
+You send standard JSON-RPC and get standard responses. Any library that speaks to a node, such as viem or ethers, works with us unchanged. Features like [Super Logs](/docs/deep-dive-into-eth_getlogs) make standard methods better instead of replacing them, so you're never locked in.
+
+## Correct before fast
+
+A fast wrong answer is worse than a slow right one. Your reads never go backwards, even when served by different nodes in different regions. See [Consistency](/docs/documentation/architecture/engine/consistency/read-consistency).
+
+## No single point of failure
+
+We run several [clients](/docs/documentation/architecture/nodes) wherever a network has more than one, in several [regions](/docs/documentation/architecture/regions). A client bug, a bad node or a regional outage moves traffic elsewhere instead of taking your app down.
+
+## Secure by default
+
+Every token is scoped to the [permissions](/docs/documentation/account/authentication/permissions) it needs, and can be locked to your [IPs](/docs/how-to-add-allowlists-to-your-apps-for-enhanced-security) or [domains](/docs/how-to-add-allowlists-to-your-apps-for-enhanced-security). Keys leaked on GitHub are [revoked automatically](/docs/documentation/account/security/leaked-key-detection).
+
+## Errors that tell you what to do
+
+Limits are documented and errors explain how to fix them. A range that's too wide for `eth_getLogs` returns a [range that works](/docs/deep-dive-into-eth_getlogs), not just a failure.
+
+## Experiment in the open
+
+New ideas ship as [experiments](/docs/documentation/experiments/overview) you can try early, before they become defaults. You see what's coming and can tell us what works.

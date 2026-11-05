@@ -1,0 +1,60 @@
+---
+title: "Regions"
+description: "Where we run and how requests are routed."
+subtitle: "Where we run and how requests are routed."
+slug: documentation/architecture/regions
+---
+
+Requests are served from the region closest to you, and fail over to another region if one has an issue.
+
+## Where we run
+
+| Region | Code | Location |
+| - | - | - |
+| US East | `use1` | 🇺🇸 Vint Hill, Virginia |
+| US West | `usw2` | 🇺🇸 Seattle, Washington |
+| Europe | `euc1` | 🇩🇪 Frankfurt, Germany |
+| Asia | `apse1` | 🇸🇬 Singapore |
+| Asia | `apne1` | 🇯🇵 Tokyo, Japan |
+
+Nodes run on dedicated bare metal servers in each region.
+
+## Beyond our regions
+
+Some requests don't need a node at all, because their answer doesn't change. We cache those answers at the [edge](/docs/documentation/architecture/edge), in locations around the world well beyond the regions above, so they're answered close to you even when no region is nearby. Everything else goes to the closest region.
+
+## Networks by region
+
+Not every network runs in every region. Call [Networks](/docs/reference/node-supported-chains) to see the regions each network and product is served from, or see [Networks](/docs/documentation/chains/overview) for the full list of networks.
+
+```bash
+curl https://api.alchemy.com/v1/coverage/networks \
+  --header 'Authorization: Bearer YOUR_ACCESS_TOKEN'
+```
+
+Each network lists its products and the regions that serve them. Here, RPC on Ethereum runs in all five regions, while Balances and Webhooks run in US East:
+
+```json
+{
+  "networks": [
+    {
+      "network": "eth-mainnet",
+      "chain_id": 1,
+      "products": [
+        {
+          "product": "rpc",
+          "regions": ["use1", "usw2", "euc1", "apse1", "apne1"]
+        },
+        { "product": "balances", "regions": ["use1"] },
+        { "product": "webhooks", "regions": ["use1"] }
+      ]
+    }
+  ]
+}
+```
+
+## How requests are routed
+
+If no node in your region can answer a request, or a network stalls in your region, traffic moves to another region. See [Fallbacks](/docs/documentation/architecture/engine/fallbacks).
+
+## New regions

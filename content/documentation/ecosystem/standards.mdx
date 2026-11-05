@@ -1,0 +1,43 @@
+---
+title: "Shaping Standards"
+description: "Features we shipped before they became Ethereum standards, and the standards we helped land."
+subtitle: "Features we shipped before they became Ethereum standards, and the standards we helped land."
+slug: documentation/ecosystem/standards
+---
+
+We see what thousands of teams need from a node before anyone else does. When a pattern keeps coming up, we build it, and then we work with client teams to make it a standard every node supports.
+
+| Feature | We shipped it | Standard |
+| - | - | - |
+| Push receipts for mined transactions | October 2022 | October 2025 |
+| All receipts for a block in one call | December 2021 | August 2023 |
+| Send a transaction and wait for its receipt | July 2025 | November 2025 |
+| Block timestamps on logs | July 2025 | August 2025 |
+
+## Receipts over WebSockets
+
+We launched the `alchemy_minedTransactions` subscription in October 2022. It pushes each transaction as soon as it's mined, so apps no longer had to poll for receipts.
+
+Three years later, the same idea became `transactionReceipts`, a standard `eth_subscribe` type. geth shipped it in v1.16.5 in October 2025, the other major clients followed in April 2026, and it joined the execution API spec in August 2026.
+
+## Block receipts
+
+We added `alchemy_getTransactionReceipts` in December 2021, to return every receipt in a block in one request instead of one per transaction.
+
+The standard version, `eth_getBlockReceipts`, joined the execution API spec in August 2023 and geth in v1.13.0 the next month.
+
+## Synchronous sends
+
+`eth_sendRawTransactionSync` sends a transaction and waits for its receipt, saving a round of polling. We supported it on every network in July 2025, the month [EIP-7966](https://eips.ethereum.org/EIPS/eip-7966) was published as a draft. geth added it in v1.16.6 in November 2025.
+
+We also helped shape the EIP, by raising how a request's timeout should relate to the node's own timeout.
+
+## Block timestamps on logs
+
+Logs used to come without the time of their block, so apps had to fetch each block to date an event. A `blockTimestamp` field had been proposed since 2022.
+
+In 2025 we worked with client teams to land it. We backed the [spec change](https://github.com/ethereum/execution-apis/pull/639) and pushed the clients that hadn't shipped it yet. We served `blockTimestamp` on `eth_getLogs` from July 2025. The spec merged in August 2025, and Erigon, Besu and Nethermind shipped it by October 2025.
+
+## Get involved
+
+We take part in the RPC standards calls and work in the open on [execution-apis](https://github.com/ethereum/execution-apis). If there's a method you think every node should support, [tell us](mailto:support@alchemy.com).

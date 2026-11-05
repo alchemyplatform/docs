@@ -1,0 +1,27 @@
+---
+title: "Read Consistency"
+description: "Why your reads always agree with each other, across nodes and regions."
+subtitle: "Why your reads always agree with each other, across nodes and regions."
+slug: documentation/architecture/engine/consistency/read-consistency
+---
+
+Your requests are served by many nodes across several [regions](/docs/documentation/architecture/regions). Nodes don't all see a new block at the same moment, so without care, two requests in a row could disagree:
+
+* `eth_blockNumber` returns block 100, then 99.
+* You read block 100, then `eth_getLogs` for block 100 returns nothing because it went to a node that hasn't seen it yet.
+
+## How we keep reads consistent
+
+We track a single canonical chain for each network: the blocks we've confirmed across our nodes. Each request goes to a node that has the blocks it needs, so:
+
+* The head never goes backwards between your requests.
+* Once you've seen a block, follow-up requests for it find it.
+* During a reorg, every node serves the same chain once we switch over.
+
+If the closest node is behind, your request goes to another node that has the block, in the same region first and then in another.
+
+## Tips
+
+* **Pin the block.** When several calls must describe the same moment, read `eth_blockNumber` once and pass that number to each call instead of `latest`.
+* **Check the block hash.** To detect reorgs, compare the `blockHash` of the data you stored with the block's current hash.
+* **Use commitment levels.** Read from `safe` or `finalized` for data that must not change. See [Commitment Levels](/docs/documentation/architecture/engine/consistency/commitment-levels).

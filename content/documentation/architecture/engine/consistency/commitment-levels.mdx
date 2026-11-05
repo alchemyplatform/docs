@@ -1,0 +1,51 @@
+---
+title: "Commitment Levels"
+description: "How settled a block is, from latest to finalized, for reads and writes."
+subtitle: "How settled a block is, from latest to finalized, for reads and writes."
+slug: documentation/architecture/engine/consistency/commitment-levels
+---
+
+New blocks can be replaced by a reorg before the network settles on them. A commitment level, passed as the block tag, picks how settled the block you read from must be: newer data, or data that won't change.
+
+```bash
+curl https://eth-mainnet.g.alchemy.com/v2 \
+  --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --header 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"eth_getBlockByNumber","params":["finalized", false]}'
+```
+
+## Levels
+
+| Tag | What it is | Can it change? | Behind the head on Ethereum |
+| - | - | - | - |
+| `latest` | The newest block | Yes, a reorg can replace it | 0 |
+| `safe` | A block most validators have voted for | Very unlikely | About 6 minutes |
+| `finalized` | A block the network has finalized | No | About 13 minutes |
+
+`latest` is the default when you leave out the tag.
+
+## Which to use
+
+* **`latest`** for anything shown to users right away, such as balances and recent activity.
+* **`safe`** when acting on data matters but a few minutes of delay is fine, such as crediting a deposit.
+* **`finalized`** when a reorg would be costly, such as exchange deposits or bridging.
+
+## Confirming your transactions
+
+A transaction is final once the block it's in is final. After you send one:
+
+1. Get its receipt, and note the `blockNumber`.
+2. Read the `safe` or `finalized` block.
+3. Once that block's number is at least your receipt's `blockNumber`, your transaction has reached that level.
+
+If a reorg drops the block before then, the receipt disappears and the transaction goes back to the mempool.
+
+## Layer 2 networks
+
+On rollups such as Base, Optimism and Arbitrum, blocks settle in stages:
+
+* **`latest`**: produced by the sequencer, usually in under a second.
+* **`safe`**: posted to Ethereum.
+* **`finalized`**: posted to Ethereum in a block that Ethereum has finalized.
+
+Need confirmations faster than `safe`? See [Fast Confirmation Rule](/docs/documentation/experiments/fast-confirmation).
