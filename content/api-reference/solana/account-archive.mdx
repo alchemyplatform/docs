@@ -24,7 +24,7 @@ This is a feature, not a bug. It's part of why Solana is fast. But it means a wh
 
 You might think `getBlock` covers this, but it doesn't. It returns a past slot's transactions and their pre/post *balances*, not account *data*. For most applications, the state that matters lives in the data bytes: the order book, price feed, position, or configuration.
 
-Solana Account Archive brings that history back. It answers `getAccountInfo` for any account at any slot within the archive's coverage, using the same request and response shapes you already use. The archive never prunes, so the queryable window keeps growing forward as the chain advances.
+Solana Account Archive brings that history back. It answers `getAccountInfo` for any account at any slot from slot 353,856,028 (July 17, 2025) onward, using the same request and response shapes you already use. The archive never prunes, so the queryable window keeps growing forward as the chain advances.
 
 ## The API: `getAccountInfo`, extended
 
@@ -302,7 +302,7 @@ Yes. The same account decoders a standard Solana RPC node uses are applied to th
 
 ### How far back can I query?
 
-Coverage starts at a fixed point in history that applies to all accounts. Slots before it are not indexed, and requests for them return error `-32020`. Everything indexed is never pruned, so it stays queryable and the window keeps growing forward as the chain advances.
+Coverage starts at slot 353,856,028 (July 17, 2025). This start is fixed and applies to all accounts: slots below it are not indexed, and requests for them return error `-32020`. History from that slot onward is never pruned, so everything indexed stays queryable and the window keeps growing forward as the chain advances.
 
 ### How is the historical data known to be correct?
 
