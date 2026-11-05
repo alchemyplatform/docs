@@ -1,0 +1,92 @@
+---
+title: "Verify Webhook Signatures"
+description: "Check that a webhook came from Alchemy before you act on it."
+subtitle: "Check that a webhook came from Alchemy before you act on it."
+slug: guides/webhooks/verify-webhook-signatures
+---
+
+Anyone who finds your webhook URL can send it requests. Every request from Alchemy is signed, so check the signature before trusting the event.
+
+## How signatures work
+
+Each webhook has its own **signing key**, on its page in the [dashboard](https://dashboard.alchemy.com/webhooks). Alchemy computes an HMAC-SHA256 of the raw request body with that key, and sends it hex encoded in the `X-Alchemy-Signature` header.
+
+To verify, compute the same HMAC and compare.
+
+<Warning>
+Hash the **raw body**, exactly as received. If your framework parses the JSON first and you hash a re-serialized copy, the signature won't match.
+</Warning>
+
+```ts Bun theme={null}
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+export function isValidSignature(rawBody: string, signature: string | null, signingKey: string) {
+  const digest = createHmac("sha256", signingKey).update(rawBody, "utf8").digest("hex");
+  return (
+    signature !== null &&
+    signature.length === digest.length &&
+    timingSafeEqual(Buffer.from(digest), Buffer.from(signature))
+  );
+}
+```
+
+```python Python theme={null}
+import hashlib
+import hmac
+
+def is_valid_signature(raw_body: bytes, signature: str, signing_key: str) -> bool:
+    digest = hmac.new(signing_key.encode(), raw_body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(digest, signature or "")
+```
+
+```go Go theme={null}
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+)
+
+func isValidSignature(rawBody []byte, signature, signingKey string) bool {
+	mac := hmac.New(sha256.New, []byte(signingKey))
+	mac.Write(rawBody)
+	expected := hex.EncodeToString(mac.Sum(nil))
+	return hmac.Equal([]byte(expected), []byte(signature))
+}
+```
+
+Use a constant-time comparison, as above, so the check doesn't leak how much of a forged signature was right.
+
+## Verify in a Bun server
+
+Read the body as text, verify it, then parse it:
+
+```ts server.ts theme={null}
+import { isValidSignature } from "./signature";
+
+Bun.serve({
+  port: 8080,
+  routes: {
+    "/webhooks": {
+      async POST(req) {
+        const rawBody = await req.text();
+        const signature = req.headers.get("X-Alchemy-Signature");
+        if (!isValidSignature(rawBody, signature, process.env.ALCHEMY_SIGNING_KEY!)) {
+          return new Response("Invalid signature", { status: 401 });
+        }
+        const event = JSON.parse(rawBody);
+        // event is verified
+        return new Response(null, { status: 200 });
+      },
+    },
+  },
+});
+```
+
+## Allowlist Alchemy's IP addresses
+
+For another layer, accept webhook requests only from these addresses:
+
+* `54.236.136.17`
+* `34.237.24.169`
+
+Keep the signature check too. IP lists can change, and the signature proves the body wasn't altered.

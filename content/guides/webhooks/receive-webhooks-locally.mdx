@@ -1,0 +1,65 @@
+---
+title: "Receive Webhooks Locally"
+description: "Run a webhook listener on your machine and send it a test event."
+subtitle: "Run a webhook listener on your machine and send it a test event."
+slug: guides/webhooks/receive-webhooks-locally
+---
+
+You need an [access token](/docs/how-to-create-access-keys) with the `webhooks:write` permission, and [Bun](https://bun.sh) and [ngrok](https://ngrok.com) installed.
+
+<Tip>
+Just want to see what events look like? Open [Svix Play](https://www.svix.com/play/) and use its URL as your webhook URL. It shows every delivery in your browser, with headers and body, without writing a server.
+</Tip>
+
+**1. Start a listener**
+
+Save this as `server.ts` and run `bun server.ts`. It logs every event and responds with `200`.
+
+```ts server.ts theme={null}
+Bun.serve({
+  port: 8080,
+  async fetch(req) {
+    const event = await req.json();
+    console.log(event.type, event.id, event.event);
+    return new Response(null, { status: 200 });
+  },
+});
+```
+
+**2. Expose it with ngrok**
+
+Webhooks need a public HTTPS URL. ngrok forwards one to your machine:
+
+```bash
+ngrok http 8080
+```
+
+Copy the `https://…ngrok-free.app` URL it prints.
+
+**3. Create a webhook**
+
+Point a webhook at your ngrok URL. This one tracks an address on Ethereum Sepolia:
+
+```bash
+curl https://api.alchemy.com/v1/webhooks \
+  -H "Authorization: Bearer $ALCHEMY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "data",
+    "network": "eth-sepolia",
+    "webhook_url": "https://YOUR-SUBDOMAIN.ngrok-free.app",
+    "addresses": ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"]
+  }'
+```
+
+The response includes the webhook's `id`. Copy its **signing key** from the webhook's page in the [dashboard](https://dashboard.alchemy.com/webhooks).
+
+**4. Send a test event**
+
+In the dashboard, open the webhook and click **Test Webhook**. The event appears in your terminal, and in ngrok's inspector at `http://localhost:4040`, where you can replay it.
+
+<Tip>
+Test events differ slightly from real ones. Once your handler works with a test event, send a real transaction on Sepolia to check it with a real payload.
+</Tip>
+
+Before going to production, [verify signatures](/docs/guides/webhooks/verify-webhook-signatures) so you only trust events from Alchemy, and [handle retries and duplicates](/docs/guides/webhooks/handle-retries-and-duplicates).
