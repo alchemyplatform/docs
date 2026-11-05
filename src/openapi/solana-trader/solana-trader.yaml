@@ -43,17 +43,13 @@ paths:
           description: >
             Wallet to receive the output instead of `taker` (omit to keep it
             with `taker`). Expects a wallet address, not a token account.
-            Missing ATAs are created automatically. Switches `mode` to
-            `manual`.
+            Missing ATAs are created automatically.
           schema:
             type: string
         - name: swapMode
           in: query
           required: false
-          description: |
-            How `amount` is interpreted.
-
-            Switches `mode` to `manual`.
+          description: How `amount` is interpreted.
           schema:
             type: string
             enum: [ExactIn, ExactOut]
@@ -68,7 +64,7 @@ paths:
           in: query
           required: false
           description: |
-            Slippage tolerance in basis points, 0–10000. Switches `mode` to `manual`.
+            Slippage tolerance in basis points, 0–10000.
 
             `rtse` (automatic slippage) is not supported.
           schema:
@@ -104,7 +100,7 @@ paths:
           description: |
             How your custom fee (`priorityFeeLamports` + `jitoTipLamports`) is applied.
 
-            When omitted, or sent without `priorityFeeLamports` or `jitoTipLamports`, the fee is estimated automatically. Otherwise, switches `mode` to `manual`.
+            When omitted, or sent without `priorityFeeLamports` or `jitoTipLamports`, the fee is estimated automatically.
           schema:
             type: string
             enum: [maxCap, exactFee]
@@ -121,7 +117,6 @@ paths:
           description: >
             Comma-separated list of DEX labels to exclude from routing. Labels
             are case-sensitive (for example, `Raydium,Orca+V2,Meteora+DLMM`).
-            Switches `mode` to `manual`.
           schema:
             type: string
         - name: excludeRouters
@@ -691,14 +686,8 @@ components:
         mode:
           type: string
           description: >
-            Router mode used to price the quote. Defaults to `ultra`; becomes
-            `manual` when the caller sets `slippageBps`, `swapMode`, `receiver`,
-            `excludeDexes`, `excludeRouters`, or a `broadcastFeeType` together
-            with `priorityFeeLamports` or `jitoTipLamports`. `payer` does not
-            change `mode`. The value echoed here reflects the effective mode
-            only — echoed request defaults such as `slippageBps: 50` or
-            `swapMode: ExactIn` do not on their own indicate the caller set
-            them.
+            Compatibility mode label: `ultra` or `manual`. Informational only;
+            both are processed identically.
         inputMint:
           type: string
           description: Mint of the input token, echoed back.
