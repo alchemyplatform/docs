@@ -334,7 +334,7 @@ redirects:
     permanent: true
 
   - source: /reference/update-webhook-addresses
-    destination: /docs/data/webhooks/webhooks-api-endpoints/notify-api-endpoints/update-webhook-addresses
+    destination: /docs/data/webhooks/webhooks-api-endpoints/update-webhook-addresses
     permanent: true
 
   # ========================================= Node Redirects =========================================
@@ -2392,6 +2392,22 @@ redirects:
     permanent: true
   - source: "/docs/data/webhooks/custom-webhook-api-methods/custom-webhook-api-methods/notify-api-methods/:method"
     destination: "/docs/data/webhooks/webhooks-api-endpoints/notify-api-endpoints/:method"
+    permanent: true
+  # The Notify API reference now comes from the spec that the API generates.
+  # Its URLs have no `notify-api-endpoints` segment, and some endpoint slugs
+  # changed. The catch-all covers the slugs that did not change, so it must
+  # stay after the other dynamic entries.
+  - source: "/docs/data/webhooks/webhooks-api-endpoints/notify-api-endpoints/read-custom-webhook-variable"
+    destination: "/docs/data/webhooks/webhooks-api-endpoints/get-graphql-variable"
+    permanent: true
+  - source: "/docs/data/webhooks/webhooks-api-endpoints/notify-api-endpoints/:slug(team-webhooks|webhook-addresses|webhook-nft-filters)"
+    destination: "/docs/data/webhooks/webhooks-api-endpoints/get-:slug"
+    permanent: true
+  - source: "/docs/data/webhooks/webhooks-api-endpoints/notify-api-endpoints/:action(create|update|delete)-custom-webhook-variable"
+    destination: "/docs/data/webhooks/webhooks-api-endpoints/:action-graphql-variable"
+    permanent: true
+  - source: "/docs/data/webhooks/webhooks-api-endpoints/notify-api-endpoints/:slug"
+    destination: "/docs/data/webhooks/webhooks-api-endpoints/:slug"
     permanent: true
   - source: "/docs/node/hyperevm/hyper-evm-api-endpoints/:path*"
     destination: "/docs/node/hyperliquid/hyperliquid-api-endpoints/:path*"
