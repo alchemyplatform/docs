@@ -29,7 +29,7 @@ For the best development experience, we recommend that you [sign up for a free A
 
 ## Which libraries support Elysium?
 
-Common Ethereum libraries such as [viem](https://viem.sh/), [ethers.js](https://docs.ethers.org/), and [web3.js](https://web3js.readthedocs.io/) all support Elysium given its EVM nature. Elysium is not yet in viem's bundled chain list, so you need to define it with `defineChain` using chain ID `99801` and HYPE as the native currency. See the [Quickstart](/docs/reference/elysium-api-quickstart) for an example.
+Common Ethereum libraries such as [viem](https://viem.sh/), [ethers.js](https://docs.ethers.org/), and [web3.js](https://web3js.readthedocs.io/) all support Elysium given its EVM nature. Elysium is not yet in viem's bundled chain list, so you need to define it with `defineChain` using chain ID `99901` for mainnet or `99801` for testnet, and HYPE as the native currency. See the [Quickstart](/docs/reference/elysium-api-quickstart) for an example.
 
 <Warning>
   The `elysiumTestnet` export in `viem/chains` refers to a different chain: Vulcan Forged's Elysium Testnet (chain ID `1338`, LAVA currency). Define Kinetiq's Elysium Testnet (chain ID `99801`, HYPE currency) yourself with `defineChain`.
@@ -53,11 +53,22 @@ No. Elysium runs a single sequencer with no public mempool, so pending transacti
 
 ## Which networks does Alchemy support for Elysium?
 
-Alchemy currently supports the following Elysium network:
+Alchemy supports Elysium Mainnet and Elysium Testnet:
 
+* **Elysium Mainnet** (chain ID `99901`): `https://elysium-mainnet.g.alchemy.com/v2/{apiKey}`
 * **Elysium Testnet** (chain ID `99801`): `https://elysium-testnet.g.alchemy.com/v2/{apiKey}`
 
-Elysium mainnet has not yet launched. When it does, we will add mainnet endpoint support here.
+## Which Data APIs are available on Elysium Mainnet?
+
+| API | Elysium Mainnet support |
+| --- | --- |
+| [Token API](/docs/reference/token-api) | Token balances and metadata |
+| [Transfers API](/docs/reference/transfers-api-quickstart) | External (native HYPE), ERC-20, ERC-721, ERC-1155, and internal transfers |
+| [NFT API](/docs/reference/nft-api-overview) | NFT ownership and metadata queries using `elysium-mainnet`; endpoint-specific network restrictions still apply |
+| [Portfolio APIs](/docs/reference/portfolio-apis) | Token balances, tokens, NFTs, and NFT collections by wallet; transaction history (Transfers By Wallet) is not supported |
+| [Prices API](/docs/reference/prices-api-quickstart) | HYPE by symbol works; prices for Elysium tokens by address are not supported |
+
+Use `elysium-mainnet` as the network identifier. These Data API support details apply to mainnet; they do not imply testnet support.
 
 ## What testnet should I use for Elysium?
 
