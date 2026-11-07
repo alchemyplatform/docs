@@ -7,7 +7,7 @@ components:
       description: |-
         Clients can request a filtered list of events emitted by a given ledger range.
 
-        Stellar-RPC will support querying within a maximum 7 days of recent ledgers.
+        Stellar-RPC will support querying within a maximum 60 days of recent ledgers.
 
         Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
 
@@ -114,7 +114,7 @@ components:
           description: |
             Returns up to 2 native XLM `transfer` contract events emitted from the Stellar Asset Contract
             (`CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA`) starting near the current head.
-            Stellar RPC retains roughly the last 7 days of events, so `startLedger` may need to be bumped
+            Stellar RPC retains roughly the last 60 days of events, so `startLedger` may need to be bumped
             forward over time. The first topic `AAAADwAAAAh0cmFuc2Zlcg==` is the SCV-encoded `transfer` symbol.
           params:
             - name: startLedger
@@ -494,7 +494,7 @@ components:
         - name: Two ledgers from a stable historical sequence
           description: |
             Returns two consecutive ledger summaries starting at sequence 60,000,000.
-            Unlike `getEvents` and `getTransactions` (which retain ~7 and ~14 days respectively),
+            Unlike `getEvents` and `getTransactions` (which retain ~60 days),
             Alchemy's Stellar mainnet RPC retains full ledger history back to genesis (ledger 2),
             so this example is stable indefinitely.
           params:
