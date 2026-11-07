@@ -108,6 +108,7 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 | getTokenAccountsByDelegate        | 10                          |               |
 | getTokenAccountsByOwner           | 10                          |               |
 | getTokenAccountsByOwnerV2         | 10                          |               |
+| getAgGenesisCert                  | 20                          |               |
 | getBlockCommitment                | 20                          |               |
 | getBlockHeight                    | 20                          |               |
 | getBlocksWithLimit                | 20                          |               |
@@ -154,6 +155,7 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 | getInflationReward                | 40                          | 300           |
 | getSignaturesForAddress           | 40                          |               |
 | getTokenAccountsByOwnerAtSlot     | 40                          | 100           |
+| getTokenHoldersAtSlot             | 40                          | 100           |
 | getTransaction                    | 40                          |               |
 | getTransactionsForAddress         | 100                         |               |
 | getAsset\_v2                      | 160                         | 200           |
@@ -169,6 +171,7 @@ For more details, check out the [Compute Units](/docs/reference/compute-units#wh
 | getAssetsByGroup\_v2              | 480                         | 200           |
 | getAssetsByOwner\_v2              | 480                         | 200           |
 | searchAssets\_v2                  | 480                         | 200           |
+| simulateTransactionsAtSlot        | 1500                        |               |
 | getLargestAccounts                | 3000                        |               |
 | batch\*                           | CU of method # times called |               |
 {/* cu:auto end */}
@@ -329,33 +332,32 @@ Similar to the [NFT API](/docs/reference/compute-unit-costs#nft-api), the Embedd
 Similar to the [NFT API](/docs/reference/compute-unit-costs#nft-api), the Gas Manager & Bundler APIs implement "Throughput CU" to count separately toward your applications' throughput!
 
 {/* cu:auto product="gas-manager-bundler" */}
-| Method                                     | CU   | Throughput CU |
-| ------------------------------------------ | ---- | ------------- |
-| debug\_bundler\_clearMempool               | 10   |               |
-| debug\_bundler\_clearState                 | 10   |               |
-| debug\_bundler\_dumpMempool                | 10   |               |
-| debug\_bundler\_dumpPaymasterBalances      | 10   |               |
-| debug\_bundler\_dumpReputation             | 10   |               |
-| debug\_bundler\_getStakeStatus             | 10   |               |
-| debug\_bundler\_sendBundleNow              | 10   |               |
-| debug\_bundler\_setBundlingMode            | 10   |               |
-| debug\_bundler\_setReputation              | 10   |               |
-| eth\_supportedEntryPoints                  | 10   |               |
-| rundler\_getUserOperationGasPrice          | 10   |               |
-| rundler\_maxPriorityFeePerGas              | 10   |               |
-| eth\_getUserOperationByHash                | 20   |               |
-| eth\_getUserOperationReceipt               | 20   |               |
-| rundler\_getUserOperationStatus            | 50   |               |
-| pm\_getPaymasterStubData                   | 250  | 100           |
-| eth\_estimateUserOperationGas              | 500  | 50            |
-| alchemy\_requestFeePayer                   | 1000 | 100           |
-| alchemy\_requestPaymasterAndData           | 1000 | 100           |
-| alchemy\_requestPaymasterTokenQuote        | 1000 | 100           |
-| eth\_sendUserOperation                     | 1000 | 100           |
-| pm\_getPaymasterData                       | 1000 | 100           |
-| rundler\_dropLocalUserOperation            | 1000 |               |
-| alchemy\_requestGasAndPaymasterAndData     | 1250 | 125           |
-| alchemy\_simulateUserOperationAssetChanges | 2500 |               |
+| Method                                 | CU   | Throughput CU |
+| -------------------------------------- | ---- | ------------- |
+| debug\_bundler\_clearMempool           | 10   |               |
+| debug\_bundler\_clearState             | 10   |               |
+| debug\_bundler\_dumpMempool            | 10   |               |
+| debug\_bundler\_dumpPaymasterBalances  | 10   |               |
+| debug\_bundler\_dumpReputation         | 10   |               |
+| debug\_bundler\_getStakeStatus         | 10   |               |
+| debug\_bundler\_sendBundleNow          | 10   |               |
+| debug\_bundler\_setBundlingMode        | 10   |               |
+| debug\_bundler\_setReputation          | 10   |               |
+| eth\_supportedEntryPoints              | 10   |               |
+| rundler\_getUserOperationGasPrice      | 10   |               |
+| rundler\_maxPriorityFeePerGas          | 10   |               |
+| eth\_getUserOperationByHash            | 20   |               |
+| eth\_getUserOperationReceipt           | 20   |               |
+| rundler\_getUserOperationStatus        | 50   |               |
+| pm\_getPaymasterStubData               | 250  | 100           |
+| eth\_estimateUserOperationGas          | 500  | 50            |
+| alchemy\_requestFeePayer               | 1000 | 100           |
+| alchemy\_requestPaymasterAndData       | 1000 | 100           |
+| alchemy\_requestPaymasterTokenQuote    | 1000 | 100           |
+| eth\_sendUserOperation                 | 1000 | 100           |
+| pm\_getPaymasterData                   | 1000 | 100           |
+| rundler\_dropLocalUserOperation        | 1000 |               |
+| alchemy\_requestGasAndPaymasterAndData | 1250 | 125           |
 {/* cu:auto end */}
 
 * When `eth_sendUserOperation` is called with a valid bundler sponsorship header (`x-alchemy-policy-id`), the CU cost is 3000 instead of the standard 1000.
@@ -469,12 +471,8 @@ We want builders to be able to use as much of the NFT API as they need without w
 # Transact
 
 {/* cu:auto product="transact" */}
-| Method                              | CU   |
-| ----------------------------------- | ---- |
-| alchemy\_simulateAssetChanges       | 2500 |
-| alchemy\_simulateExecution          | 2500 |
-| alchemy\_simulateAssetChangesBundle | 4500 |
-| alchemy\_simulateExecutionBundle    | 4500 |
+| Method | CU |
+| ------ | -- |
 {/* cu:auto end */}
 
 # Transfers API
@@ -1472,6 +1470,14 @@ Aptos gRPC [streaming methods](/docs/reference/aptos-grpc-overview) (`aptos.inde
 | protocol.WalletSolidity/ScanShieldedTRC20NotesByIvk          | 20 |
 | protocol.WalletSolidity/ScanShieldedTRC20NotesByOvk          | 20 |
 | protocol.WalletSolidity/TriggerConstantContract              | 20 |
+{/* cu:auto end */}
+
+# Arc: Specific Methods
+
+{/* cu:auto product="arc" */}
+| Method              | CU |
+| ------------------- | -- |
+| arc\_getCertificate | 20 |
 {/* cu:auto end */}
 
 # Compute unit cost for error codes
