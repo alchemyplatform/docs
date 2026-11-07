@@ -1,0 +1,59 @@
+---
+title: "Track Wallet Activity"
+description: "Get notified when your users send or receive tokens."
+subtitle: "Get notified when your users send or receive tokens."
+slug: guides/webhooks/track-wallet-activity
+---
+
+A `data` webhook sends an [`address.activity`](/docs/reference/webhooks-overview) event every time a tracked address sends or receives the native token, an ERC-20, an ERC-721 or an ERC-1155. One webhook can track up to 100,000 addresses.
+
+**1. Create the webhook**
+
+Create one webhook per network, with the addresses you already have:
+
+```bash
+curl https://api.alchemy.com/v1/webhooks \
+  -H "Authorization: Bearer $ALCHEMY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "data",
+    "network": "eth-mainnet",
+    "webhook_url": "https://api.example.com/webhooks",
+    "addresses": ["0x3974549dc16bf72af6fc3668d5f6c092c9e91c2b"]
+  }'
+```
+
+Save the webhook's `id`.
+
+**2. Add addresses as users sign up**
+
+Add new addresses, and remove ones you no longer need, without recreating the webhook:
+
+```bash
+curl -X PATCH https://api.alchemy.com/v1/webhooks/$WEBHOOK_ID/addresses \
+  -H "Authorization: Bearer $ALCHEMY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "addresses_to_add": ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],
+    "addresses_to_remove": []
+  }'
+```
+
+Batch changes into one request where you can, rather than one per user.
+
+**3. Handle the events**
+
+Each event says which tracked address was involved, and whether it was incoming or outgoing:
+
+```ts
+function onActivity({ address, direction, value, token, hash }) {
+  const symbol = token?.symbol ?? "ETH";
+  if (direction === "in") notifyUser(address, `Received ${value} ${symbol}`, hash);
+}
+```
+
+`token` is `null` for the native token. [Verify the signature](/docs/guides/webhooks/verify-webhook-signatures) and [skip duplicates](/docs/guides/webhooks/handle-retries-and-duplicates) before acting on an event.
+
+<Tip>
+Crediting deposits? Wait until the transaction's block is `safe` or `finalized` before treating the funds as final. See [Commitment Levels](/docs/documentation/architecture/engine/consistency/commitment-levels).
+</Tip>

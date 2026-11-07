@@ -1,0 +1,20 @@
+---
+title: "Edge"
+description: "Where your requests enter, close to you, before they reach the engine."
+subtitle: "Where your requests enter, close to you, before they reach the engine."
+slug: documentation/architecture/edge
+---
+
+The edge is the front door to every request. It runs in each [region](/docs/documentation/architecture/regions), so your request is received close to where your app runs, and it handles everything that doesn't need a node.
+
+## What the edge does
+
+* **Receives your request** in the closest region. If a region has a problem, traffic moves to another one.
+* **Checks your access token** and its [permissions](/docs/documentation/account/authentication/permissions), and rejects requests that aren't allowed before they reach the engine.
+* **Applies your [throughput](/docs/reference/throughput) limit,** so a burst returns `429` quickly instead of slowing down other requests.
+* **Gives the request a [trace ID](/docs/documentation/monitoring/tracing)** in `x-alchemy-trace-id`, or keeps the one you sent, so the same ID follows it through every layer.
+* **Passes it to the [engine](/docs/documentation/architecture/engine/routing)**, which decides how to answer it.
+
+## Caching
+
+The edge works like a globally distributed cache: answers that can't change are served from locations around the world, beyond our [regions](/docs/documentation/architecture/regions#beyond-our-regions), without going further.

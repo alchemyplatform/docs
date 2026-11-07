@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=./docs-yml.schema.json
 
 tabs:
+  documentation:
+    display-name: Documentation
+    slug: documentation
   chains:
     display-name: Chains
     slug: chains
@@ -10,15 +13,12 @@ tabs:
   wallets:
     display-name: Wallets
     slug: wallets
-  build-with-ai:
-    display-name: Build with AI
-    slug: build-with-ai
-  # Former "Get Started" tab, renamed "Tools & Resources". Keeps the
+  # Former "Get Started" tab, then "Tools & Resources", now "Guides". Keeps the
   # "get-started" key (the frontend header matches its active tab against it)
   # and the "tutorials" slug so existing URLs under /docs/tutorials/... keep
   # working.
   get-started:
-    display-name: Tools & Resources
+    display-name: Guides
     slug: tutorials
   changelog:
     display-name: Changelog
@@ -56,6 +56,44 @@ navigation:
             path: api-reference/node-api/mev-protection.mdx
           - link: Pricing
             href: /docs/reference/pricing-plans
+          - page: Error Reference
+            path: api-reference/pricing-resources/resources/error-reference.mdx
+          - page: Gas Limits
+            path: >-
+              api-reference/pricing-resources/resources/gas-limits-for-eth-call-and-eth-estimategas.mdx
+
+          # Admin API reference. Its overview page is in the Documentation
+          # tab (Account > Admin API); the endpoints live here with the rest
+          # of the API reference. url-path keeps them at /docs/admin-api/... .
+          - section: Admin API
+            contents:
+              - link: Overview
+                href: /docs/reference/admin-api/overview
+              - page: Quickstart
+                path: admin-api/quickstart.mdx
+              - section: Apps
+                url-path: admin-api/apps
+                contents:
+                  - api: Apps
+                    api-name: admin-api
+                    include-tags: [Apps]
+                    skip-slug: true
+                    flattened: true
+              - section: Chains
+                url-path: admin-api/chains
+                contents:
+                  - api: Chains
+                    api-name: admin-api
+                    include-tags: [Chains]
+                    skip-slug: true
+                    flattened: true
+              - section: Usage
+                url-path: admin-api/usage
+                contents:
+                  - api: Usage
+                    api-name: usage-api
+                    skip-slug: true
+                    flattened: true
 
           - section: WebSockets
             contents:
@@ -2051,155 +2089,379 @@ navigation:
             slug: resources/contact-us
             path: wallets/pages/resources/contact-us.mdx
 
-  # Build with AI is promoted to a top-level tab: AI is part of everyday
-  # developer workflows and deserves the visibility even while the content
-  # set is still small.
-  - tab: build-with-ai
+  # Documentation tab: the sidebar mirrors the Mintlify prototype
+  # (https://alchemy-88.mintlify.app) entry for entry, with the same labels and
+  # order. Keep it that way: add new pages to the prototype's structure rather
+  # than appending extra entries here.
+  #
+  # - Pages under content/documentation/ were ported from the prototype where
+  #   we had no equivalent page. Some are still "Coming soon" there too.
+  # - Where we already had a page, the entry points at ours. Pages that live in
+  #   the Chains, Data or Wallets reference tabs are linked, not moved, so
+  #   their URLs and the chain selector are unchanged.
+  # - `hidden: true` pages are ours but have no entry in the prototype. They
+  #   stay routable (and appear when you are on them) but are out of the
+  #   sidebar.
+  - tab: documentation
     layout:
-      - section: Getting Started
+      - section: Get Started
+        skip-slug: true
+        contents:
+          - page: Quickstart
+            path: api-reference/introduction/alchemy-quickstart-guide.mdx
+          - page: Development
+            path: documentation/development.mdx
+          - section: Tools
+            contents:
+              - page: MCP
+                path: tutorials/build-with-ai/alchemy-mcp-server.mdx
+              - page: CLI
+                path: tutorials/build-with-ai/alchemy-cli.mdx
+              - page: Client Libraries
+                path: documentation/tools/client-libraries.mdx
+              - page: API Collections
+                path: documentation/tools/api-collections.mdx
+          # Former docs landing page; /docs/get-started stays routable.
+          - page: Get Started
+            path: api-reference/introduction/api-overview.mdx
+            hidden: true
+      - section: Platform
+        skip-slug: true
+        contents:
+          - page: Philosophy
+            path: documentation/platform/philosophy.mdx
+          - section: Goals
+            contents:
+              - page: Reliable
+                path: documentation/platform/reliable.mdx
+              - page: Performant
+                path: documentation/platform/performant.mdx
+              - page: Scalable
+                path: documentation/platform/scalable.mdx
+              - page: Secure
+                path: documentation/platform/secure.mdx
+          - section: Chains
+            contents:
+              - page: Overview
+                path: documentation/chains/overview.mdx
+              - page: EVM
+                path: documentation/chains/evm.mdx
+              - page: Solana
+                path: documentation/chains/solana.mdx
+              - page: Hyperliquid
+                path: documentation/chains/hyperliquid.mdx
+              - page: Bitcoin and UTXO
+                path: documentation/chains/bitcoin.mdx
+              - page: Testnets
+                path: documentation/chains/testnets.mdx
+          - section: Experiments
+            contents:
+              - page: Overview
+                path: documentation/experiments/overview.mdx
+              - page: Fast Confirmation Rule
+                path: documentation/experiments/fast-confirmation.mdx
+              - page: eth_sendRawTransactionSync
+                path: documentation/experiments/send-raw-transaction-sync.mdx
+              - page: eth_getBlockReceipts
+                path: documentation/experiments/get-block-receipts.mdx
+      - section: Architecture
+        skip-slug: true
         contents:
           - page: Overview
-            path: tutorials/build-with-ai/overview.mdx
-          - page: Agent Skills
-            path: tutorials/build-with-ai/alchemy-agent-skills.mdx
-          - page: Alchemy CLI
-            path: tutorials/build-with-ai/alchemy-cli.mdx
-          - page: Agent Wallets
-            path: tutorials/build-with-ai/agent-wallets.mdx
-          - page: x402 payments
-            path: tutorials/build-with-ai/x402-payments.mdx
-          - page: Wallet auth for Alchemy APIs
-            path: tutorials/build-with-ai/alchemy-for-agents.mdx
-          - page: Alchemy MCP Server
-            path: tutorials/build-with-ai/alchemy-mcp-server.mdx
-          - page: Alchemy Claude Plugin
-            path: tutorials/build-with-ai/alchemy-claude-plugin.mdx
-        slug: getting-started
-      - section: Tutorials
+            path: documentation/architecture/overview.mdx
+          - page: Edge
+            path: documentation/architecture/edge.mdx
+          - section: Engine
+            contents:
+              - page: Routing
+                path: documentation/architecture/engine/routing.mdx
+              - page: Fallbacks
+                path: documentation/architecture/engine/fallbacks.mdx
+              - section: Consistency
+                contents:
+                  - page: Commitment Levels
+                    path: documentation/architecture/engine/consistency/commitment-levels.mdx
+                  - page: Read Consistency
+                    path: documentation/architecture/engine/consistency/read-consistency.mdx
+                  - page: Sticky Routing
+                    path: documentation/architecture/engine/consistency/sticky-routing.mdx
+              - page: Indexes
+                path: documentation/architecture/engine/indexes.mdx
+          - page: Nodes
+            path: documentation/architecture/nodes.mdx
+          - page: Regions
+            path: documentation/architecture/regions.mdx
+      - section: Reads
+        skip-slug: true
         contents:
-          - page: Add Alchemy RPC To Any Project
-            path: tutorials/build-with-ai/add-alchemy-rpc-to-any-project.mdx
-          - page: Build a Web3 Dashboard
-            path: tutorials/build-with-ai/web3-dashboard-prompt.mdx
-          - page: Learning Alchemy's Data APIs using Cursor
-            path: tutorials/build-with-ai/data-apis-with-cursor.mdx
-        slug: tutorials
-
-  # Former "Get Started" tab, renamed "Tools & Resources": it collects admin,
-  # pricing, dashboard tooling, and learning material that doesn't belong to a
-  # single product area. The "Get Started" page in Introduction is slated to
-  # become the docs homepage/landing page and move out of this tab.
-  - tab: get-started
-    layout:
-      # Hidden for now: /docs/get-started stays routable (old links and
-      # redirects point at it) but is out of the sidebar. The tab's landing
-      # page is Pricing Plans (see the docs-site header config).
-      - page: Get Started
-        path: api-reference/introduction/api-overview.mdx
-        hidden: true
+          - link: Overview
+            href: /docs/chains
+          - link: Historical Data
+            href: /docs/what-is-archive-data-on-ethereum
+          - link: Logs
+            href: /docs/deep-dive-into-eth_getlogs
+          - link: Traces
+            href: /docs/reference/trace-api-quickstart
+          - page: Batching
+            path: api-reference/pricing-resources/resources/batch-requests.mdx
+          - link: Compression
+            href: >-
+              /docs/how-to-enable-compression-to-speed-up-json-rpc-blockchain-requests
+      - section: Writes
+        skip-slug: true
+        contents:
+          - page: Overview
+            path: documentation/writes/overview.mdx
+          - page: User Operations
+            path: documentation/writes/user-operations.mdx
+          - link: Gas Sponsorship
+            href: /docs/wallets/transactions/sponsor-gas
+          - link: Transaction Protection
+            href: /docs/reference/mev-protection
+      - section: Data
+        skip-slug: true
+        contents:
+          - link: Endpoints
+            href: /docs/data
+          - link: Metadata
+            href: /docs/reference/nft-api-overview
+          - page: Spam
+            path: documentation/data/spam.mdx
+      - section: Streaming
+        skip-slug: true
+        contents:
+          - link: WebSockets
+            href: /docs/reference/subscription-api
+          - link: Webhooks
+            href: /docs/reference/webhooks-overview
+          - link: gRPC
+            href: /docs/reference/yellowstone-grpc-overview
+      - section: Monitoring
+        skip-slug: true
+        contents:
+          - page: Request Logs
+            path: tutorials/getting-started/dashboard/request-logs.mdx
+          - page: Tracing
+            path: documentation/monitoring/tracing.mdx
+          - page: Alerts
+            path: tutorials/getting-started/developer-best-practices/dashboard-alerts.mdx
+      - section: Account
+        skip-slug: true
+        contents:
+          - section: Authentication
+            contents:
+              - link: Access Tokens
+                href: /docs/how-to-create-access-keys
+              - link: Expiry and Rotation
+                href: /docs/how-to-rotate-api-keys
+              - page: Permissions
+                path: documentation/account/authentication/permissions.mdx
+          - section: Team
+            contents:
+              - page: Organizations
+                path: tutorials/getting-started/dashboard/dashboard-organizations.mdx
+              - page: Teams
+                path: documentation/account/team/teams.mdx
+              - page: Roles
+                path: tutorials/getting-started/dashboard/dashboard-roles.mdx
+              - page: Single Sign On (SSO)
+                path: tutorials/getting-started/dashboard/dashboard-sso.mdx
+              - page: Dashboard Roles
+                path: tutorials/getting-started/dashboard/dashboard-team-roles.mdx
+                hidden: true
+          - section: Security
+            contents:
+              - link: IP Allowlisting
+                href: >-
+                  /docs/how-to-add-allowlists-to-your-apps-for-enhanced-security
+              - link: Domain Allowlisting
+                href: >-
+                  /docs/how-to-add-allowlists-to-your-apps-for-enhanced-security
+              - page: Leaked Key Detection
+                path: documentation/account/security/leaked-key-detection.mdx
+              - page: Activity Logs
+                path: tutorials/getting-started/dashboard/activity-log.mdx
+              - page: Audits
+                path: documentation/account/security/audits.mdx
+              - page: Activity Log Webhook Subscriptions
+                path: tutorials/getting-started/dashboard/activity-log-webhook-subscriptions.mdx
+                hidden: true
+              - page: Activity Log OCSF Mapping
+                path: tutorials/getting-started/dashboard/activity-log-ocsf-mapping.mdx
+                hidden: true
+          - page: Admin API
+            path: admin-api/overview.mdx
       - section: Pricing
+        slug: pricing-resources
         contents:
-          - page: Pricing Plans
+          - page: Overview
             path: api-reference/pricing-resources/pricing/pricing-plans.mdx
-          - page: Compute Units
-            path: api-reference/pricing-resources/pricing/compute-units.mdx
-          - page: Compute Unit Costs
-            path: api-reference/pricing-resources/pricing/compute-unit-costs.mdx
+          - page: Add-ons
+            path: documentation/pricing/add-ons.mdx
+          - section: Usage
+            contents:
+              - page: Compute Units
+                path: api-reference/pricing-resources/pricing/compute-units.mdx
+              - page: Throughput
+                path: api-reference/pricing-resources/resources/throughput.mdx
+              - page: Usage Exports
+                path: documentation/pricing/usage/usage-exports.mdx
+              - page: Compute Unit Costs
+                path: api-reference/pricing-resources/pricing/compute-unit-costs.mdx
+                hidden: true
+          - section: Billing
+            contents:
+              - page: Invoices
+                path: documentation/pricing/billing/invoices.mdx
+              - page: Payment Methods
+                path: documentation/pricing/billing/payment-methods.mdx
           - section: Pricing FAQ
+            hidden: true
             contents:
               - page: Pay As You Go Pricing FAQ
                 path: >-
                   api-reference/pricing-resources/pricing-faq/pay-as-you-go-pricing-faq.mdx
             slug: pricing-faq
-          - section: Resources
-            contents:
-              - page: Throughput
-                path: api-reference/pricing-resources/resources/throughput.mdx
-              - page: Batch Requests
-                path: api-reference/pricing-resources/resources/batch-requests.mdx
-              - page: Gas Limits
-                path: >-
-                  api-reference/pricing-resources/resources/gas-limits-for-eth-call-and-eth-estimategas.mdx
-              - page: Error Reference
-                path: api-reference/pricing-resources/resources/error-reference.mdx
-            slug: resources
-        slug: pricing-resources
-      - section: Tools
+      - section: Ecosystem
+        skip-slug: true
         contents:
-          - page: Tools Quickstart
-            path: tutorials/getting-started/dashboard/dashboard-tools-quickstart.mdx
-          - section: Admin API
+          - page: Benchmarks
+            path: documentation/ecosystem/benchmarks.mdx
+          - page: Chain Rankings
+            path: documentation/ecosystem/rankings.mdx
+          - section: Network Upgrades
             contents:
-              - page: Overview
-                path: admin-api/overview.mdx
-              - page: Quickstart
-                path: admin-api/quickstart.mdx
-              - section: Apps
-                url-path: admin-api/apps
-                contents:
-                  - api: Apps
-                    api-name: admin-api
-                    include-tags: [Apps]
-                    skip-slug: true
-                    flattened: true
-              - section: Chains
-                url-path: admin-api/chains
-                contents:
-                  - api: Chains
-                    api-name: admin-api
-                    include-tags: [Chains]
-                    skip-slug: true
-                    flattened: true
-              - section: Usage
-                url-path: admin-api/usage
-                contents:
-                  - api: Usage
-                    api-name: usage-api
-                    skip-slug: true
-                    flattened: true
-          - page: Sandbox
-            path: tutorials/getting-started/dashboard/alchemy-sandbox.mdx
-          - page: Testnet Faucets
-            path: tutorials/getting-started/faucets.mdx
-          - page: Alerts
-            path: tutorials/getting-started/developer-best-practices/dashboard-alerts.mdx
-          - page: Request Logs
-            path: tutorials/getting-started/dashboard/request-logs.mdx
-          - page: AI Assistant
-            path: tutorials/getting-started/dashboard/ai-assistant.mdx
-          - page: Roles
-            path: tutorials/getting-started/dashboard/dashboard-roles.mdx
-          - page: Dashboard Roles
-            path: tutorials/getting-started/dashboard/dashboard-team-roles.mdx
-            hidden: true
-          - page: Organizations
-            path: tutorials/getting-started/dashboard/dashboard-organizations.mdx
-            hidden: true
-          - page: Single Sign-On (SSO)
-            path: tutorials/getting-started/dashboard/dashboard-sso.mdx
-          - section: Activity Log
-            contents:
-              - page: Overview
-                path: tutorials/getting-started/dashboard/activity-log.mdx
-              - page: Webhook Subscriptions
-                path: tutorials/getting-started/dashboard/activity-log-webhook-subscriptions.mdx
-              - page: OCSF Mapping
-                path: tutorials/getting-started/dashboard/activity-log-ocsf-mapping.mdx
+              - page: Node Upgrades
+                path: documentation/ecosystem/node-upgrades.mdx
+              - page: Release Calendar
+                path: documentation/ecosystem/release-calendar.mdx
+              - page: Release Feed
+                path: documentation/ecosystem/release-feed.mdx
+          - page: Shaping Standards
+            path: documentation/ecosystem/standards.mdx
+          - page: Funding
+            path: documentation/ecosystem/funding.mdx
+      - section: Support
+        skip-slug: true
+        contents:
+          - link: Contact Us
+            href: mailto:support@alchemy.com
+          - page: Support Plans
+            path: documentation/support/support-plans.mdx
+          - page: Incidents
+            path: documentation/support/incidents.mdx
+
+  # Guides tab (formerly "Tools & Resources"). Keeps the "get-started" key
+  # (the frontend header matches its active tab against it) and the
+  # "tutorials" slug so existing URLs under /docs/tutorials/... keep working.
+  # Reference material moved to the Documentation tab; what is left here is
+  # tutorials and learning content.
+  - tab: get-started
+    layout:
+      # Groups from the Mintlify prototype's Guides tab, in its order. Entries
+      # we already had a page for point at ours; the rest are ported under
+      # content/guides/.
+      - section: Use Cases
+        skip-slug: true
+        contents:
+          - page: Build a Wallet
+            path: guides/use-cases/wallets.mdx
+          - page: Build an Explorer
+            path: guides/use-cases/explorers.mdx
+          - page: Build a Trading App
+            path: guides/use-cases/trading.mdx
+          - page: Build a Fintech App
+            path: guides/use-cases/fintech.mdx
+      - section: Dashboard
+        skip-slug: true
+        contents:
+          - page: Create an App
+            path: tutorials/getting-started/create-an-api-key.mdx
+          - page: Set Limits
+            path: >-
+              tutorials/getting-started/developer-best-practices/how-to-set-usage-limits-and-alerts-for-your-account.mdx
+          - link: Configure Alerts
+            href: /docs/dashboard-alerts
+      - section: Authentication
+        skip-slug: true
+        contents:
+          - page: Create an Access Token
+            path: >-
+              tutorials/getting-started/api-security-and-authentication/how-to-create-access-keys.mdx
+          - page: Rotate an Access Token
+            path: >-
+              tutorials/getting-started/api-security-and-authentication/how-to-rotate-api-keys.mdx
+      - section: Webhooks
+        skip-slug: true
+        contents:
+          - page: Receive Webhooks Locally
+            path: guides/webhooks/receive-webhooks-locally.mdx
+          - page: Track Wallet Activity
+            path: guides/webhooks/track-wallet-activity.mdx
+          - page: Verify Webhook Signatures
+            path: guides/webhooks/verify-webhook-signatures.mdx
+          - page: Handle Retries and Duplicates
+            path: guides/webhooks/handle-retries-and-duplicates.mdx
+      - section: Billing
+        skip-slug: true
+        contents:
+          - page: Upgrade Your Plan
+            path: guides/billing/upgrade-your-plan.mdx
+          - page: Update a Payment Method
+            path: guides/billing/update-payment-method.mdx
+          - page: Pay an Unpaid Invoice
+            path: guides/billing/pay-an-invoice.mdx
+          - page: Download Invoices
+            path: guides/billing/download-invoices.mdx
+      - section: Security
+        skip-slug: true
+        contents:
+          - link: Configure SSO
+            href: /docs/dashboard-sso
+          - page: Set Up SCIM Provisioning
+            path: guides/security/scim-provisioning.mdx
       - section: Tutorials
         contents:
-          - section: Alchemy Quickstart Guides
-            path: >-
-              api-reference/introduction/alchemy-quickstart-guide.mdx
+          - section: Getting Started
+            slug: alchemy-quickstart-guides
             contents:
-              - page: Create an Alchemy API Key
-                path: tutorials/getting-started/create-an-api-key.mdx
               - page: Make Your First Alchemy Request
                 path: tutorials/getting-started/make-your-first-request.mdx
               - page: Set Up Alchemy with Viem
                 path: tutorials/getting-started/set-up-alchemy-with-viem.mdx
               - page: Set Up Alchemy with any Library via AI
                 path: tutorials/getting-started/alchemy-via-libraries.mdx
-            slug: alchemy-quickstart-guides
+          - section: Build with AI
+            slug: build-with-ai
+            contents:
+              - page: Overview
+                path: tutorials/build-with-ai/overview.mdx
+              - page: Agent Skills
+                path: tutorials/build-with-ai/alchemy-agent-skills.mdx
+              - page: Agent Wallets
+                path: tutorials/build-with-ai/agent-wallets.mdx
+              - page: x402 payments
+                path: tutorials/build-with-ai/x402-payments.mdx
+              - page: Wallet auth for Alchemy APIs
+                path: tutorials/build-with-ai/alchemy-for-agents.mdx
+              - page: Alchemy Claude Plugin
+                path: tutorials/build-with-ai/alchemy-claude-plugin.mdx
+              - page: Add Alchemy RPC To Any Project
+                path: tutorials/build-with-ai/add-alchemy-rpc-to-any-project.mdx
+              - page: Build a Web3 Dashboard
+                path: tutorials/build-with-ai/web3-dashboard-prompt.mdx
+              - page: Learning Alchemy's Data APIs using Cursor
+                path: tutorials/build-with-ai/data-apis-with-cursor.mdx
+          - section: Dashboard Tools
+            contents:
+              - page: Tools Quickstart
+                path: tutorials/getting-started/dashboard/dashboard-tools-quickstart.mdx
+              - page: Sandbox
+                path: tutorials/getting-started/dashboard/alchemy-sandbox.mdx
+              - page: Testnet Faucets
+                path: tutorials/getting-started/faucets.mdx
+              - page: AI Assistant
+                path: tutorials/getting-started/dashboard/ai-assistant.mdx
           - section: Transactions
             contents:
               - section: Understanding Transactions
@@ -2287,15 +2549,9 @@ navigation:
             slug: streaming-data
           - section: API Security and Authentication
             contents:
-              - page: How To Create Access Keys
-                path: >-
-                  tutorials/getting-started/api-security-and-authentication/how-to-create-access-keys.mdx
               - page: How To Make HTTP Header-Based API Requests
                 path: >-
                   tutorials/getting-started/api-security-and-authentication/how-to-use-api-keys-in-http-headers.mdx
-              - page: How to Rotate API Keys
-                path: >-
-                  tutorials/getting-started/api-security-and-authentication/how-to-rotate-api-keys.mdx
               - page: How To Use JWTs For API Requests
                 path: >-
                   tutorials/getting-started/api-security-and-authentication/how-to-use-jwts-for-api-requests.mdx
@@ -2330,9 +2586,6 @@ navigation:
               - page: How to Implement Retries
                 path: >-
                   tutorials/getting-started/developer-best-practices/how-to-implement-retries.mdx
-              - page: How to set usage limits for your account
-                path: >-
-                  tutorials/getting-started/developer-best-practices/how-to-set-usage-limits-and-alerts-for-your-account.mdx
               - link: Dashboard Alerts
                 href: /docs/dashboard-alerts
             slug: developer-best-practices

@@ -1,0 +1,49 @@
+---
+title: "Permissions"
+description: "Give each token only the access it needs."
+subtitle: "Give each token only the access it needs."
+slug: documentation/account/authentication/permissions
+---
+
+Each token is granted one or more permissions. Each endpoint needs one permission, listed on its API Reference page. A request to an endpoint the token isn't allowed to call is rejected with `403 Forbidden`.
+
+Permissions are named `area:access`, where access is `read` or `write`:
+
+* **`read`** lets a token fetch data, such as `evm:read` for `eth_getBalance` or `balances:read` for the [Balances](/docs/reference/token-api-overview) endpoint.
+* **`write`** lets a token change something, such as `evm:write` to send transactions or `webhooks:write` to create webhooks. A `write` permission doesn't include the matching `read`, so grant both if you need both.
+
+## Examples
+
+| Service | Permissions |
+| - | - |
+| Read-only backend for a wallet | `evm:read`, `balances:read`, `activity:read` |
+| Service that sends transactions | `evm:read`, `evm:write` |
+| Script that manages webhooks | `webhooks:read`, `webhooks:write` |
+| Admin automation | `admin:read`, `admin:write` |
+
+## All permissions
+
+| Permission | Grants access to |
+| - | - |
+| `evm:read` | EVM methods that read chain state, such as [eth\_blockNumber](/docs/chains/ethereum/ethereum-api-endpoints/eth-block-number) and [eth\_getBalance](/docs/chains/ethereum/ethereum-api-endpoints/eth-get-balance) |
+| `evm:write` | EVM methods that submit transactions, such as `eth_sendRawTransaction` |
+| `solana:read` | Solana methods that read chain state, such as [getSlot](/docs/chains/solana/solana-api-endpoints/get-slot) and [getBalance](/docs/chains/solana/solana-api-endpoints/get-balance) |
+| `bundler:read` | Bundler methods that read user operations, such as [eth\_estimateUserOperationGas](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) and [eth\_getUserOperationReceipt](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) |
+| `bundler:write` | Bundler methods that submit user operations, such as [eth\_sendUserOperation](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) |
+| `utxo:read` | UTXO methods that read chain state, such as [getblock](/docs/chains/bitcoin/bitcoin-api-endpoints/getblock) and [getrawtransaction](/docs/chains/bitcoin/bitcoin-api-endpoints/getrawtransaction) |
+| `utxo:write` | UTXO methods that broadcast transactions, such as [sendrawtransaction](/docs/chains/bitcoin/bitcoin-api-endpoints/sendrawtransaction) |
+| `hypercore:read` | Hypercore `/info` methods, such as [allMids](/docs/chains/websockets/hypercore) and [l2Book](/docs/chains/websockets/hypercore) |
+| `activity:read` | [Activity](/docs/reference/transfers-api-quickstart) |
+| `balances:read` | [Balances](/docs/reference/token-api-overview) |
+| `collectibles:read` | [Collectibles](/docs/reference/nft-api-overview) |
+| `staking:read` | [Staking](/docs/reference/portfolio-apis) (beta) |
+| `defi:read` | [DeFi](/docs/reference/portfolio-apis) (beta) |
+| `stablecoins:read` | [Stablecoins](/docs/reference/token-api-overview) (beta) |
+| `webhooks:read` | [List Webhooks](/docs/reference/webhooks-overview), [Get Webhook](/docs/reference/webhooks-overview), [Get Addresses](/docs/reference/webhooks-overview) |
+| `webhooks:write` | [Create Webhook](/docs/reference/webhooks-overview), [Update Webhook](/docs/reference/webhooks-overview), [Delete Webhook](/docs/reference/webhooks-overview), [Update Addresses](/docs/reference/webhooks-overview) |
+| `policies:read` | [List Policies](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints), [Get Policy](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints) |
+| `policies:write` | [Create Policy](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints), [Update Policy](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints), [Delete Policy](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints) |
+| `admin:read` | [List Apps](/docs/reference/admin-api/overview), [List Teams](/docs/reference/admin-api/overview) |
+| `admin:write` | [Create App](/docs/reference/admin-api/overview), [Update App](/docs/reference/admin-api/overview), [Delete App](/docs/reference/admin-api/overview), [Create Team](/docs/reference/admin-api/overview), [Update Team](/docs/reference/admin-api/overview) |
+
+[Networks](/docs/reference/node-supported-chains) and Regions work with any valid token.
