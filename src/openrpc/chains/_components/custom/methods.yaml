@@ -1,6 +1,113 @@
 # These methods are only supported by specific chains/networks
 components:
   methods:
+    # Alpen methods
+    # (Alpen is an EVM-compatible zero-knowledge validity rollup on Bitcoin,
+    # built by Alpen Labs. Alpen full nodes expose a single `alpen_*` method
+    # alongside the standard Reth `eth_*` surface. The `alpen_*` namespace
+    # abstracts the progress of Strata, the orchestration layer that posts
+    # checkpoints to Bitcoin.)
+    alpen_getBlockStatus:
+      name: alpen_getBlockStatus
+      summary: Returns the Strata checkpoint finalization status for an Alpen block hash.
+      description: >-
+        Returns the finalization status of a given Alpen (execution-layer)
+        block hash, abstracting Strata's checkpoint progress on Bitcoin. Alpen
+        state commitments are periodically checkpointed to Bitcoin through
+        Strata, the orchestration layer; a block's reported status reflects
+        how far the Strata checkpoint covering it has advanced.
+
+
+        Status values:
+
+
+        * `pending`: the Alpen block is not yet covered by any confirmed or
+          finalized Strata checkpoint.
+
+        * `confirmed`: the Alpen block is covered by a confirmed Strata
+          checkpoint.
+
+        * `finalized`: the Alpen block is covered by a finalized Strata
+          checkpoint. A finalized block cannot be reorganized without reorging
+          the Bitcoin block its checkpoint was confirmed in.
+
+
+        When `status` is `confirmed` or `finalized`, the response also
+        includes `checkpoint_epoch`, the Strata checkpoint epoch number that
+        covers the block. That value can be passed to Strata RPC methods such
+        as `strata_getCheckpointInfo` to inspect the checkpoint itself. When
+        `status` is `pending`, `checkpoint_epoch` is omitted.
+
+
+        The block hash must resolve to a canonical Alpen block on the serving
+        node. Unknown or non-canonical block hashes return an "invalid params"
+        error with the message `block not found`. The genesis block is always
+        reported as `finalized`.
+
+
+        See the [Alpen RPC endpoints reference](https://docs.alpen.org/build-alpen-apps/rpc-endpoints#alpen_getblockstatus)
+        for upstream documentation.
+      x-compute-units: 20
+      params:
+        - name: Block hash
+          required: true
+          description: >-
+            32-byte hex-encoded hash of a canonical Alpen (EVM
+            execution-layer) block.
+          schema:
+            title: Block hash
+            type: string
+            pattern: "^0x[0-9a-fA-F]{64}$"
+      result:
+        name: Block status
+        description: The Strata checkpoint finalization status of the requested Alpen block.
+        schema:
+          title: Block status
+          type: object
+          required:
+            - status
+          properties:
+            status:
+              title: Finalization status
+              description: >-
+                The block's finalization status with respect to Strata
+                checkpoints on Bitcoin.
+              type: string
+              enum:
+                - pending
+                - confirmed
+                - finalized
+            checkpoint_epoch:
+              title: Checkpoint epoch
+              description: >-
+                The Strata checkpoint epoch number that covers this Alpen
+                block. Present only when `status` is `confirmed` or
+                `finalized`; omitted when the status is `pending`.
+              type: integer
+              minimum: 0
+              maximum: 4294967295
+      examples:
+        - name: Finalized block
+          params:
+            - name: Block hash
+              value: "0xe51973464ec8524d9df2b232ace849a0404a0bc96b9211db9b8daa5a4999a655"
+          result:
+            name: Block status
+            value:
+              status: finalized
+              checkpoint_epoch: 1
+        - name: Pending block
+          params:
+            - name: Block hash
+              value: "0x936fe1b255580c33346bcd14be4699c2078165c4302d7b9da9f8e7c86af72f07"
+          result:
+            name: Block status
+            value:
+              status: pending
+      errors:
+        - code: -32602
+          message: "block not found"
+
     # Arc methods
     # (Arc's Malachite BFT consensus layer surfaces a custom `arc_` JSON-RPC
     # namespace alongside the standard `eth_*` methods.)
