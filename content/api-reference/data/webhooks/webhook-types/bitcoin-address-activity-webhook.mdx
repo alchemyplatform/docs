@@ -1,0 +1,162 @@
+---
+title: Bitcoin Address Activity Webhook
+description: Get real-time updates of Bitcoin transactions that send from or pay to the addresses that you track using the Bitcoin Address Activity webhook
+subtitle: Get real-time updates of Bitcoin transactions that send from or pay to the addresses that you track using the Bitcoin Address Activity webhook
+slug: reference/bitcoin-address-activity-webhook
+---
+
+<Callout intent="info" title="Beta">
+  The Bitcoin Address Activity webhook is in beta. Payload fields, limits, and behavior may change, including breaking changes.
+</Callout>
+
+<Info>
+  See the [Feature Support by Chain](/docs/reference/feature-support-by-chain) page for details about product and chain support!
+</Info>
+
+# Introduction
+
+Alchemy's Bitcoin Address Activity webhook notifies your app when a transaction in a new block spends from or pays to one of the addresses that you configure. Each notification gives the transaction from the point of view of your address: whether the address received or sent BTC, its net balance change, the fee, and every input and output of the transaction.
+
+The webhook supports all standard address types: legacy (`1...`), P2SH (`3...`), and SegWit and Taproot (`bc1...`). It is available on Bitcoin Mainnet and Bitcoin Testnet4.
+
+# How activity is reported
+
+Bitcoin uses unspent transaction outputs (UTXOs), not account balances. A transaction spends one or more earlier outputs (its inputs) and creates new outputs, so one transaction can involve many addresses. For this reason the webhook reports one activity entry per transaction and tracked address, not one entry per transfer.
+
+* **Direction.** `incoming` if your address does not spend any input of the transaction. `self` if it spends an input and every output with an address pays back to it. `outgoing` in all other cases.
+* **Net value.** The total of the outputs that pay your address, minus the total of the inputs that it spends. A negative value means that the balance of the address went down.
+* **Inputs and outputs.** The full lists for the transaction, so that you can identify change outputs and the other parties.
+* **Amounts.** Integer strings in satoshis (1 BTC = 100,000,000 satoshis).
+
+<Info>
+  We send a notification when a block is added to the chain (one confirmation). Unconfirmed mempool transactions are not reported. If a block is removed by a chain reorganization, we send the activity from that block again with `status` set to `removed` and `removed` set to `true`.
+</Info>
+
+<Info>
+  One notification can contain several activity entries: all matching transactions in a block, for each tracked address that they involve. A busy address can have many entries in one block.
+</Info>
+
+# Example response
+
+When a transaction in a new block involves one of the addresses that you track, you receive a response like this:
+
+<CodeGroup>
+  ```json Bitcoin Address Activity Response
+  {
+    "webhookId": "wh_k2p9xw4mz7qv1ndt",
+    "id": "whevt_5tq8rmc2xwz0jh6b",
+    "createdAt": "2026-11-10T00:56:04.512Z",
+    "type": "ADDRESS_ACTIVITY",
+    "event": {
+      "network": "BITCOIN_MAINNET",
+      "source": "bitcoin-core",
+      "activity": [
+        {
+          "address": "3KMmeqPeQcngyTehdfSwsGqvxfU7J7qtc8",
+          "txid": "bd5dff8db6e16d9fd823b0e03e7cfe680f7d67414ca1a7aca58c697da00cf6e2",
+          "blockHeight": 975230,
+          "blockHash": "0000000000000000000194f9d869aacbcc933214cf1e5eacadaf42aabe509da0",
+          "blockTimestamp": "2026-11-10T00:55:51Z",
+          "confirmations": 1,
+          "status": "confirmed",
+          "direction": "incoming",
+          "netValue": "27654",
+          "fee": "536",
+          "coinbase": false,
+          "inputs": [
+            {
+              "address": "39tnEqBuDFPhvRVyB4DooenynzD5bXvv1f",
+              "value": "28190",
+              "prevTxid": "3dfeda50839a9aa10e0de6ec712e56958a7d1fa67e5a63a45d8d966a57138ae4",
+              "prevVout": 54
+            }
+          ],
+          "outputs": [
+            {
+              "address": "3KMmeqPeQcngyTehdfSwsGqvxfU7J7qtc8",
+              "value": "27654",
+              "vout": 0,
+              "scriptType": "scripthash"
+            }
+          ],
+          "removed": false
+        }
+      ]
+    }
+  }
+  ```
+</CodeGroup>
+
+# Field definitions
+
+Below you can find descriptions for each field of the response.
+
+| Field                   | Description                                                                                                                                                                         | Value                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `webhookId`             | Unique ID of the webhook destination.                                                                                                                                               | `wh_k2p9xw4mz7qv1ndt`                                              |
+| `id`                    | ID of the event.                                                                                                                                                                    | `whevt_5tq8rmc2xwz0jh6b`                                           |
+| `createdAt`             | Timestamp when the webhook event was created.                                                                                                                                       | `2026-11-10T00:56:04.512Z`                                         |
+| `type`                  | Webhook event type.                                                                                                                                                                 | `ADDRESS_ACTIVITY`                                                 |
+| `event`                 | Object containing the network, source, and list of activity entries.                                                                                                                | `N/A`                                                              |
+| `network`               | The Bitcoin network the webhook is on.                                                                                                                                              | `BITCOIN_MAINNET` or `BITCOIN_TESTNET4`                            |
+| `source`                | The source used to produce the event stream.                                                                                                                                        | `bitcoin-core`                                                     |
+| `activity`              | List of activity entries, one for each transaction and tracked address.                                                                                                             | `N/A`                                                              |
+| `address`               | The tracked address that the entry is for.                                                                                                                                          | `3KMmeqPeQcngyTehdfSwsGqvxfU7J7qtc8`                               |
+| `txid`                  | The transaction ID.                                                                                                                                                                 | `bd5dff8d...a00cf6e2`                                              |
+| `blockHeight`           | The height of the block that includes the transaction.                                                                                                                              | `975230`                                                           |
+| `blockHash`             | The hash of the block that includes the transaction.                                                                                                                                | `00000000...be509da0`                                              |
+| `blockTimestamp`        | The ISO 8601 timestamp of the block.                                                                                                                                                | `2026-11-10T00:55:51Z`                                             |
+| `confirmations`         | The number of confirmations of the block when the event was sent.                                                                                                                   | `1`                                                                |
+| `status`                | `confirmed` for a transaction in a new block. `removed` for a transaction in a block that a chain reorganization removed.                                                           | `confirmed` or `removed`                                           |
+| `direction`             | The direction of the transaction for the tracked address. See [How activity is reported](#how-activity-is-reported).                                                                | `incoming`, `outgoing`, or `self`                                  |
+| `netValue`              | The balance change of the tracked address in satoshis: outputs that pay the address minus inputs that it spends. Negative when the address sends more than it receives.            | `27654`                                                            |
+| `fee`                   | The transaction fee in satoshis. Omitted for a coinbase transaction.                                                                                                                | `536`                                                              |
+| `coinbase`              | Whether the transaction is the coinbase transaction (the block reward). A coinbase transaction has no inputs.                                                                       | `false`                                                            |
+| `inputs`                | All inputs of the transaction. See fields below.                                                                                                                                    | `N/A`                                                              |
+| `inputs[].address`      | The address of the output that the input spends. Omitted for a script without an address.                                                                                           | `39tnEqBuDFPhvRVyB4DooenynzD5bXvv1f`                               |
+| `inputs[].value`        | The value of the spent output in satoshis.                                                                                                                                          | `28190`                                                            |
+| `inputs[].prevTxid`     | The ID of the transaction that created the spent output.                                                                                                                            | `3dfeda50...57138ae4`                                              |
+| `inputs[].prevVout`     | The index of the spent output in that transaction.                                                                                                                                  | `54`                                                               |
+| `outputs`               | All outputs of the transaction. See fields below.                                                                                                                                   | `N/A`                                                              |
+| `outputs[].address`     | The address that the output pays. Omitted for a script without an address, for example an `OP_RETURN` output.                                                                      | `3KMmeqPeQcngyTehdfSwsGqvxfU7J7qtc8`                               |
+| `outputs[].value`       | The value of the output in satoshis.                                                                                                                                                | `27654`                                                            |
+| `outputs[].vout`        | The index of the output in the transaction.                                                                                                                                         | `0`                                                                |
+| `outputs[].scriptType`  | The script type of the output, as reported by Bitcoin Core.                                                                                                                         | `pubkeyhash`, `scripthash`, `witness_v0_keyhash`, `witness_v1_taproot`, `nulldata` |
+| `removed`               | `true` if a chain reorganization removed the block. Equal to `status` being `removed`.                                                                                              | `false`                                                            |
+
+# How to set up a Bitcoin Address Activity webhook
+
+<Steps>
+  <Step title="Open the Webhooks page">
+    Go to the [Webhooks page](https://dashboard.alchemy.com/apps/latest/webhooks) in your Alchemy Dashboard.
+
+    <Tip>Make sure you have the correct app selected in the top left of the dashboard.</Tip>
+  </Step>
+
+  <Step title="Create the webhook">
+    Click **Create Webhook**, and choose **Address Activity** as the webhook type.
+  </Step>
+
+  <Step title="Choose the network">
+    Select **Bitcoin** in the **CHAIN** dropdown. Then choose your **NETWORK** (Mainnet or Testnet4).
+  </Step>
+
+  <Step title="Add your URL and addresses">
+    Paste your webhook URL into the **WEBHOOK URL** field. Then enter one or more **Bitcoin Addresses** that you want to track. Mainnet addresses start with `1`, `3`, or `bc1`; Testnet4 addresses start with `m`, `n`, `2`, or `tb1`.
+  </Step>
+
+  <Step title="Test and create">
+    Click **Test Webhook** to send an example event to your URL. After the test is successful, click **Create Webhook**. Your webhook appears in the list.
+  </Step>
+</Steps>
+
+Events start with the next block after you create the webhook. Earlier transactions are not sent.
+
+# Useful endpoints
+
+| Endpoint                                                                                       | Description                                                 |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Webhook Addresses](/docs/data/webhooks/webhooks-api-endpoints/get-webhook-addresses)          | Get all addresses for an Address Activity webhook.          |
+| [Update Webhook Addresses](/docs/data/webhooks/webhooks-api-endpoints/update-webhook-addresses) | Add or remove addresses from a specific webhook.            |
+| [Delete Webhook](/docs/data/webhooks/webhooks-api-endpoints/delete-webhook)                    | Delete a webhook.                                           |
+| [Update Webhook](/docs/data/webhooks/webhooks-api-endpoints/update-webhook)                    | Set the status of a webhook to active or inactive.          |
