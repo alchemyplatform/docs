@@ -7,6 +7,10 @@ description: "Connect to the HyperCore gRPC block stream: endpoint, authenticati
 
 # gRPC streaming
 
+Available on PayG and Enterprise plans. Not available on Free.
+
+Contact us for stream limits.
+
 HyperCore gRPC streams raw HyperCore blocks over a single server-streaming method.
 
 | Service | Method | Delivers |
@@ -30,14 +34,12 @@ This is the only gRPC service. For order-book, mid-price, and fill data, use the
 Send your API key as gRPC metadata on every call:
 
 ```text
-authorization: Bearer <API_KEY>
+x-token: <API_KEY>
 ```
-
-The key must be in the `authorization` metadata. A key sent any other way, for example as `x-api-key`, is rejected with `UNAUTHENTICATED` and the message `Must be authenticated!`.
 
 ## Service definition
 
-Save this as `blocks.proto` and generate your client from it.
+Use the [engineering collection](https://github.com/alchemyplatform/collections/tree/main/hypercore) and its [blocks.proto](https://github.com/alchemyplatform/collections/blob/main/hypercore/grpc/proto/streams/v1/blocks.proto). Save the definition below as `blocks.proto` and generate your client from it.
 
 ```proto title="blocks.proto"
 syntax = "proto3";
@@ -45,15 +47,45 @@ syntax = "proto3";
 package streams.v1;
 
 service BlockStream {
+  // Subscribe to the stream of HyperCore (Hyperliquid) blocks.
+  //
+  // Each response carries one raw execution block, in ascending block order.
+  // Check that `block_number` increases by one; a jump means blocks were
+  // missed upstream and cannot be recovered from this stream. By default the
+  // stream begins with the next block produced after the subscription starts.
+  //
+  // To resume after a disconnect, subscribe again with `start_block` set to
+  // the last `block_number` you processed plus one. Replay only covers a short
+  // window of recent blocks (a few seconds), so reconnect promptly.
+  //
+  // The stream ends with one of these gRPC status codes:
+  //   NOT_FOUND    `start_block` cannot be replayed: it is older than the
+  //                replay window, or that range is not available. Resubscribe
+  //                without `start_block` to continue from the latest block.
+  //   ABORTED      The client was reading too slowly and fell behind the
+  //                live stream. Resubscribe from your last block plus one.
+  //   UNAVAILABLE  The service is temporarily unavailable. Retry with
+  //                backoff and resubscribe from your last block plus one.
   rpc StreamBlocks(StreamBlocksRequest) returns (stream BlockMessage);
 }
 
+// Request message for BlockStream.StreamBlocks
 message StreamBlocksRequest {
+  // Optional. Block number to start from (inclusive). Leave unset to receive
+  // only new blocks. A value ahead of the latest block starts the stream at
+  // the latest block.
   optional uint64 start_block = 1;
 }
 
+// Response message for BlockStream.StreamBlocks
 message BlockMessage {
+  // Sequential HyperCore block number. This is not the HyperBFT consensus
+  // round.
   uint64 block_number = 1;
+
+  // The block as raw JSON bytes, in the same format as the node's
+  // `replica_cmds` output. In protobuf JSON (e.g. grpcurl or Bruno) this field
+  // appears base64-encoded.
   bytes data = 2;
 }
 ```

@@ -55,24 +55,32 @@ New codes may be added. Treat unknown codes as errors for the affected subscript
 
 ## Limits
 
-Limits protect shared infrastructure and may change during early access. Hitting a limit on a subscription returns `limit_reached`; existing subscriptions keep working.
+Limits depend on your plan. Hitting a limit returns `limit_reached`; existing subscriptions keep working.
 
-| Limit | Value |
+| | Free | PayG | Enterprise |
+| --- | --- | --- | --- |
+| Connections | 1 | 25 | Custom |
+| Total subscriptions | 2 | 250 | Highest in the industry |
+| Coins per subscription | 5 | 25 | Custom |
+| Addresses per filter | 5 | 25 | Custom |
+| gRPC | Not available | Available | Available |
+
+Need higher limits? Contact us.
+
+HyperCore is free on every plan during launch week. Pricing will be published here before billing starts.
+
+| Protocol limit | Value |
 | --- | --- |
-| Subscriptions per connection | 200 |
-| Addresses in `users` or `builders` | 1 to 200 per subscription |
-| Markets in `coins` | Up to 200 per subscription |
-| Unfiltered subscriptions per stream type | 1 per connection, 5 per team (`liquidationFills`: see below) |
-| Subscriptions per team | 20,000 |
-| Concurrent connections per team | 1,000 |
 | Request message size | 256 KiB |
 | `subscriptionId` and coin name length | 128 characters each |
 
-A connection over your team's connection limit is refused during the handshake with HTTP `429`; the server may also refuse with HTTP `503` when it's at capacity. Reconnect with backoff in both cases. Contact [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com) if you need higher limits.
+A connection over your plan's connection limit is refused during the handshake with HTTP `429`; the server may also refuse with HTTP `503` when it's at capacity. Reconnect with backoff in both cases.
 
 A request larger than 256 KiB closes the connection with code `1009`.
 
 ### Unfiltered subscriptions
+
+All-markets subscriptions are available on PayG and Enterprise.
 
 Omitting `coins`, or sending an empty list (`"coins":[]`), subscribes to every market. `liquidationFills` has no `coins` filter, so every `liquidationFills` subscription is unfiltered; a connection can hold one with `aggregateByTime` on and one with it off.
 
