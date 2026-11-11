@@ -30,11 +30,11 @@ message StreamBlocksRequest {
 | `start_block` omitted | The stream starts with the next new block. |
 | `start_block` inside the retained window | The server replays from `start_block` through the latest block, then continues with new blocks. There are no gaps or duplicates between the replayed and new blocks. |
 | `start_block` older than the retained window | The call fails with `NOT_FOUND`. No messages are sent. |
-| `start_block` newer than the latest block | Treated like an omitted `start_block`. The stream starts with the next new block, which can be lower than `start_block`. Skip blocks you don't need. |
+| `start_block` newer than the latest block | The stream starts at the latest block, which can be lower than `start_block`. Skip blocks you don't need. |
 
 ### Retained window
 
-The server keeps a short window of recent blocks for resuming, currently up to the last 64. That covers only a few seconds of chain activity. The window size is not guaranteed and can be smaller, for example right after a server restart, when it can be empty.
+Replay only covers a short window of recent blocks (a few seconds of mainnet), so it is for reconnecting clients rather than history.
 
 A `start_block` the server can't replay as a continuous range returns `NOT_FOUND`, even if the block is recent. This also happens when the window has no blocks yet.
 
@@ -81,8 +81,8 @@ Every error ends the stream with a gRPC status. There are no error messages insi
 
 | Code | When | Message | What to do |
 | --- | --- | --- | --- |
-| `UNAUTHENTICATED` | At call start | `Must be authenticated!` | Send `authorization: Bearer <API_KEY>` metadata. Don't retry until the key is fixed. |
-| `NOT_FOUND` | At call start | `start_block is older than the retained block window` | Fetch the missed blocks from another source, then call again without `start_block`. |
+| `UNAUTHENTICATED` | At call start | `Must be authenticated!` | Send `x-token: <API_KEY>` metadata. Don't retry until the key is fixed. |
+| `NOT_FOUND` | At call start | `start_block is older than the retained block window` | The missed blocks are no longer retained. Call again without `start_block` to resume live. |
 | `ABORTED` | During the stream | `block stream fell behind live blocks` | Your client read too slowly. Reconnect from your last block plus one, and read faster. |
 | `UNAVAILABLE` | At call start or during the stream | For example `block feed not ready`, `block stream connection limit reached`, or `server draining` | Temporary. Reconnect with backoff from your last block plus one. |
 | `DEADLINE_EXCEEDED` | When your call deadline expires | Set by your client | Don't set a deadline on this call. Reconnect. |
@@ -111,7 +111,7 @@ The server doesn't support reflection, so pass `blocks.proto` from the [overview
 ```bash
 grpcurl \
   -proto blocks.proto \
-  -H "authorization: Bearer $ALCHEMY_API_KEY" \
+  -H "x-token: $ALCHEMY_API_KEY" \
   -max-msg-sz 67108864 \
   -d '{}' \
   hypercore-mainnet.g.alchemy.com:443 \
@@ -123,7 +123,7 @@ To resume, pass a block number:
 ```bash
 grpcurl \
   -proto blocks.proto \
-  -H "authorization: Bearer $ALCHEMY_API_KEY" \
+  -H "x-token: $ALCHEMY_API_KEY" \
   -max-msg-sz 67108864 \
   -d '{"start_block": 1194130000}' \
   hypercore-mainnet.g.alchemy.com:443 \
@@ -160,7 +160,7 @@ let lastBlock = null; // block_number of the last processed block, as a string
 
 function connect() {
   const metadata = new grpc.Metadata();
-  metadata.set("authorization", `Bearer ${process.env.ALCHEMY_API_KEY}`);
+  metadata.set("x-token", process.env.ALCHEMY_API_KEY);
 
   const request =
     lastBlock === null ? {} : { startBlock: (BigInt(lastBlock) + 1n).toString() };

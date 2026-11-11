@@ -7,12 +7,12 @@ description: "What changes when you move a client from Hyperliquid's public WebS
 
 # Migrating from the Hyperliquid API
 
-Alchemy's HyperCore streams use the same stream names and the same core data as Hyperliquid's public WebSocket (`wss://api.hyperliquid.xyz/ws`), with a few request and envelope differences. Code written for the public API needs small changes before it works here.
+Streams that also exist in Hyperliquid's public WebSocket (`wss://api.hyperliquid.xyz/ws`) keep the same stream names and core data, with a few request and envelope differences. Code written for the public API needs small changes before it works here.
 
 ## What you gain
 
 * Book updates every block. The public `l2Book` feed is throttled; Alchemy sends a market's book whenever it changes.
-* Many markets or addresses in one subscription, or every market at once.
+* Many markets or addresses in one subscription, or every market at once (PayG and Enterprise).
 * Order-level books (`l4BookUpdates`) and incremental L2 books (`l2BookDiff`).
 * Fill replay after a reconnect (`fromBlock`) and a per-subscription `seq` to detect missed messages.
 * Block number and block time on every data message.
