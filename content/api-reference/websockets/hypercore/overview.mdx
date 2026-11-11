@@ -15,7 +15,7 @@ Stream Hyperliquid order books and fills from Alchemy-operated nodes. One connec
 wss://hypercore-mainnet.g.alchemy.com/v2/<API_KEY>
 ```
 
-HyperCore access is enabled per team during the beta; to request it, contact [abdul.manan@alchemy.com](mailto:abdul.manan@alchemy.com). Once enabled, the HyperCore network appears in your Alchemy dashboard and works with your existing API key. Testnet is not available yet.
+Enable HyperCore for your app in the dashboard (**Chains → HyperCore**). It works with your existing API key. Testnet is not available yet.
 
 ## Quick example
 
@@ -42,7 +42,7 @@ Every request is a JSON object with `method` and `subscriptionId`.
 {"method":"unsubscribe","subscriptionId":"btc-top"}
 ```
 
-Filters are arrays: `coins`, `users`, `builders`. To subscribe to one market, pass a one-element array such as `"coins": ["BTC"]`. Omitting `coins` subscribes to **every market**, which can be a large volume of data. See [unfiltered subscriptions](/docs/chains/websockets/hypercore/errors-and-limits#unfiltered-subscriptions).
+Filters are arrays: `coins`, `users`, `builders`. To subscribe to one market, pass a one-element array such as `"coins": ["BTC"]`. Omitting `coins` subscribes to **every market** (PayG and Enterprise only), which can be a large volume of data. See [unfiltered subscriptions](/docs/chains/websockets/hypercore/errors-and-limits#unfiltered-subscriptions).
 
 <Callout intent="warning">
   Send only the fields documented for each stream. Fields the server doesn't recognize are ignored rather than rejected, so a misspelled or unsupported filter (for example `coin` instead of `coins`) can result in an unfiltered, all-markets subscription.
@@ -61,6 +61,8 @@ Filters are arrays: `coins`, `users`, `builders`. To subscribe to one market, pa
 Every data message includes `data.blockNumber` and `data.blockTime` (Unix milliseconds). `seq` is a per-subscription counter that starts at `1` and increases by one with each data, `gap`, or `book_reset` message; use it to detect a missed message. See [connection lifecycle](/docs/chains/websockets/hypercore/connection-lifecycle#sequence-numbers).
 
 ## Streams
+
+All nine streams are available on every plan, including Free.
 
 | Stream | Kind | Filter | Replay |
 | --- | --- | --- | --- |
