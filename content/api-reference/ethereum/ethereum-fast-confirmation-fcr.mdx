@@ -1,0 +1,60 @@
+---
+title: Fast Confirmation (FCR)
+description: Use Alchemy's Fast Confirmation Rule (FCR) to treat an Ethereum block as safe in as little as 24 seconds by reading the `safe` block tag.
+subtitle: Read fast-confirmed Ethereum blocks via the `safe` block tag
+slug: docs/ethereum/fast-confirmation-fcr
+---
+
+<Warning>
+  **FCR is opt-in, and is not enabled by default.** Using the `safe` block tag on an Ethereum endpoint does not automatically use FCR. You must request access and receive confirmation that FCR has been enabled for your app(s). Until then, `safe` returns the standard safe head. [Request access here](https://dashboard.alchemy.com/labs).
+</Warning>
+
+The **Fast Confirmation Rule (FCR)** lets you treat an Ethereum block as safe to act on in as little as 24 seconds, instead of waiting a number of blocks or about 13 minutes for finality.
+
+It works by counting the attestations Ethereum's validators make for every block. When enough of them have attested to a block, and the network is behaving normally, that block is **fast-confirmed**: it won't be reorged, under normal network conditions.
+
+Note that fast confirmation is not Ethereum finality. It does not accelerate transaction inclusion or provide the same crypto-economic guarantees as finalized blocks.
+
+## Read the fast-confirmed block
+
+With FCR enabled, the `safe` block tag typically points 1 to 2 slots behind the head of the chain. Without it, `safe` trails the head by about one epoch.
+
+<Warning>
+  Enabling FCR changes the meaning of `safe` for the approved app/network. Applications already reading `safe` should review this semantic change before enabling FCR.
+</Warning>
+
+The `safe` tag works anywhere a block tag is accepted. No new endpoint or RPC method is required. For example:
+
+```bash
+curl "https://eth-mainnet.g.alchemy.com/v2/{apiKey}" \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getBlockByNumber",
+    "params": ["safe", false]
+  }'
+```
+
+## Understand FCR vs the alternatives
+
+|                      | **FCR (`safe` with FCR)**                                                                                               | **Justified (`safe` without FCR)**                                                                                                                                                    | **Finality**                                                                                                 |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Time to confirm      | As little as 24 s                                                                                                       | 6–13 min                                                                                                                                                                              | ~13 min                                                                                                      |
+| What it checks       | Attestations for the block, and that the current checkpoint will be justified and no conflicting one can be             | Two-thirds of stake attested to an epoch checkpoint at or after the block                                                                                                             | Two-thirds of stake attested to it, twice                                                                    |
+| How to access        | Our Node RPC, under `safe`, with FCR enabled                                                                            | Our Node RPC, under `safe`, with FCR disabled (default)                                                                                                                               | Our Node RPC, under `finalized`                                                                              |
+| Safety assumptions   | Proven safe if less than 25% of each committee is against it and the network is in sync                                 | Argued safe if less than about 1/6 of stake is against it (less with proposer boost) and the network is in sync during and after the justification epoch                              | Proven safe unless a third of stake signs messages that can be slashed; no network assumption                |
+| What a reorg needs   | More than 25% of a committee                                                                                            | Delayed messages, so that about a third of validators miss a justification in time; an attacker can help by withholding attestations                                                  | A third of stake signing messages that can be slashed                                                        |
+| Track record         | No false confirmations when four clients' FCR code was replayed over 12 months of mainnet                               | Served under `safe` since the Merge (2022); no publicly reported reorg of a justified checkpoint on mainnet                                                                           | No finalized block reverted since the Merge (2022)                                                           |
+
+## Security and fallback behavior
+
+FCR's safety depends on timely delivery of validator attestations and an adversarial-stake bound below 25%. It does not provide the same slashable-stake guarantees as Ethereum finality.
+
+When conditions deteriorate, fast confirmations can slow or stop. In extreme conditions, a previously fast-confirmed block can be reorganized, and the safe head can move backward or change hash at the same height. Do not assume it advances monotonically.
+
+If FCR can't advance, it returns the latest justified block.
+
+## Learn more
+
+* [Ethereum FCR overview](https://fastconfirm.it/)
