@@ -3,182 +3,79 @@ title: "Networks and conventions"
 description: "Check Trading API network support, pagination, amounts, timestamps, and errors."
 ---
 
-<Markdown src="../../shared/preview-notice.mdx" />
+<Markdown src="../../shared/preview-notice-trading-beta.mdx" />
 
-Choose a network and variant for your task before sending a request.
+## Supported networks
 
-## Supported networks (private preview)
+A check means the endpoint is supported. A dash means not yet supported or unconfirmed. Coverage can also vary by token.
 
-A check means supported in the private preview; a dash means not yet supported in the preview. The seven groups cover all 13 capabilities and both variants.
+The **Market and wallet endpoints** column covers token market data (single and batch), token metadata, token OHLCV, token trades, pools for a token, pools (single and batch), pool OHLCV, pool trades, trending pools, search, wallet trades, and wallet PnL.
 
-### Pool
+| Network | Slug | Market and wallet endpoints | Holders† | Holder history† | Top traders† | New pools | Screener |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Ethereum | `eth-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Base | `base-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Arbitrum | `arb-mainnet` | ✓ | ✓ | ✓ | – | ✓ | ✓ |
+| Optimism | `opt-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Polygon | `matic-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Avalanche | `avax-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Linea | `linea-mainnet` | ✓ | ✓ | ✓ | ✓ | – | ✓ |
+| Robinhood | `robinhood-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Arc | `arc-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Solana | `solana-mainnet` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | ✓ | – | – | ✓ | ✓ | – |
 
-Applies to [Get pool](/docs/data/trading-api/endpoints/pools/get-pool), [Get pool candles](/docs/data/trading-api/endpoints/pools/get-pool-candles), [Get pool trades](/docs/data/trading-api/endpoints/pools/get-pool-trades). Each linked General operation has a matching Premium operation.
+† Coverage varies by token. This applies to holders, holder history, and top traders. Arbitrum top-trader coverage is unconfirmed. An empty holders result returns `200` with an empty list. Top traders returns `404 NOT_FOUND` with "No trader data for this token." when no trader data is available. Holder history can also return an empty list. Holders and holder history are not yet supported on HyperEVM.
 
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | ✓ | ✓ |
-| Base | `base-mainnet` | ✓ | ✓ |
-| Arbitrum | `arb-mainnet` | ✓ | ✓ |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | ✓ | ✓ |
-| Optimism | `opt-mainnet` | – | – |
-| Polygon | `matic-mainnet` | – | – |
-| Avalanche | `avax-mainnet` | – | – |
-| Linea | `linea-mainnet` | – | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | – |
-| Robinhood | `robinhood-mainnet` | – | – |
-| Arc | `arc-mainnet` | – | – |
-| Tempo | `tempo-mainnet` | – | – |
+## Read amounts, timestamps, and identifiers
 
-Support for more networks is planned.
+USD values, token amounts, and percentages are decimal strings; `null` means unknown. Use decimal arithmetic for calculations and convert to JavaScript numbers only when needed for display. Response rows carry an Alchemy `network` slug. Response timestamps, including OHLCV timestamps, use ISO 8601 UTC. Request time parameters also accept Unix seconds.
 
-### Token and search
+Token and pool addresses have no network prefixes. DEX details use `dex: { id, name }`. Token `topPools` contains only `{ network, poolAddress }` references. Pool responses have `baseToken` and a primary `quoteToken`; multi-token pools also have `quoteTokens` containing all quote tokens. `feePercent` is available on single and batch pool endpoints.
 
-Applies to [Get token candles](/docs/data/trading-api/endpoints/tokens/get-token-candles), [Get token trades](/docs/data/trading-api/endpoints/tokens/get-token-trades), [Get pools for a token](/docs/data/trading-api/endpoints/tokens/get-pools-for-a-token), [Search tokens and pools](/docs/data/trading-api/endpoints/discovery/search-tokens-and-pools). Each linked General operation has a matching Premium operation.
+A trade `id` is unique per swap and has the format `{network}:{txHash}:{logIndex}`. Use it to distinguish multiple trades in one transaction. A trade describes its incoming and outgoing tokens with `tokenIn` and `tokenOut`; `isAnomalous` can help filter unusual activity.
 
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | ✓ | ✓ |
-| Base | `base-mainnet` | ✓ | ✓ |
-| Arbitrum | `arb-mainnet` | ✓ | ✓ |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | ✓ | ✓ |
-| Optimism | `opt-mainnet` | ✓ | – |
-| Polygon | `matic-mainnet` | ✓ | – |
-| Avalanche | `avax-mainnet` | ✓ | ✓ |
-| Linea | `linea-mainnet` | ✓ | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | ✓ |
-| Robinhood | `robinhood-mainnet` | – | – |
-| Arc | `arc-mainnet` | – | – |
-| Tempo | `tempo-mainnet` | – | – |
+## Chart OHLCV
 
-### Holder
+Pool OHLCV prices the pool’s base token in USD. Token OHLCV describes the selected token. Rows are objects sorted in ascending timestamp order. Empty intervals are omitted; preserve chart gaps instead of filling them with zero prices.
 
-Applies to [Get top holders](/docs/data/trading-api/endpoints/tokens/get-top-holders). Each linked General operation has a matching Premium operation.
-
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | ✓ | ✓ |
-| Base | `base-mainnet` | ✓ | ✓ |
-| Arbitrum | `arb-mainnet` | ✓ | ✓ |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | ✓ | – |
-| Optimism | `opt-mainnet` | ✓ | – |
-| Polygon | `matic-mainnet` | ✓ | – |
-| Avalanche | `avax-mainnet` | ✓ | ✓ |
-| Linea | `linea-mainnet` | ✓ | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | ✓ |
-| Robinhood | `robinhood-mainnet` | – | – |
-| Arc | `arc-mainnet` | – | – |
-| Tempo | `tempo-mainnet` | – | – |
-
-### New pool
-
-Applies to [Get new pools](/docs/data/trading-api/endpoints/discovery/get-new-pools). Each linked General operation has a matching Premium operation.
-
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | ✓ | ✓ |
-| Base | `base-mainnet` | ✓ | ✓ |
-| Arbitrum | `arb-mainnet` | ✓ | ✓ |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | ✓ | ✓ |
-| Optimism | `opt-mainnet` | ✓ | – |
-| Polygon | `matic-mainnet` | ✓ | – |
-| Avalanche | `avax-mainnet` | ✓ | ✓ |
-| Linea | `linea-mainnet` | – | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | ✓ |
-| Robinhood | `robinhood-mainnet` | ✓ | ✓ |
-| Arc | `arc-mainnet` | ✓ | ✓ |
-| Tempo | `tempo-mainnet` | – | – |
-
-### Screening and token list
-
-Applies to [Screen pools](/docs/data/trading-api/endpoints/discovery/screen-pools), [Get token list](/docs/data/trading-api/endpoints/discovery/get-token-list). Each linked General operation has a matching Premium operation.
-
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | ✓ | ✓ |
-| Base | `base-mainnet` | ✓ | ✓ |
-| Arbitrum | `arb-mainnet` | ✓ | ✓ |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | ✓ | ✓ |
-| Optimism | `opt-mainnet` | ✓ | – |
-| Polygon | `matic-mainnet` | ✓ | – |
-| Avalanche | `avax-mainnet` | ✓ | ✓ |
-| Linea | `linea-mainnet` | ✓ | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | ✓ |
-| Robinhood | `robinhood-mainnet` | ✓ | ✓ |
-| Arc | `arc-mainnet` | ✓ | ✓ |
-| Tempo | `tempo-mainnet` | – | ✓ |
-
-### Wallet PnL
-
-Applies to [Get wallet PnL](/docs/data/trading-api/endpoints/wallets/get-wallet-pnl). Each linked General operation has a matching Premium operation.
-
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | ✓ | ✓ |
-| Base | `base-mainnet` | ✓ | ✓ |
-| Arbitrum | `arb-mainnet` | ✓ | ✓ |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | – | ✓ |
-| Optimism | `opt-mainnet` | ✓ | – |
-| Polygon | `matic-mainnet` | ✓ | – |
-| Avalanche | `avax-mainnet` | ✓ | ✓ |
-| Linea | `linea-mainnet` | ✓ | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | ✓ |
-| Robinhood | `robinhood-mainnet` | ✓ | ✓ |
-| Arc | `arc-mainnet` | ✓ | ✓ |
-| Tempo | `tempo-mainnet` | – | ✓ |
-
-General accepts EVM networks only; every network in a multi-network request must be EVM. Premium accepts an optional `networks` list. Omit it to combine all supported EVM networks. Request `solana-mainnet` on its own; do not combine Solana with EVM networks.
-
-### Wallet trade
-
-Applies to [Get wallet trades](/docs/data/trading-api/endpoints/wallets/get-wallet-trades). Each linked General operation has a matching Premium operation.
-
-| Network | Slug | General | Premium |
-| --- | --- | --- | --- |
-| Ethereum | `eth-mainnet` | – | ✓ |
-| Base | `base-mainnet` | – | ✓ |
-| Arbitrum | `arb-mainnet` | – | – |
-| BNB Smart Chain | `bnb-mainnet` | ✓ | ✓ |
-| Solana | `solana-mainnet` | – | ✓ |
-| Optimism | `opt-mainnet` | – | – |
-| Polygon | `matic-mainnet` | – | – |
-| Avalanche | `avax-mainnet` | – | – |
-| Linea | `linea-mainnet` | – | – |
-| Hyperliquid (HyperEVM) | `hyperliquid-mainnet` | – | – |
-| Robinhood | `robinhood-mainnet` | – | ✓ |
-| Arc | `arc-mainnet` | – | – |
-| Tempo | `tempo-mainnet` | – | – |
-
-General wallet trades supports `bnb-mainnet`. Range requests are limited.
-
-## Read amounts and timestamps
-
-USD values and token amounts are decimal strings so you can preserve precision. Use decimal arithmetic for calculations; converting these strings to JavaScript numbers can lose precision. `null` means unknown, not zero. Every row carries its Alchemy `network` slug. Other timestamps use ISO 8601 UTC; candle `timestamp` values use Unix seconds UTC.
-
-## Choose token or pool scope
-
-Pool operations describe one pool. Token operations describe the selected token: candles are built from the token’s pool activity. Premium can aggregate across pools. The aggregation request control remains pending. Pool candle price orientation must be checked before comparing it with a token chart. Empty candle intervals are omitted by default; preserve those gaps instead of treating them as zero-volume candles or interpolating prices.
-
-New pool operations return recently created pools. Range requests are limited; split a longer analysis into smaller requests. Time-range boundary inclusion is pending, so account for duplicates when combining adjacent requests.
+Use `interval` with `1s`, `15s`, `30s`, `1m`, `5m`, `15m`, `1h`, `4h`, `12h`, or `1d`. `to` requests entries before a time, and `limit` accepts up to 1000 entries. Holder-history requests use `days=7`, `days=30`, or `days=max`.
 
 ## Continue through pages
 
-Omit `pageKey` on your first request. Copy each returned opaque key unchanged into the next request, keeping your filters fixed. Stop only when `pageKey` is `null`. Treat a missing key or a repeated key as an error. The proposed `pageSize` default is 25 and maximum is 100. Pagination applies only where an operation exposes it.
+Omit `pageKey` on the first request. Pass it back unchanged with the same filters. Stop when the response contains `pageKey: null`. Treat a missing key or a repeated key as an error. A key used with different filters returns `INVALID_ARGUMENT`.
+
+| Endpoint | Pagination |
+| --- | --- |
+| Token, pool, and wallet trades | `pageSize` defaults to 100; maximum 300. |
+| New pools, trending pools, pools for a token, screener | Fixed pages of up to 20; no `pageSize`. |
+| Top holders | No `pageKey`. `limit` maximum 50, or 40 on Solana. |
+| Holder history, OHLCV, top traders | No `pageKey`. |
+| Wallet PnL | Pagination applies to token rows; `pageSize` defaults to 25, maximum 100. |
+| Search | Use the returned `pageKey`; no `pageSize`. |
+| Batch token market data and pools | Up to 30 items per request; no `pageKey`. |
+
+## Request trade ranges
+
+For token, pool, and wallet trades, provide `from` and `to` together or omit both. The maximum window is exactly 30 days. A longer window, or only one boundary, returns `INVALID_ARGUMENT`. Keep the same boundaries while paging.
 
 ## Interpret wallet PnL
 
-General uses average cost for lifetime realized and unrealized PnL, broken down by network and token. Premium reports realized PnL for `1d`, `7d`, `30d` (the default), or `all`. Its history uses hourly buckets for `1d` and `7d`, and daily buckets for `30d` and `all`. Its summary includes trade count, wins, losses, and win rate. The methods and measurement periods differ, so the General and Premium PnL numbers are not comparable.
+Wallet PnL is lifetime only, with `methodology: "average_cost"`. It returns realized and unrealized totals, `byNetwork` totals, and token rows with buy/sell counts, amounts, USD totals, and average prices.
+
+`networks` is required. Use only EVM networks, or `solana-mainnet` alone; mixing them returns `INVALID_ARGUMENT`. `sortBy` accepts `realizedPnlUsd`, `unrealizedPnlUsd`, `boughtUsd`, or `soldUsd`.
 
 ## Handle errors and retries
 
-Errors use `{ "error": { "message": "..." } }`. Correct a `400` request before retrying and check your API key for `401`. Retry `429` and `503` with bounded exponential backoff. When `Retry-After` is present, wait at least its duration, interpreting either seconds or an HTTP date. Surface other errors and exhausted retries. The [quickstart](/docs/data/trading-api/quickstart) includes TypeScript retry handling.
+Application errors use `{ "error": { "code": "<CODE>", "message": "<text>" } }`.
 
-## Update frequency
+| HTTP status | Code | Action |
+| --- | --- | --- |
+| 400 | `INVALID_ARGUMENT` | Correct the request parameters. |
+| 400 | `UNSUPPORTED_NETWORK` | Choose a network supported by the endpoint. |
+| 404 | `NOT_FOUND` | Check the address or resource; trader data may be unavailable for the token. |
+| 429 | `RATE_LIMITED` | Honor `Retry-After` before retrying. |
+| 503 | `UPSTREAM_UNAVAILABLE` | Retry with bounded exponential backoff. |
 
-Pending. We have not defined update frequency for this preview.
+Empty collections return `200` with an empty list; a missing single resource returns `404`. Honor `Retry-After` as seconds or an HTTP date. Surface exhausted retries and other errors. The [quickstart](/docs/data/trading-api/quickstart) includes retry handling.

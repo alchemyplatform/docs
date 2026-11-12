@@ -1,26 +1,26 @@
 ---
 title: "Trading API quickstart"
-description: "Find token pools, chart candles, page through trades, and compare wallet PnL methods."
+description: "Find token pools, chart OHLCV, page through trades, and read wallet PnL."
 ---
 
-<Markdown src="../../shared/preview-notice.mdx" />
+<Markdown src="../../shared/preview-notice-trading-beta.mdx" />
 
-Find WETH markets on Ethereum, prepare an hourly chart, read recent trades, and interpret wallet profit and loss. Requests use a provisional URL and schema; you need access to the private preview.
+Find USDC pools on Ethereum, prepare an hourly chart, read recent trades, and read wallet profit and loss.
 
-Replace `YOUR_API_KEY` in each cURL command. For TypeScript, use Node.js 18 or later with TypeScript and `tsx` installed. Copy the TypeScript blocks in order into `trading-quickstart.mts` and run `npx tsx trading-quickstart.mts`. The TypeScript helper handles retries and pagination.
+Replace `YOUR_API_KEY` in each cURL command. For TypeScript, use Node.js 22 with TypeScript and `tsx` installed. Copy the TypeScript blocks in order into `trading-quickstart.mts` and run `npx tsx trading-quickstart.mts`.
 
 <Steps>
   <Step title="Get an API key">
 
-Create or select an app in the [Alchemy Dashboard](https://dashboard.alchemy.com/) and copy its API key. Replace `YOUR_API_KEY` below. There is no API request in this setup step.
+Create or select an app in the [Alchemy Dashboard](https://dashboard.alchemy.com/) and copy its API key.
 
 ```typescript
 export {};
 
 const apiKey = "YOUR_API_KEY";
 const base = "https://api.g.alchemy.com/trading/v1/" + encodeURIComponent(apiKey);
-const token = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-const wallet = "0x7942262a7a5637e6eb0eec9b91b55ec232141f87";
+const token = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+const wallet = "0x8e92d28216ac924bbf01f2e7fe4fffd575ec3f17";
 
 async function sleep(ms: number): Promise<void> {
   while (ms > 0) {
@@ -79,22 +79,16 @@ function nextKey(value: unknown, seen: Set<string>): string | null {
 console.log("API key configured");
 ```
 
-Expected output:
-
-```text
-API key configured
-```
-
   </Step>
-  <Step title="Find WETH pools on Ethereum">
+  <Step title="Find USDC pools on Ethereum">
 
-Read the first page of pools for WETH. Select a returned pool address when you need pool-scoped requests; the next step uses token candles.
+Read the first page of pools for USDC. Pool pages contain up to 20 entries. Use the returned `pageKey` to continue with the same filters.
 
 <CodeGroup>
 
 ```bash
 curl --request GET \
-  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/pools'
+  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/pools'
 ```
 
 ```typescript
@@ -103,99 +97,100 @@ interface Pool {
   poolAddress: string;
 }
 const pools = await request<Page<Pool>>("/tokens/eth-mainnet/" + token + "/pools");
-console.log(JSON.stringify(pools, null, 2));
-if (pools.data.length === 0) {
-  throw new Error("No pools returned for this token.");
-}
+console.log(JSON.stringify(pools.data.map(({ network, poolAddress }) => ({ network, poolAddress })), null, 2));
 ```
 
 </CodeGroup>
 
-Expected response, projected to the fields you need:
-
-```json
-{
-  "data": [
-    {
-      "network": "eth-mainnet",
-      "poolAddress": "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36"
-    },
-    {
-      "network": "eth-mainnet",
-      "poolAddress": "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-    }
-  ],
-  "pageKey": null
-}
-```
+Use a returned pool address for pool-scoped calls. For token market data, request `GET /tokens/{network}/{tokenAddress}`; `include=topPools` adds pool references.
 
   </Step>
-  <Step title="Prepare hourly token candles">
+  <Step title="Prepare hourly token OHLCV">
 
-Request hourly candles for a time range. The cURL command uses a fixed one-day range; TypeScript requests the last 24 hours. Candles are built from the token’s pool activity. Sort returned candles by timestamp and preserve missing intervals as chart gaps. Do not fill gaps with zero prices. Keep decimal strings for calculations; a charting library may convert them at the display boundary.
+Request up to 24 hourly entries before a given time. Entries are sorted ascending and use ISO 8601 timestamps. Preserve missing intervals as chart gaps. Keep decimal strings for calculations.
 
 <CodeGroup>
 
 ```bash
 curl --get \
-  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/candles' \
+  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/ohlcv' \
   --data-urlencode 'interval=1h' \
-  --data-urlencode 'from=2026-10-29T06:00:00Z' \
-  --data-urlencode 'to=2026-10-30T06:00:00Z'
+  --data-urlencode 'to=2026-11-12T20:00:00Z' \
+  --data-urlencode 'limit=24'
 ```
 
 ```typescript
-interface Candle {
+interface OHLCV {
   network: string;
-  timestamp: number;
+  timestamp: string;
   open: string | null;
   high: string | null;
   low: string | null;
   close: string | null;
   volumeUsd: string | null;
 }
+interface TokenRef {
+  network: string;
+  tokenAddress: string;
+}
 const to = new Date().toISOString();
 const from = new Date(Date.parse(to) - 24 * 60 * 60 * 1000).toISOString();
-const candles = await request<{ data: Candle[] }>(
-  "/tokens/eth-mainnet/" + token + "/candles",
-  { interval: "1h", from, to },
+const ohlcv = await request<{ data: { baseToken: TokenRef; quoteToken: TokenRef; ohlcv: OHLCV[] } }>(
+  "/tokens/eth-mainnet/" + token + "/ohlcv",
+  { interval: "1h", to, limit: "24" },
 );
-const sorted = [...candles.data].sort((a, b) => a.timestamp - b.timestamp);
-const chartPoints: { timestamp: number; close: string | null }[] = [];
-for (const candle of sorted) {
+const sorted = [...ohlcv.data.ohlcv].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+const chartPoints: { timestamp: string; close: string | null }[] = [];
+for (const entry of sorted) {
   const previous = chartPoints.at(-1);
   if (previous) {
-    for (let gap = previous.timestamp + 3600; gap < candle.timestamp; gap += 3600) {
-      chartPoints.push({ timestamp: gap, close: null });
+    for (let gap = Date.parse(previous.timestamp) + 3_600_000; gap < Date.parse(entry.timestamp); gap += 3_600_000) {
+      chartPoints.push({ timestamp: new Date(gap).toISOString(), close: null });
     }
   }
-  chartPoints.push({ timestamp: candle.timestamp, close: candle.close });
+  chartPoints.push({ timestamp: entry.timestamp, close: entry.close });
 }
 console.log(JSON.stringify(chartPoints, null, 2));
 ```
 
 </CodeGroup>
 
-The cURL response contains named candle fields. TypeScript prints chronological chart points; a `null` close in this derived chart marks a gap or an unknown close.
+Example chart output:
+
+```json
+[
+  {
+    "timestamp": "2026-11-12T05:00:00.000Z",
+    "close": "0.9996485018430129"
+  },
+  {
+    "timestamp": "2026-11-12T06:00:00.000Z",
+    "close": "0.9994207408728889"
+  }
+]
+```
+
+A `null` close in the derived chart marks a gap or an unknown close.
 
   </Step>
   <Step title="Page through recent trades">
 
-Keep the same time range while paging. Range requests are limited. The cURL command requests the first page; to continue, add `--data-urlencode "pageKey=RETURNED_PAGE_KEY"` with the response key. The TypeScript loop prints each page and stops at `pageKey: null`; a missing or repeated key is an error.
+Provide `from` and `to` together, with a maximum window of exactly 30 days. Keep the same range and filters while paging. `pageSize` defaults to 100 and accepts up to 300.
 
 <CodeGroup>
 
 ```bash
 curl --get \
-  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/trades' \
-  --data-urlencode 'from=2026-10-29T06:00:00Z' \
-  --data-urlencode 'to=2026-10-30T06:00:00Z'
+  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/trades' \
+  --data-urlencode 'from=2026-11-11T20:00:00Z' \
+  --data-urlencode 'to=2026-11-12T20:00:00Z'
 ```
 
 ```typescript
 interface Trade {
   network: string;
-  transactionHash: string;
+  id: string;
+  txHash: string;
   timestamp: string;
   volumeUsd: string | null;
 }
@@ -206,10 +201,7 @@ do {
   if (pageKey !== null) {
     query.pageKey = pageKey;
   }
-  const page = await request<Page<Trade>>(
-    "/tokens/eth-mainnet/" + token + "/trades",
-    query,
-  );
+  const page = await request<Page<Trade>>("/tokens/eth-mainnet/" + token + "/trades", query);
   console.log(JSON.stringify(page, null, 2));
   pageKey = nextKey(page.pageKey, seen);
 } while (pageKey !== null);
@@ -217,126 +209,90 @@ do {
 
 </CodeGroup>
 
-Expected final response, projected to a few fields:
+Example trade, projected to the fields used above:
 
 ```json
 {
-  "data": [
-    {
-      "network": "eth-mainnet",
-      "transactionHash": "0xfb317c5340251495687a6714afc60a8e27d79ff9b5bc7029ca67d29ce889eb6a",
-      "timestamp": "2026-10-30T05:09:11Z",
-      "volumeUsd": "901.497802739622"
-    }
-  ],
-  "pageKey": null
+  "network": "eth-mainnet",
+  "id": "eth-mainnet:0xfa6ee970a2c43225db7aa11db320308638f36c6f1a8f4192a29fe3c26024ce63:839",
+  "txHash": "0xfa6ee970a2c43225db7aa11db320308638f36c6f1a8f4192a29fe3c26024ce63",
+  "timestamp": "2026-11-12T19:00:11Z",
+  "volumeUsd": "2098.74644822369"
 }
 ```
 
   </Step>
-  <Step title="Interpret wallet PnL">
+  <Step title="Read lifetime wallet PnL">
 
-Request General lifetime PnL and Premium 30-day realized PnL for the same wallet on Ethereum. General accepts EVM networks only. Its first page includes token rows; use the same `pageKey` loop if you need all token rows. For Premium, omit `networks` to combine all supported EVM networks. To query Solana, pass `networks=solana-mainnet` alone. Do not mix Solana and EVM networks.
+`networks` is required. Use only EVM networks, or `solana-mainnet` alone. Pagination applies to token rows; pass the returned `pageKey` unchanged with the same filters to continue.
 
 <CodeGroup>
 
 ```bash
 curl --get \
-  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/wallets/0x7942262a7a5637e6eb0eec9b91b55ec232141f87/pnl' \
+  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/wallets/0x8e92d28216ac924bbf01f2e7fe4fffd575ec3f17/pnl' \
   --data-urlencode 'networks=eth-mainnet'
 ```
 
-```bash
-curl --get \
-  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/premium/wallets/0x7942262a7a5637e6eb0eec9b91b55ec232141f87/pnl' \
-  --data-urlencode 'networks=eth-mainnet' \
-  --data-urlencode 'period=30d'
-```
-
 ```typescript
-interface LifetimeResult {
-  data: { realizedPnlUsd: string | null; unrealizedPnlUsd: string | null };
+interface PnlResult {
+  data: {
+    methodology: "average_cost";
+    realizedPnlUsd: string | null;
+    unrealizedPnlUsd: string | null;
+    byNetwork: {
+      network: string;
+      realizedPnlUsd: string | null;
+      unrealizedPnlUsd: string | null;
+    }[];
+  };
   pageKey: string | null;
 }
-interface PeriodResult {
-  data: {
-    summary: {
-      networks: string[];
-      realizedPnlUsd: string | null;
-      trades: number;
-      wins: number;
-      losses: number;
-      winRate: number;
-    };
-  };
-}
-const general = await request<LifetimeResult>("/wallets/" + wallet + "/pnl", {
-  networks: "eth-mainnet",
-});
-const premium = await request<PeriodResult>("/premium/wallets/" + wallet + "/pnl", {
-  networks: "eth-mainnet",
-  period: "30d",
-});
+const pnl = await request<PnlResult>("/wallets/" + wallet + "/pnl", { networks: "eth-mainnet" });
 console.log(JSON.stringify({
-  lifetimeRealizedPnlUsd: general.data.realizedPnlUsd,
-  lifetimeUnrealizedPnlUsd: general.data.unrealizedPnlUsd,
-  periodSummary: premium.data.summary,
+  methodology: pnl.data.methodology,
+  realizedPnlUsd: pnl.data.realizedPnlUsd,
+  unrealizedPnlUsd: pnl.data.unrealizedPnlUsd,
+  byNetwork: pnl.data.byNetwork,
 }, null, 2));
 ```
 
 </CodeGroup>
 
-Expected TypeScript output (cURL prints each full response):
+Example output:
 
 ```json
 {
-  "lifetimeRealizedPnlUsd": "465692.44904367876",
-  "lifetimeUnrealizedPnlUsd": "-8650.833771133304",
-  "periodSummary": {
-    "networks": ["eth-mainnet"],
-    "realizedPnlUsd": "-907.4494995427917",
-    "trades": 6,
-    "wins": 1,
-    "losses": 3,
-    "winRate": 25
-  }
+  "methodology": "average_cost",
+  "realizedPnlUsd": "307281.7738573944",
+  "unrealizedPnlUsd": "-32173.192627546752",
+  "byNetwork": [
+    {
+      "network": "eth-mainnet",
+      "realizedPnlUsd": "307281.7738573944",
+      "unrealizedPnlUsd": "-32173.192627546752"
+    }
+  ]
 }
 ```
-
-General uses average cost over the wallet’s lifetime, with realized and unrealized results per network and token. Premium uses realized results for the selected period. Premium includes hourly history for `1d` or `7d`, and daily history for `30d` or `all`.
 
   </Step>
   <Step title="Handle errors">
 
-The TypeScript helper retries rate limiting (`429`) and temporary unavailability (`503`), with up to five retries. It honors `Retry-After` seconds or dates, uses exponential backoff, and surfaces other HTTP errors immediately. It throws when retries are exhausted. Transport and malformed-JSON errors remain visible. Use cURL’s `--include` flag to inspect the HTTP status and response headers.
-
-<CodeGroup>
-
-```bash
-curl --include \
-  --url 'https://api.g.alchemy.com/trading/v1/YOUR_API_KEY/tokens/eth-mainnet/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/pools'
-```
-
-```typescript
-// A failure rejects the request and exits nonzero with the status and body.
-await request<Page<Pool>>("/tokens/eth-mainnet/" + token + "/pools");
-```
-
-</CodeGroup>
-
-On success, expect a `200` response; the TypeScript call above completes without output. On temporary unavailability, an error body can be:
+The helper retries `429` and `503` up to five times. It honors `Retry-After` seconds or dates and uses exponential backoff. Other HTTP errors, transport errors, malformed JSON, and exhausted retries remain visible.
 
 ```json
 {
   "error": {
-    "message": "Data temporarily unavailable. Retry with backoff."
+    "code": "UPSTREAM_UNAVAILABLE",
+    "message": "Request could not be completed. Retry later."
   }
 }
 ```
 
-After the last unsuccessful retry, TypeScript throws `HTTP 503:` followed by the body. Correct a `400` request and verify your API key for `401` before trying again.
+Correct `400` request parameters and check resource addresses for `404`. Top-trader data may be unavailable for an otherwise valid token.
 
   </Step>
 </Steps>
 
-For operation-specific coverage and conventions, read [Networks and conventions](/docs/data/trading-api/networks-and-conventions).
+Read [Networks and conventions](/docs/data/trading-api/networks-and-conventions) for coverage, pagination, and identifiers.

@@ -1,1161 +1,1243 @@
-# This local specification will move to a remote spec once the service exists.
-openapi: 3.1.0
+openapi: "3.1.0"
 info:
-  title: Trading API
+  title: "Trading API"
   version: "1.0"
-  description: >-
-    DEX market data and wallet trading analytics. All paths and shapes are provisional
-    private-preview contracts.
+  description: "DEX market data and wallet trading analytics. Beta: endpoints and fields may change."
 servers:
-  - url: https://api.g.alchemy.com/trading/v1
-    description: Provisional base URL; it will be confirmed before general availability.
+  - url: "https://api.g.alchemy.com/trading/v1"
+    description: "Beta base URL."
 tags:
-  - name: Pools
-    description: Inspect pools, candles, and trades.
-  - name: Tokens
-    description: Explore token markets and holders.
-  - name: Discovery
-    description: Find pools and tokens.
-  - name: Wallets
-    description: Analyze wallet trading outcomes.
+  - name: "Tokens"
+    description: "Token market data, metadata, OHLCV, trades, and holders."
+  - name: "Pools"
+    description: "Inspect pools, OHLCV, and trades."
+  - name: "Discovery"
+    description: "Find new, trending, and screened pools."
+  - name: "Wallets"
+    description: "Analyze wallet trading outcomes."
 paths:
-  /{apiKey}/pools/{network}/{poolAddress}:
-    get:
-      summary: Get pool
-      operationId: get-pool
+  /{apiKey}/tokens/market-data:
+    post:
+      summary: "Get token market data (batch)"
+      operationId: "get-token-market-data-batch"
       tags:
-        - Pools
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 200 (proposed; pending validation).
-
-        Inspect a pool and its market activity. Support for more networks is planned.
-
-        tokenAddress identifies the token that priceUsd refers to.
+        - "Tokens"
+      description: "Get market data for up to 30 tokens in one request. Results are returned in input order."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkPools"
-            x-shape-pending: true
-        - name: poolAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Pool address or pool identifier.
-            x-shape-pending: true
-          example: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PoolResponse"
+                $ref: "#/components/schemas/TokenListResponse"
               example:
                 data:
-                  network: eth-mainnet
-                  poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                  name: WETH/USDC 0.05%
-                  priceUsd: "2243.05"
-                  liquidityUsd: "78770522.8106"
-                  volumeUsd: "362680573.741548"
-                  createdAt: "2021-12-29T12:35:14Z"
-                  tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                  buys: 6026
-                  sells: 4750
-                  feePercent: "0.05"
+                  - network: "eth-mainnet"
+                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                    name: "USD Coin"
+                    symbol: "USDC"
+                    decimals: 6
+                    logoUrl: null
+                    priceUsd: "0.9994207409"
+                    marketCapUsd: "69473200842.8992"
+                    fdvUsd: "45053697116.2719"
+                    liquidityUsd: "362774413.826085574"
+                    volumeUsd:
+                      h24: "1007567572.85251"
+                    totalSupply: "45079867582.8485"
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/pools/{network}/{poolAddress}:
-    get:
-      summary: Get pool (Premium)
-      operationId: get-pool-premium
-      tags:
-        - Pools
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              required:
+                - "tokens"
+              properties:
+                tokens:
+                  type: "array"
+                  items:
+                    $ref: "#/components/schemas/NetworkAddressItem"
+                  minItems: 1
+                  maxItems: 30
+            example:
+              tokens:
+                - network: "eth-mainnet"
+                  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
       x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 350 (proposed; pending validation).
-
-        Inspect a pool and its market activity. Support for more networks is planned.
-
-        tokenAddress identifies the token that priceUsd refers to.
+  /{apiKey}/tokens/{network}/{tokenAddress}:
+    get:
+      summary: "Get token market data"
+      operationId: "get-token-market-data"
+      tags:
+        - "Tokens"
+      description: "Read token market data. Set include=topPools to add pool references."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/tokenAddress"
+        - name: "include"
+          in: "query"
+          required: false
+          description: "Include references to the token’s top pools."
           schema:
-            $ref: "#/components/schemas/NetworkPools"
-            x-shape-pending: true
-        - name: poolAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Pool address or pool identifier.
-            x-shape-pending: true
-          example: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
+            type: "string"
+            enum:
+              - "topPools"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PoolResponse"
+                $ref: "#/components/schemas/TokenResponse"
               example:
                 data:
-                  network: eth-mainnet
-                  poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                  priceUsd: "1.0010145046137575"
-                  liquidityUsd: "21506601.147597637"
-                  volumeUsd: "362541465.4874774"
-                  createdAt: null
+                  network: "eth-mainnet"
                   tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                  buys: 4760
-                  sells: 6039
-                  dexName: Uniswap V3
-                  feePercent: "0.05"
+                  name: "USD Coin"
+                  symbol: "USDC"
+                  decimals: 6
+                  logoUrl: null
+                  priceUsd: "0.9994207409"
+                  marketCapUsd: "69473200842.8992"
+                  fdvUsd: "45053697116.2719"
+                  liquidityUsd: "362774413.826085574"
+                  volumeUsd:
+                    h24: "1007567572.85251"
+                  totalSupply: "45079867582.8485"
+                  topPools:
+                    - network: "eth-mainnet"
+                      poolAddress: "0xa348fcea4d10b98fe574bee2294b32ae0d6ebc50cf1d5aa1d7048bbfae3d88f6"
+                    - network: "eth-mainnet"
+                      poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/pools/{network}/{poolAddress}/candles:
-    get:
-      summary: Get pool candles
-      operationId: get-pool-candles
-      tags:
-        - Pools
       x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 400 (proposed; pending validation).
-
-
-        Support for more networks is planned. Candles use Unix seconds UTC and USD decimal strings.
-        Intervals without trades are omitted by default.
-
-
-        Read tokenAddress on each candle to identify the token priced in USD.
+  /{apiKey}/tokens/{network}/{tokenAddress}/metadata:
+    get:
+      summary: "Get token metadata"
+      operationId: "get-token-metadata"
+      tags:
+        - "Tokens"
+      description: "Read token identity, description, social links, holder information, and security fields."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkPools"
-            x-shape-pending: true
-        - name: poolAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Pool address or pool identifier.
-            x-shape-pending: true
-          example: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-        - $ref: "#/components/parameters/interval"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/tokenAddress"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CandlesResponse"
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/pools/{network}/{poolAddress}/candles:
-    get:
-      summary: Get pool candles (Premium)
-      operationId: get-pool-candles-premium
-      tags:
-        - Pools
-      x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 700 (proposed; pending validation).
-
-
-        Support for more networks is planned. Candles use Unix seconds UTC and USD decimal strings.
-        Intervals without trades are omitted by default.
-
-
-        Read tokenAddress on each candle to identify the token priced in USD.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkPools"
-            x-shape-pending: true
-        - name: poolAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Pool address or pool identifier.
-            x-shape-pending: true
-          example: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-        - $ref: "#/components/parameters/interval"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CandlesResponse"
+                $ref: "#/components/schemas/TokenMetadataResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    timestamp: 1792735200
-                    open: "1.0000190394919894"
-                    high: "1.0033339585976742"
-                    low: "0.9994463906795187"
-                    close: "0.9998467970665696"
-                    volumeUsd: "608023.2686436487"
-                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                  - network: eth-mainnet
-                    timestamp: 1792738800
-                    open: "0.9998467970665696"
-                    high: "1.000492596299776"
-                    low: "0.9998467970665696"
-                    close: "1.0004917886570452"
-                    volumeUsd: "541364.2636006158"
-                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                  network: "eth-mainnet"
+                  tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                  name: "USD Coin"
+                  symbol: "USDC"
+                  decimals: 6
+                  logoUrl: null
+                  description: "USDC is a US dollar stablecoin."
+                  websites:
+                    - "https://www.circle.com/en/usdc"
+                  twitter: null
+                  telegram: null
+                  discord: "https://discord.com/invite/buildoncircle"
+                  farcaster: null
+                  categories: []
+                  holders:
+                    count: 9184240
+                    distribution:
+                      top10: "23.4559"
+                      ranks11To30: "13.2152"
+                      ranks31To50: "5.0391"
+                      rest: "58.2898"
+                    updatedAt: "2026-11-12T18:57:13Z"
+                  security:
+                    isHoneypot: false
+                    mintAuthority: null
+                    freezeAuthority: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/pools/{network}/{poolAddress}/trades:
-    get:
-      summary: Get pool trades
-      operationId: get-pool-trades
-      tags:
-        - Pools
       x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 400 (proposed; pending validation).
-
-        Support for more networks is planned. Read individual trades. Range requests are limited.
-
-        Use pageKey until it is null.
-
-        Trade side and amount refer to the row’s tokenAddress.
+  /{apiKey}/tokens/{network}/{tokenAddress}/ohlcv:
+    get:
+      summary: "Get token OHLCV"
+      operationId: "get-token-ohlcv"
+      tags:
+        - "Tokens"
+      description: "Read token OHLCV entries sorted ascending by ISO 8601 timestamp. Empty intervals are omitted; preserve chart gaps."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkPools"
-            x-shape-pending: true
-        - name: poolAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Pool address or pool identifier.
-            x-shape-pending: true
-          example: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TradesResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    transactionHash: "0xe0ebd07409bae528d27b652d2ad9a3895f98717cf430cfdd6dc643db04d385f5"
-                    timestamp: "2026-10-30T05:08:35Z"
-                    address: "0xace0000083d3952db57d903f26f2009480d3ebc1"
-                    side: buy
-                    volumeUsd: "197.579678870079"
-                    sent:
-                      - network: eth-mainnet
-                        tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                        amount: "197.654553"
-                    received:
-                      - network: eth-mainnet
-                        tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                        amount: "0.0880519091180887"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    amount: "0.0880519091180887"
-                  - network: eth-mainnet
-                    transactionHash: "0xd6d713fcdf3b3b94aaccee340e2263e21782fd2994023852f6397e3b6e69b4f4"
-                    timestamp: "2026-10-30T05:08:35Z"
-                    address: "0xe5533973a73b494fc241f1673e2c1426bb4d7f59"
-                    side: sell
-                    volumeUsd: "7998.29535564857"
-                    sent:
-                      - network: eth-mainnet
-                        tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                        amount: "3.56446158725815"
-                    received:
-                      - network: eth-mainnet
-                        tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                        amount: "7992.369342"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    amount: "3.56446158725815"
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/pools/{network}/{poolAddress}/trades:
-    get:
-      summary: Get pool trades (Premium)
-      operationId: get-pool-trades-premium
-      tags:
-        - Pools
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 700 (proposed; pending validation).
-
-        Support for more networks is planned. Read individual trades.
-
-        Use pageKey until it is null.
-
-        Trade side and amount refer to the row’s tokenAddress.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkPools"
-            x-shape-pending: true
-        - name: poolAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Pool address or pool identifier.
-            x-shape-pending: true
-          example: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TradesResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    transactionHash: "0x6162ba700c0c71d2f8f6332a75d07b4a1eaf1a0f54b621e2138db4f4850698e2"
-                    timestamp: "2026-10-30T05:08:35Z"
-                    address: "0x5d1783ddbb657fdf6fcc2ef5b6796ac0ddeeb6e3"
-                    poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                    side: buy
-                    amount: "2164.644674"
-                    volumeUsd: "2166.318658592873"
-                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                  - network: eth-mainnet
-                    transactionHash: "0xd6d713fcdf3b3b94aaccee340e2263e21782fd2994023852f6397e3b6e69b4f4"
-                    timestamp: "2026-10-30T05:08:35Z"
-                    address: "0xe5533973a73b494fc241f1673e2c1426bb4d7f59"
-                    poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                    side: buy
-                    amount: "7992.369342"
-                    volumeUsd: "7997.301386652063"
-                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/tokens/{network}/{tokenAddress}/candles:
-    get:
-      summary: Get token candles
-      operationId: get-token-candles
-      tags:
-        - Tokens
-      x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 400 (proposed; pending validation).
-
-
-        Candles use Unix seconds UTC and USD decimal strings. Intervals without trades are omitted
-        by default. Candles are built from the token’s pool activity.
-
-
-        Read tokenAddress on each candle to identify the token priced in USD.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensGeneral"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/tokenAddress"
         - $ref: "#/components/parameters/interval"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
+        - $ref: "#/components/parameters/ohlcvTo"
+        - $ref: "#/components/parameters/ohlcvLimit"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CandlesResponse"
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/tokens/{network}/{tokenAddress}/candles:
-    get:
-      summary: Get token candles (Premium)
-      operationId: get-token-candles-premium
-      tags:
-        - Tokens
-      x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 700 (proposed; pending validation).
-
-
-        Candles use Unix seconds UTC and USD decimal strings. Intervals without trades are omitted
-        by default. Candles are built from the token’s pool activity. Aggregation across pools is
-        available, with its request control pending.
-
-
-        Read tokenAddress on each candle to identify the token priced in USD.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensPremium"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-        - $ref: "#/components/parameters/interval"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CandlesResponse"
+                $ref: "#/components/schemas/OHLCVResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    timestamp: 1792735200
-                    open: "2399.866121365033"
-                    high: "2405.217832445473"
-                    low: "2399.866121365033"
-                    close: "2405.217832445473"
-                    volumeUsd: "684829.8781849999"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                  - network: eth-mainnet
-                    timestamp: 1792738800
-                    open: "2405.217832445473"
-                    high: "2405.2233466709845"
-                    low: "2405.217832445473"
-                    close: "2405.2224940980295"
-                    volumeUsd: "900.4667290000001"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                  baseToken:
+                    network: "eth-mainnet"
+                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                    name: "USD Coin"
+                    symbol: "USDC"
+                    logoUrl: null
+                  quoteToken:
+                    network: "eth-mainnet"
+                    tokenAddress: "0xc824c41b34df9da25dc7dc4ef2a075c18bba3b83"
+                    name: "ChainLink Protocol"
+                    symbol: "LINK"
+                    logoUrl: null
+                  ohlcv:
+                    - network: "eth-mainnet"
+                      timestamp: "2026-11-12T05:00:00.000Z"
+                      open: "1.00013966225628"
+                      high: "1.00013966225628"
+                      low: "0.9996485018430129"
+                      close: "0.9996485018430129"
+                      volumeUsd: "50006987.11173308"
+                    - network: "eth-mainnet"
+                      timestamp: "2026-11-12T06:00:00.000Z"
+                      open: "0.9996485018430129"
+                      high: "0.9996485018430129"
+                      low: "0.998939197681714"
+                      close: "0.9994207408728889"
+                      volumeUsd: "3.996884198213158"
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
+      x-shape-pending: true
   /{apiKey}/tokens/{network}/{tokenAddress}/trades:
     get:
-      summary: Get token trades
-      operationId: get-token-trades
+      summary: "Get token trades"
+      operationId: "get-token-trades"
       tags:
-        - Tokens
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 400 (proposed; pending validation).
-
-        Read individual trades. Range requests are limited.
-
-        Use pageKey until it is null.
-
-        Trade side and amount refer to the row’s tokenAddress.
+        - "Tokens"
+      description: "Read individual trades. Provide from and to together, or omit both. The maximum range is exactly 30 days. Pass pageKey back unchanged with the same filters."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensGeneral"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/tokenAddress"
         - $ref: "#/components/parameters/from"
         - $ref: "#/components/parameters/to"
+        - $ref: "#/components/parameters/tradePageSize"
         - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TradesResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    transactionHash: "0xfb317c5340251495687a6714afc60a8e27d79ff9b5bc7029ca67d29ce889eb6a"
-                    timestamp: "2026-10-30T05:09:11Z"
-                    address: "0x07afb48ac70094eeb3706068d2972f8ec5c2555d"
-                    poolAddress: "0xce84867c3c02b05dc570d0135103d3fb9cc19433"
-                    side: buy
-                    volumeUsd: "901.497802739622"
-                    sent:
-                      - network: eth-mainnet
-                        tokenAddress: "0x6b3595068778dd592e39a122f4f5a5cf09c90fe2"
-                        amount: "4760.04894174157"
-                    received:
-                      - network: eth-mainnet
-                        tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                        amount: "0.401978820921509"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    amount: "0.401978820921509"
-                  - network: eth-mainnet
-                    transactionHash: "0xfb317c5340251495687a6714afc60a8e27d79ff9b5bc7029ca67d29ce889eb6a"
-                    timestamp: "2026-10-30T05:09:11Z"
-                    address: "0x07afb48ac70094eeb3706068d2972f8ec5c2555d"
-                    poolAddress: "0x87c7056bbe6084f03304196be51c6b90b6d85aa2"
-                    side: sell
-                    volumeUsd: "885.048582713995"
-                    sent:
-                      - network: eth-mainnet
-                        tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                        amount: "0.394644096365458"
-                    received:
-                      - network: eth-mainnet
-                        tokenAddress: "0x6b3595068778dd592e39a122f4f5a5cf09c90fe2"
-                        amount: "4760.04894174157"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    amount: "0.394644096365458"
+                  - network: "eth-mainnet"
+                    id: "eth-mainnet:0xfa6ee970a2c43225db7aa11db320308638f36c6f1a8f4192a29fe3c26024ce63:839"
+                    txHash: "0xfa6ee970a2c43225db7aa11db320308638f36c6f1a8f4192a29fe3c26024ce63"
+                    blockNumber: 26400815
+                    timestamp: "2026-11-12T19:00:11Z"
+                    side: "buy"
+                    trader: "0x61b00b90f9bc4df63bed3b511833e088d5ef9984"
+                    tokenIn:
+                      address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      amount: "2100"
+                      priceUsd: "0.999403070582711"
+                    tokenOut:
+                      address: "0xa038a26bf960451b8ce75ec4c92013c6307f8e4e"
+                      amount: "1591.73991007776"
+                      priceUsd: "1.31852348171704"
+                    volumeUsd: "2098.74644822369"
+                    isAnomalous: false
+                    poolAddress: "0xdbf919d8a1276be708736527045b1610df27319f"
+                    dex:
+                      id: "uniswap-v3"
+                      name: "Uniswap V3"
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/tokens/{network}/{tokenAddress}/trades:
-    get:
-      summary: Get token trades (Premium)
-      operationId: get-token-trades-premium
-      tags:
-        - Tokens
       x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 700 (proposed; pending validation).
-
-        Read individual trades.
-
-        Use pageKey until it is null.
-
-        Trade side and amount refer to the row’s tokenAddress.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensPremium"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TradesResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    transactionHash: "0xa5c146a3f5884e1d2725b702078d0fac12c770605e868e2b785a4f091475a898"
-                    timestamp: "2026-10-30T05:07:47Z"
-                    address: "0x61b4a19fe0775906e9a732cc7c456c4fb95f229f"
-                    poolAddress: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
-                    side: sell
-                    amount: "0.10162422791618508"
-                    volumeUsd: "227.804685"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                  - network: eth-mainnet
-                    transactionHash: "0x096e4e83fc31c3b3438ea657ce9d92355fe7c1ce61e039a02802f58fbf2fc2ba"
-                    timestamp: "2026-10-30T05:07:47Z"
-                    address: "0x1b878f3af0a7420ef87899696caad92e63e5c4ae"
-                    poolAddress: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
-                    side: buy
-                    amount: "0.003061466755620276"
-                    volumeUsd: "6.864125"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
   /{apiKey}/tokens/{network}/{tokenAddress}/pools:
     get:
-      summary: Get pools for a token
-      operationId: get-pools-for-a-token
+      summary: "Get pools for a token"
+      operationId: "get-pools-for-a-token"
       tags:
-        - Tokens
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 200 (proposed; pending validation).
-
-        Find the pools where a token trades.
-
-        Use pageKey until it is null.
-
-        tokenAddress identifies the token that priceUsd refers to.
+        - "Tokens"
+      description: "Find pools for a token. Pages contain up to 20 pools. Pass pageKey back unchanged with the same filters."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensGeneral"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/tokenAddress"
         - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PoolsResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    poolAddress: "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36"
-                    name: WETH/USDT 0.3%
-                    priceUsd: "2243.05"
-                    liquidityUsd: "87257672.6689"
-                    volumeUsd: "465668076.167822"
-                    createdAt: "2021-12-29T12:36:12Z"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    buys: 1479
-                    sells: 1779
-                  - network: eth-mainnet
-                    poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                    name: WETH/USDC 0.05%
-                    priceUsd: "2243.05"
-                    liquidityUsd: "78770522.8106"
-                    volumeUsd: "362680573.741548"
-                    createdAt: "2021-12-29T12:35:14Z"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    buys: 6026
-                    sells: 4750
+                  - network: "eth-mainnet"
+                    poolAddress: "0xa348fcea4d10b98fe574bee2294b32ae0d6ebc50cf1d5aa1d7048bbfae3d88f6"
+                    dex:
+                      id: "uniswap-v4"
+                      name: "Uniswap V4"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xc824c41b34df9da25dc7dc4ef2a075c18bba3b83"
+                      name: "ChainLink Protocol"
+                      symbol: "LINK"
+                      decimals: 18
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      name: "USD Coin"
+                      symbol: "USDC"
+                      decimals: 6
+                      logoUrl: null
+                    priceUsd: "9.7689425857"
+                    quotePriceUsd: "0.999420740872889"
+                    priceInQuote: "9.7746046147"
+                    liquidityUsd: "2879366005.4192"
+                    fdvUsd: "45053697116.2719"
+                    marketCapUsd: "69473200842.8992"
+                    createdAt: "2026-11-12T05:29:35Z"
+                    priceChangePercent:
+                      m5: "0"
+                      m15: "0"
+                      m30: "0"
+                      h1: "0"
+                      h6: "0"
+                      h24: "-0.07"
+                    volumeUsd:
+                      m5: "0"
+                      m15: "0"
+                      m30: "0"
+                      h1: "0"
+                      h6: "0"
+                      h24: "50006991.1086173"
+                    txns:
+                      m5:
+                        buys: 0
+                        sells: 0
+                        buyers: 0
+                        sellers: 0
+                      m15:
+                        buys: 0
+                        sells: 0
+                        buyers: 0
+                        sellers: 0
+                      m30:
+                        buys: 0
+                        sells: 0
+                        buyers: 0
+                        sellers: 0
+                      h1:
+                        buys: 0
+                        sells: 0
+                        buyers: 0
+                        sellers: 0
+                      h6:
+                        buys: 0
+                        sells: 0
+                        buyers: 0
+                        sellers: 0
+                      h24:
+                        buys: 9
+                        sells: 9
+                        buyers: 3
+                        sellers: 3
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/tokens/{network}/{tokenAddress}/pools:
-    get:
-      summary: Get pools for a token (Premium)
-      operationId: get-pools-for-a-token-premium
-      tags:
-        - Tokens
       x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 350 (proposed; pending validation).
-
-        Find the pools where a token trades.
-
-        Use pageKey until it is null.
-
-        tokenAddress identifies the token that priceUsd refers to.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensPremium"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PoolsResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    poolAddress: "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36"
-                    volumeUsd: "461854868.42775726"
-                    createdAt: "2021-05-05T16:37:08Z"
-                    tokenAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7"
-                    dexName: Uniswap V3
-                  - network: eth-mainnet
-                    poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                    volumeUsd: "362363483.47664624"
-                    createdAt: "2021-05-05T21:42:11Z"
-                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                    dexName: Uniswap V3
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
   /{apiKey}/tokens/{network}/{tokenAddress}/holders:
     get:
-      summary: Get top holders
-      operationId: get-top-holders
+      summary: "Get top holders"
+      operationId: "get-top-holders"
       tags:
-        - Tokens
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 200 (proposed; pending validation).
-
-        Read the largest token holdings.
-
-        Use pageKey until it is null.
+        - "Tokens"
+      description: "Coverage varies by token. No pagination. Empty results return 200 with an empty holders list. Not yet supported on HyperEVM."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkTokensGeneral"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/holderNetwork"
+        - $ref: "#/components/parameters/tokenAddress"
+        - $ref: "#/components/parameters/holderLimit"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/HoldersResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    address: "0xf04a5cc80b1e94c69b48f5ee68a08cd2f09a7c3e"
-                    amount: "488010.26530488976"
-                    valueUsd: "1094631425.59"
-                  - network: eth-mainnet
-                    address: "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8"
-                    amount: "327418.39141122816"
-                    valueUsd: "734415822.85"
-                pageKey: null
+                  updatedAt: "2026-11-12T18:57:13.558Z"
+                  holders:
+                    - network: "eth-mainnet"
+                      rank: 1
+                      address: "0x37305b1cd40574e4c5ce33f8e8306be057fd7341"
+                      label: "LITE PSM USDC A POCKET"
+                      amount: "2711047841.446635"
+                      percentOfSupply: "6.0139"
+                      valueUsd: "2709477442.24"
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/tokens/{network}/{tokenAddress}/holders:
+      x-shape-pending: true
+  /{apiKey}/tokens/{network}/{tokenAddress}/holders/history:
     get:
-      summary: Get top holders (Premium)
-      operationId: get-top-holders-premium
+      summary: "Get holder history"
+      operationId: "get-holder-history"
       tags:
-        - Tokens
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 350 (proposed; pending validation).
-
-        Read the largest token holdings.
-
-        Use pageKey until it is null.
+        - "Tokens"
+      description: "Read holder counts over time. Empty results return 200 with an empty list. Not yet supported on HyperEVM."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkHoldersPremium"
-            x-shape-pending: true
-        - name: tokenAddress
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Token address.
-            x-shape-pending: true
-          example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/holderNetwork"
+        - $ref: "#/components/parameters/tokenAddress"
+        - $ref: "#/components/parameters/days"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HoldersResponse"
+                $ref: "#/components/schemas/HolderHistoryResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    address: "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8"
-                    amount: "299809.453314693"
-                    valueUsd: "672385118.6441882"
-                  - network: eth-mainnet
-                    address: "0xf04a5cc80b1e94c69b48f5ee68a08cd2f09a7c3e"
-                    amount: "293296.0349973506"
-                    valueUsd: "657777421.9899784"
-                pageKey: null
+                  - network: "eth-mainnet"
+                    timestamp: "2026-11-05T19:08:17.079Z"
+                    holderCount: 9156412
+                  - network: "eth-mainnet"
+                    timestamp: "2026-11-05T19:22:59.337Z"
+                    holderCount: 9156455
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
+      x-shape-pending: true
+  /{apiKey}/tokens/{network}/{tokenAddress}/top-traders:
+    get:
+      summary: "Get top traders"
+      operationId: "get-top-traders"
+      tags:
+        - "Tokens"
+      description: "Beta. Coverage varies by token."
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/tokenAddress"
+      responses:
+        "200":
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopTradersResponse"
+              example:
+                data:
+                  network: "eth-mainnet"
+                  tokenAddress: "0x35ebe010cdd541284fcfd2f85992a392a488f989"
+                  traders:
+                    - network: "eth-mainnet"
+                      rank: 1
+                      address: "0xb63e5b242f19790921ffae8c9b4c1d9670753cb3"
+                      realizedPnlUsd: "50548.1825825001158"
+                      unrealizedPnlUsd: null
+                      avgBuyPriceUsd: "0.0000023010467109404394"
+                      avgSellPriceUsd: "0.0019682564777480654"
+                      boughtAmount: "25711764.2569515"
+                      soldAmount: "25711764.256951544"
+                      boughtUsd: "59.1639705759342"
+                      soldUsd: "50607.34655307605"
+                      buyCount: 1
+                      sellCount: 6
+                      tokenBalance: null
+                    - network: "eth-mainnet"
+                      rank: 2
+                      address: "0x650a4b00701e6a942e7ed71d7b407c248b6b8ecb"
+                      realizedPnlUsd: "49147.6127376856633"
+                      unrealizedPnlUsd: "0.000000000190211224953571764"
+                      avgBuyPriceUsd: "0.00000299977485522351558"
+                      avgSellPriceUsd: "0.00220166219280816813"
+                      boughtAmount: "22353414.6653784"
+                      soldAmount: "22353414.66537839"
+                      boughtUsd: "67.0552112415867"
+                      soldUsd: "49214.66794892725"
+                      buyCount: 1
+                      sellCount: 5
+                      tokenBalance: "0.00000001"
+        "400":
+          $ref: "#/components/responses/Error400"
+        "404":
+          description: "No trader data for this token."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: "NOT_FOUND"
+                  message: "No trader data for this token."
+        "429":
+          $ref: "#/components/responses/Error429"
+        "503":
+          $ref: "#/components/responses/Error503"
+      x-shape-pending: true
+  /{apiKey}/pools/{network}/{poolAddress}:
+    get:
+      summary: "Get pool"
+      operationId: "get-pool"
+      tags:
+        - "Pools"
+      description: "Read a pool and its market activity. priceUsd refers to baseToken."
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/poolAddress"
+      responses:
+        "200":
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PoolResponse"
+              example:
+                data:
+                  network: "eth-mainnet"
+                  poolAddress: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
+                  dex:
+                    id: "uniswap-v3"
+                    name: "Uniswap V3"
+                  baseToken:
+                    network: "eth-mainnet"
+                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                    name: "USD Coin"
+                    symbol: "USDC"
+                    decimals: 6
+                    logoUrl: null
+                  quoteToken:
+                    network: "eth-mainnet"
+                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                    name: "Wrapped Ether"
+                    symbol: "WETH"
+                    decimals: 18
+                    logoUrl: null
+                  name: "USDC/WETH 0.01%"
+                  priceUsd: "0.999552405274758"
+                  quotePriceUsd: "2014"
+                  priceInQuote: "0.0004962279397"
+                  liquidityUsd: "8172394.3062"
+                  fdvUsd: "45053039236.2708"
+                  marketCapUsd: "69472186386.0982"
+                  feePercent: "0.01"
+                  createdAt: "2021-12-30T20:32:10Z"
+                  priceChangePercent:
+                    m5: "0.003"
+                    m15: "-0.224"
+                    m30: "-0.064"
+                    h1: "0.033"
+                    h6: "-0.059"
+                    h24: "-0.087"
+                  volumeUsd:
+                    m5: "46087.2737492877"
+                    m15: "272592.481159243"
+                    m30: "773804.723511211"
+                    h1: "1250083.43979649"
+                    h6: "15040921.6924359"
+                    h24: "42529021.475937"
+                  txns:
+                    m5:
+                      buys: 23
+                      sells: 24
+                      buyers: 22
+                      sellers: 22
+                    m15:
+                      buys: 64
+                      sells: 126
+                      buyers: 51
+                      sellers: 92
+                    m30:
+                      buys: 169
+                      sells: 235
+                      buyers: 126
+                      sellers: 159
+                    h1:
+                      buys: 326
+                      sells: 399
+                      buyers: 228
+                      sellers: 248
+                    h6:
+                      buys: 1926
+                      sells: 2177
+                      buyers: 978
+                      sellers: 1048
+                    h24:
+                      buys: 7375
+                      sells: 8990
+                      buyers: 2772
+                      sellers: 2771
+        "400":
+          $ref: "#/components/responses/Error400"
+        "404":
+          $ref: "#/components/responses/Error404"
+        "429":
+          $ref: "#/components/responses/Error429"
+        "503":
+          $ref: "#/components/responses/Error503"
+      x-shape-pending: true
+  /{apiKey}/pools/by-address:
+    post:
+      summary: "Get pools (batch)"
+      operationId: "get-pools-batch"
+      tags:
+        - "Pools"
+      description: "Read up to 30 pools per request. Results are returned in input order. feePercent is included when available."
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      responses:
+        "200":
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PoolListResponse"
+              example:
+                data:
+                  - network: "eth-mainnet"
+                    poolAddress: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
+                    dex:
+                      id: "uniswap-v3"
+                      name: "Uniswap V3"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      name: "USD Coin"
+                      symbol: "USDC"
+                      decimals: 6
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      name: "Wrapped Ether"
+                      symbol: "WETH"
+                      decimals: 18
+                      logoUrl: null
+                    name: "USDC/WETH 0.01%"
+                    priceUsd: "0.999552405274758"
+                    quotePriceUsd: "2014"
+                    priceInQuote: "0.0004962279397"
+                    liquidityUsd: "8172394.3062"
+                    fdvUsd: "45053039236.2708"
+                    marketCapUsd: "69472186386.0982"
+                    feePercent: "0.01"
+                    createdAt: "2021-12-30T20:32:10Z"
+                    priceChangePercent:
+                      m5: "0.003"
+                      m15: "-0.224"
+                      m30: "-0.064"
+                      h1: "0.033"
+                      h6: "-0.059"
+                      h24: "-0.087"
+                    volumeUsd:
+                      m5: "46087.2737492877"
+                      m15: "272592.481159243"
+                      m30: "773804.723511211"
+                      h1: "1250083.43979649"
+                      h6: "15040921.6924359"
+                      h24: "42529021.475937"
+                    txns:
+                      m5:
+                        buys: 23
+                        sells: 24
+                        buyers: 22
+                        sellers: 22
+                      m15:
+                        buys: 64
+                        sells: 126
+                        buyers: 51
+                        sellers: 92
+                      m30:
+                        buys: 169
+                        sells: 235
+                        buyers: 126
+                        sellers: 159
+                      h1:
+                        buys: 326
+                        sells: 399
+                        buyers: 228
+                        sellers: 248
+                      h6:
+                        buys: 1926
+                        sells: 2177
+                        buyers: 978
+                        sellers: 1048
+                      h24:
+                        buys: 7375
+                        sells: 8990
+                        buyers: 2772
+                        sellers: 2771
+                  - network: "eth-mainnet"
+                    poolAddress: "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7"
+                    dex:
+                      id: "curve"
+                      name: "Curve"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0x6b175474e89094c44da98b954eedeac495271d0f"
+                      name: "Dai Stablecoin"
+                      symbol: "DAI"
+                      decimals: 18
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      name: "USD Coin"
+                      symbol: "USDC"
+                      decimals: 6
+                      logoUrl: null
+                    priceUsd: "0.997005722765705"
+                    quotePriceUsd: "1.00024188920169"
+                    priceInQuote: "0.9967189633"
+                    liquidityUsd: "161544021.7581"
+                    fdvUsd: "4463850429.01525"
+                    marketCapUsd: "4447336530.9343"
+                    feePercent: null
+                    createdAt: "2022-07-13T11:48:12Z"
+                    priceChangePercent:
+                      m5: "0"
+                      m15: "0"
+                      m30: "0"
+                      h1: "-0.45"
+                      h6: "-0.065"
+                      h24: "0.073"
+                    volumeUsd:
+                      m5: "3543.9891826042"
+                      m15: "3543.9891826042"
+                      m30: "45558.9516718022"
+                      h1: "119064.8190832974"
+                      h6: "281434.4053797753"
+                      h24: "831631.1404302607"
+                    txns:
+                      m5:
+                        buys: 1
+                        sells: 0
+                        buyers: null
+                        sellers: null
+                      m15:
+                        buys: 1
+                        sells: 0
+                        buyers: null
+                        sellers: null
+                      m30:
+                        buys: 1
+                        sells: 2
+                        buyers: null
+                        sellers: null
+                      h1:
+                        buys: 4
+                        sells: 6
+                        buyers: null
+                        sellers: null
+                      h6:
+                        buys: 9
+                        sells: 11
+                        buyers: null
+                        sellers: null
+                      h24:
+                        buys: 27
+                        sells: 32
+                        buyers: null
+                        sellers: null
+                    quoteTokens:
+                      - network: "eth-mainnet"
+                        tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                        name: "USD Coin"
+                        symbol: "USDC"
+                        decimals: 6
+                        logoUrl: null
+                      - network: "eth-mainnet"
+                        tokenAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                        name: "Tether USD"
+                        symbol: "USDT"
+                        decimals: 6
+                        logoUrl: null
+        "400":
+          $ref: "#/components/responses/Error400"
+        "429":
+          $ref: "#/components/responses/Error429"
+        "503":
+          $ref: "#/components/responses/Error503"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              required:
+                - "pools"
+              properties:
+                pools:
+                  type: "array"
+                  items:
+                    $ref: "#/components/schemas/NetworkAddressItem"
+                  minItems: 1
+                  maxItems: 30
+            example:
+              pools:
+                - network: "eth-mainnet"
+                  address: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
+                - network: "eth-mainnet"
+                  address: "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7"
+      x-shape-pending: true
+  /{apiKey}/pools/{network}/{poolAddress}/ohlcv:
+    get:
+      summary: "Get pool OHLCV"
+      operationId: "get-pool-ohlcv"
+      tags:
+        - "Pools"
+      description: "Read OHLCV prices for the pool’s base token in USD. Entries are sorted ascending by ISO 8601 timestamp. Empty intervals are omitted."
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/poolAddress"
+        - $ref: "#/components/parameters/interval"
+        - $ref: "#/components/parameters/ohlcvTo"
+        - $ref: "#/components/parameters/ohlcvLimit"
+      responses:
+        "200":
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OHLCVResponse"
+              example:
+                data:
+                  baseToken:
+                    network: "eth-mainnet"
+                    tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                    name: "USD Coin"
+                    symbol: "USDC"
+                    logoUrl: null
+                  quoteToken:
+                    network: "eth-mainnet"
+                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                    name: "Wrapped Ether"
+                    symbol: "WETH"
+                    logoUrl: null
+                  ohlcv:
+                    - network: "eth-mainnet"
+                      timestamp: "2026-11-12T17:00:00.000Z"
+                      open: "0.9992298831851"
+                      high: "1.0255369640669498"
+                      low: "0.9974623680479218"
+                      close: "0.999880858971094"
+                      volumeUsd: "1426197.4088222426"
+                    - network: "eth-mainnet"
+                      timestamp: "2026-11-12T18:00:00.000Z"
+                      open: "0.999880858971094"
+                      high: "1.0138635800618199"
+                      low: "0.9953825209382048"
+                      close: "0.999433913146127"
+                      volumeUsd: "1250543.9153197003"
+        "400":
+          $ref: "#/components/responses/Error400"
+        "404":
+          $ref: "#/components/responses/Error404"
+        "429":
+          $ref: "#/components/responses/Error429"
+        "503":
+          $ref: "#/components/responses/Error503"
+      x-shape-pending: true
+  /{apiKey}/pools/{network}/{poolAddress}/trades:
+    get:
+      summary: "Get pool trades"
+      operationId: "get-pool-trades"
+      tags:
+        - "Pools"
+      description: "Read individual trades. Provide from and to together, or omit both. The maximum range is exactly 30 days. Pass pageKey back unchanged with the same filters."
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/poolAddress"
+        - $ref: "#/components/parameters/from"
+        - $ref: "#/components/parameters/to"
+        - $ref: "#/components/parameters/tradePageSize"
+        - $ref: "#/components/parameters/pageKey"
+      responses:
+        "200":
+          description: "Successful response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradesResponse"
+              example:
+                data:
+                  - network: "eth-mainnet"
+                    id: "eth-mainnet:0x1294b6687d147d62d45524fe1c1705b921632d754d974d8b223e952e9b2aaa48:639"
+                    txHash: "0x1294b6687d147d62d45524fe1c1705b921632d754d974d8b223e952e9b2aaa48"
+                    blockNumber: 26400814
+                    timestamp: "2026-11-12T18:59:59Z"
+                    side: "buy"
+                    trader: "0x2afaede2cc20f05766a42efaea85680afe81f6dc"
+                    tokenIn:
+                      address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      amount: "0.000445940826243452"
+                      priceUsd: "2014"
+                    tokenOut:
+                      address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      amount: "0.898527"
+                      priceUsd: "0.999552405274758"
+                    volumeUsd: "0.898124824054312"
+                    isAnomalous: false
+                pageKey: null
+        "400":
+          $ref: "#/components/responses/Error400"
+        "404":
+          $ref: "#/components/responses/Error404"
+        "429":
+          $ref: "#/components/responses/Error429"
+        "503":
+          $ref: "#/components/responses/Error503"
+      x-shape-pending: true
   /{apiKey}/pools/new:
     get:
-      summary: Get new pools
-      operationId: get-new-pools
+      summary: "Get new pools"
+      operationId: "get-new-pools"
       tags:
-        - Discovery
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 400 (proposed; pending validation).
-
-        Find recently created pools.
-
-        Use pageKey until it is null.
-
-        tokenAddress identifies the token that priceUsd refers to.
+        - "Discovery"
+      description: "Find recently created pools. Pages contain up to 20 pools. Pass pageKey back unchanged with the same filters."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkNewGeneral"
-            x-shape-pending: true
+        - $ref: "#/components/parameters/optionalNetwork"
         - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PoolsResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    poolAddress: "0x1e20e494de3f5b51c7a9e6e269a4656305f71264373a0dff682ca0e47d20a79f"
-                    name: YGG/USDT 1.85%
-                    priceUsd: "0.0206233960544565"
-                    liquidityUsd: "9972.39005083874"
-                    volumeUsd: "73.1804078899"
-                    createdAt: "2026-10-30T05:07:47Z"
-                    tokenAddress: "0x25f8087ead173b73d6e8b84329989a8eea16cf73"
-                    buys: 0
-                    sells: 1
-                  - network: eth-mainnet
-                    poolAddress: "0xc7a33e7130040e81846a3bf6f1879fda3b2be4c2e0e68f6141e8842da1f79daa"
-                    priceUsd: "0.00000000000444442169517759"
-                    liquidityUsd: "0.4486"
-                    volumeUsd: "0.223498004"
-                    createdAt: "2026-10-30T05:02:11Z"
-                    tokenAddress: "0xb9e4e21e26f1ff9dd7cd4a0164594f61a4c24d1c"
-                    buys: 1
-                    sells: 0
+                  - network: "eth-mainnet"
+                    poolAddress: "0xc5b0026600e141385079e2843743f36e6247eb5a"
+                    dex:
+                      id: "uniswap-v2"
+                      name: "Uniswap V2"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0x4826c00be586c44ac4ebaaf5039e5d7d7cbdd312"
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      logoUrl: null
+                    priceUsd: "0.0000000000967878309843924"
+                    quotePriceUsd: "2011.94"
+                    priceInQuote: "0.00000000000000002208395356"
+                    liquidityUsd: "0.00005094594366"
+                    fdvUsd: "0.6678360338"
+                    marketCapUsd: null
+                    createdAt: "2026-11-12T18:52:23Z"
+                    priceChangePercent:
+                      m5: "-99.95"
+                      m15: "-99.935"
+                      m30: "-99.935"
+                      h1: "-99.935"
+                      h6: "-99.935"
+                      h24: "-99.935"
+                    volumeUsd:
+                      m5: "68.279325211"
+                      m15: "205.849682211"
+                      m30: "205.849682211"
+                      h1: "205.849682211"
+                      h6: "205.849682211"
+                      h24: "205.849682211"
+                    txns:
+                      m5:
+                        buys: 2
+                        sells: 1
+                        buyers: 2
+                        sellers: 1
+                      m15:
+                        buys: 6
+                        sells: 1
+                        buyers: 6
+                        sellers: 1
+                      m30:
+                        buys: 6
+                        sells: 1
+                        buyers: 6
+                        sellers: 1
+                      h1:
+                        buys: 6
+                        sells: 1
+                        buyers: 6
+                        sellers: 1
+                      h6:
+                        buys: 6
+                        sells: 1
+                        buyers: 6
+                        sellers: 1
+                      h24:
+                        buys: 6
+                        sells: 1
+                        buyers: 6
+                        sellers: 1
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/pools/new:
+      x-shape-pending: true
+  /{apiKey}/pools/trending:
     get:
-      summary: Get new pools (Premium)
-      operationId: get-new-pools-premium
+      summary: "Get trending pools"
+      operationId: "get-trending-pools"
       tags:
-        - Discovery
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 700 (proposed; pending validation).
-
-        Find recently created pools.
-
-        Use pageKey until it is null.
-
-        tokenAddress identifies the token that priceUsd refers to.
+        - "Discovery"
+      description: "Find trending pools. Pages contain up to 20 pools. Pass pageKey back unchanged with the same filters."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkNewPremium"
-            x-shape-pending: true
+        - $ref: "#/components/parameters/optionalNetwork"
+        - $ref: "#/components/parameters/window"
         - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PoolsResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    poolAddress: "0xc7a33e7130040e81846a3bf6f1879fda3b2be4c2e0e68f6141e8842da1f79daa"
-                    priceUsd: "0.00000000000883775182813209"
-                    liquidityUsd: "0.22183210218996754"
-                    createdAt: "2026-10-30T05:02:11Z"
-                    tokenAddress: "0xb9e4e21e26f1ff9dd7cd4a0164594f61a4c24d1c"
-                    dexName: Uniswap V4
-                  - network: eth-mainnet
-                    poolAddress: "0x2b447fa16e7ebe2b53dbd83ff521e410fce28a21de50cba8b0b84d9a155ab65b"
-                    priceUsd: "0.000000000002665917166679999"
-                    liquidityUsd: "0.02218321021899653"
-                    createdAt: "2026-10-30T04:58:59Z"
-                    tokenAddress: "0xe0010654a46c4b98df47a70cb2c509ab380728c8"
-                    dexName: Uniswap V4
+                  - network: "eth-mainnet"
+                    poolAddress: "0x49beea22a9e8dfb48e7895616da607f1a978536f0240e916d59633ed65eb1b01"
+                    dex:
+                      id: "uniswap-v4"
+                      name: "Uniswap V4"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0x35ebe010cdd541284fcfd2f85992a392a488f989"
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0x0000000000000000000000000000000000000000"
+                      logoUrl: null
+                    priceUsd: "0.0190428942492611"
+                    quotePriceUsd: "2014"
+                    priceInQuote: "0.000009455260303"
+                    liquidityUsd: "391360.2786"
+                    fdvUsd: "19200953.22"
+                    marketCapUsd: "19200953.22"
+                    createdAt: "2026-11-10T01:58:47Z"
+                    priceChangePercent:
+                      m5: "0.731"
+                      m15: "3.29"
+                      m30: "2.41"
+                      h1: "1.136"
+                      h6: "1.322"
+                      h24: "14.858"
+                    volumeUsd:
+                      m5: "6058.2238300272"
+                      m15: "15898.8125011008"
+                      m30: "27349.1442260286"
+                      h1: "62387.6841756823"
+                      h6: "375201.160454962"
+                      h24: "2382496.3082293"
+                    txns:
+                      m5:
+                        buys: 5
+                        sells: 2
+                        buyers: 5
+                        sellers: 2
+                      m15:
+                        buys: 17
+                        sells: 5
+                        buyers: 17
+                        sellers: 5
+                      m30:
+                        buys: 24
+                        sells: 9
+                        buyers: 24
+                        sellers: 9
+                      h1:
+                        buys: 49
+                        sells: 22
+                        buyers: 45
+                        sellers: 20
+                      h6:
+                        buys: 288
+                        sells: 133
+                        buyers: 261
+                        sellers: 110
+                      h24:
+                        buys: 1993
+                        sells: 918
+                        buyers: 574
+                        sellers: 395
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
+      x-shape-pending: true
   /{apiKey}/pools/screener:
     post:
-      summary: Screen pools
-      operationId: screen-pools
+      summary: "Screen pools"
+      operationId: "screen-pools"
       tags:
-        - Discovery
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 400 (proposed; pending validation).
-
-        Screen pools on the selected network. Additional filter controls remain pending.
-
-        Use pageKey until it is null.
-
-        tokenAddress identifies the token that priceUsd refers to.
+        - "Discovery"
+      description: "Filter pools. Pages contain up to 20 pools. Pass pageKey back unchanged with the same filters. dexes is valid only when exactly one network is given."
       parameters:
         - $ref: "#/components/parameters/apiKey"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PoolsResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    poolAddress: "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36"
-                    name: WETH/USDT 0.3%
-                    priceUsd: "2243.05"
-                    liquidityUsd: "87257672.6689"
-                    volumeUsd: "465668076.167822"
-                    createdAt: "2021-12-29T12:36:12Z"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    buys: 1479
-                    sells: 1779
-                  - network: eth-mainnet
-                    poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                    name: WETH/USDC 0.05%
-                    priceUsd: "2243.05"
-                    liquidityUsd: "78770522.8106"
-                    volumeUsd: "362680573.741548"
-                    createdAt: "2021-12-29T12:35:14Z"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    buys: 6026
-                    sells: 4750
+                  - network: "eth-mainnet"
+                    poolAddress: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
+                    dex:
+                      id: "uniswap-v3"
+                      name: "Uniswap V3"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      name: "USD Coin"
+                      symbol: "USDC"
+                      decimals: 6
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      name: "Wrapped Ether"
+                      symbol: "WETH"
+                      decimals: 18
+                      logoUrl: null
+                    name: "USDC/WETH 0.01%"
+                    priceUsd: "0.999552405274758"
+                    quotePriceUsd: "2014"
+                    priceInQuote: "0.0004962279397"
+                    liquidityUsd: "8172394.3062"
+                    fdvUsd: "45053039236.2708"
+                    marketCapUsd: "69472186386.0982"
+                    createdAt: "2021-12-30T20:32:10Z"
+                    priceChangePercent:
+                      m5: "0.003"
+                      m15: "-0.224"
+                      m30: "-0.064"
+                      h1: "0.033"
+                      h6: "-0.059"
+                      h24: "-0.087"
+                    volumeUsd:
+                      m5: "46087.2737492877"
+                      m15: "272592.481159243"
+                      m30: "773804.723511211"
+                      h1: "1250083.43979649"
+                      h6: "15040921.6924359"
+                      h24: "42529021.475937"
+                    txns:
+                      m5:
+                        buys: 23
+                        sells: 24
+                        buyers: 22
+                        sellers: 22
+                      m15:
+                        buys: 64
+                        sells: 126
+                        buyers: 51
+                        sellers: 92
+                      m30:
+                        buys: 169
+                        sells: 235
+                        buyers: 126
+                        sellers: 159
+                      h1:
+                        buys: 326
+                        sells: 399
+                        buyers: 228
+                        sellers: 248
+                      h6:
+                        buys: 1926
+                        sells: 2177
+                        buyers: 978
+                        sellers: 1048
+                      h24:
+                        buys: 7375
+                        sells: 8990
+                        buyers: 2772
+                        sellers: 2771
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
@@ -1165,1681 +1247,1561 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - network
-              properties:
-                network:
-                  $ref: "#/components/schemas/NetworkDiscoveryGeneral"
-                  x-shape-pending: true
-                pageSize:
-                  type: integer
-                  minimum: 1
-                  maximum: 100
-                  default: 25
-                  x-shape-pending: true
-                pageKey:
-                  type: string
-                  description: Opaque key from the previous response; omit on the first request.
-                  x-shape-pending: true
+              $ref: "#/components/schemas/PoolFilters"
             example:
-              network: eth-mainnet
-              pageSize: 25
-  /{apiKey}/premium/pools/screener:
-    post:
-      summary: Screen pools (Premium)
-      operationId: screen-pools-premium
-      tags:
-        - Discovery
+              networks:
+                - "eth-mainnet"
+              minLiquidityUsd: "100000"
+              sortBy: "volumeUsdH24Desc"
       x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 700 (proposed; pending validation).
-
-        Screen pools on the selected network. Additional filter controls remain pending.
-
-        Use pageKey until it is null.
-
-        tokenAddress identifies the token that priceUsd refers to.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PoolsResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    poolAddress: "0xa43fe16908251ee70ef74718545e4fe6c5ccec9f"
-                    priceUsd: "0.000004984054101869709"
-                    liquidityUsd: "15775502.919737414"
-                    volumeUsd: "99905342.63553077"
-                    createdAt: "2023-04-14T17:21:11Z"
-                    tokenAddress: "0x6982508145454ce325ddbe47a25d4ec3d2311933"
-                    buys: 2249
-                    sells: 1708
-                    dexName: Uniswap V2
-                  - network: eth-mainnet
-                    poolAddress: "0xa6cc3c2531fdaa6ae1a3ca84c2855806728693e8"
-                    priceUsd: "11.02443163548515"
-                    liquidityUsd: "4567346.738898188"
-                    volumeUsd: "85326596.23232335"
-                    createdAt: "2021-05-05T17:50:38Z"
-                    tokenAddress: "0x514910771af9ca656af840dff83e8264ecf986ca"
-                    buys: 1116
-                    sells: 472
-                    dexName: Uniswap V3
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - network
-              properties:
-                network:
-                  $ref: "#/components/schemas/NetworkDiscoveryPremium"
-                  x-shape-pending: true
-                pageSize:
-                  type: integer
-                  minimum: 1
-                  maximum: 100
-                  default: 25
-                  x-shape-pending: true
-                pageKey:
-                  type: string
-                  description: Opaque key from the previous response; omit on the first request.
-                  x-shape-pending: true
-            example:
-              network: eth-mainnet
-              pageSize: 25
   /{apiKey}/search:
     get:
-      summary: Search tokens and pools
-      operationId: search-tokens-and-pools
+      summary: "Search pools"
+      operationId: "search-pools"
       tags:
-        - Discovery
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 200 (proposed; pending validation).
-
-        Find tokens and pools by name, symbol, or address.
-
-        Use pageKey until it is null.
+        - "Discovery"
+      description: "Search pools by query, optionally restricted to one network. Pass pageKey back unchanged with the same filters."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: networks
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: "#/components/schemas/NetworkTokensGeneral"
-            x-shape-pending: true
-          style: form
-          explode: true
+        - $ref: "#/components/parameters/query"
+        - $ref: "#/components/parameters/searchNetworks"
         - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-        - name: query
-          in: query
-          required: true
-          schema:
-            type: string
-            description: Token or pool name, symbol, or address.
-            x-shape-pending: true
-          example: WETH
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SearchResponse"
+                $ref: "#/components/schemas/PoolsResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    poolAddress: "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36"
-                    name: WETH/USDT 0.3%
-                    priceUsd: "2243.05"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                  - network: eth-mainnet
-                    poolAddress: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
-                    name: WETH/USDC 0.05%
-                    priceUsd: "2243.05"
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                  - network: "eth-mainnet"
+                    poolAddress: "0x667701e51b4d1ca244f17c78f7ab8744b4c99f9b"
+                    dex:
+                      id: "fluid"
+                      name: "Fluid"
+                    baseToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      logoUrl: null
+                    quoteToken:
+                      network: "eth-mainnet"
+                      tokenAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                      logoUrl: null
+                    priceUsd: "0.998637171331949"
+                    quotePriceUsd: "1.00113784173239"
+                    priceInQuote: "0.9975021717"
+                    liquidityUsd: "34074196.3114"
+                    fdvUsd: "45018373948.7983"
+                    marketCapUsd: "69418732205.1319"
+                    createdAt: "2025-09-18T08:28:30Z"
+                    priceChangePercent:
+                      m5: "-0.014"
+                      m15: "-0.279"
+                      m30: "-0.179"
+                      h1: "-0.094"
+                      h6: "-0.129"
+                      h24: "-0.088"
+                    volumeUsd:
+                      m5: "114507.6254678"
+                      m15: "233860.501446452"
+                      m30: "805657.226109957"
+                      h1: "1238940.35415048"
+                      h6: "60797774.6570066"
+                      h24: "117816901.001841"
+                    txns:
+                      m5:
+                        buys: 1
+                        sells: 2
+                        buyers: 1
+                        sellers: 2
+                      m15:
+                        buys: 4
+                        sells: 6
+                        buyers: 4
+                        sellers: 5
+                      m30:
+                        buys: 12
+                        sells: 11
+                        buyers: 10
+                        sellers: 7
+                      h1:
+                        buys: 22
+                        sells: 20
+                        buyers: 17
+                        sellers: 12
+                      h6:
+                        buys: 180
+                        sells: 188
+                        buyers: 61
+                        sellers: 51
+                      h24:
+                        buys: 639
+                        sells: 523
+                        buyers: 111
+                        sellers: 89
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/search:
-    get:
-      summary: Search tokens and pools (Premium)
-      operationId: search-tokens-and-pools-premium
-      tags:
-        - Discovery
       x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 350 (proposed; pending validation).
-
-        Find tokens and pools by name, symbol, or address.
-
-        Use pageKey until it is null.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: networks
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: "#/components/schemas/NetworkTokensPremium"
-            x-shape-pending: true
-          style: form
-          explode: true
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-        - name: query
-          in: query
-          required: true
-          schema:
-            type: string
-            description: Token or pool name, symbol, or address.
-            x-shape-pending: true
-          example: WETH
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SearchResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                    poolAddress: "0x4e68ccd3e89f51c3074ca5072bbac773960dfa36"
-                    name: Wrapped Ether
-                    priceUsd: "2245.209761559062"
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/tokens/list:
-    get:
-      summary: Get token list
-      operationId: get-token-list
-      tags:
-        - Discovery
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 200 (proposed; pending validation).
-
-        List tokens for a network.
-
-        Use pageKey until it is null.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkDiscoveryGeneral"
-            x-shape-pending: true
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TokensResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    tokenAddress: "0x77c6e4a580c0dce4e5c7a17d0bc077188a83a059"
-                    name: Swerve.fi USD
-                    symbol: SWUSD
-                    decimals: 18
-                  - network: eth-mainnet
-                    tokenAddress: "0xf8e57ac2730d3088d98b79209739b0d5ba085a03"
-                    name: Optopia AI
-                    symbol: OPAI
-                    decimals: 18
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/tokens/list:
-    get:
-      summary: Get token list (Premium)
-      operationId: get-token-list-premium
-      tags:
-        - Discovery
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 350 (proposed; pending validation).
-
-        List tokens for a network.
-
-        Use pageKey until it is null.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkDiscoveryPremium"
-            x-shape-pending: true
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TokensResponse"
-              example:
-                data:
-                  - network: eth-mainnet
-                    tokenAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-                    name: Wrapped BTC
-                    symbol: WBTC
-                    decimals: 8
-                  - network: eth-mainnet
-                    tokenAddress: "0x0000000000000000000000000000000000000000"
-                    name: Ethereum
-                    symbol: ETH
-                    decimals: 18
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/wallets/{address}/pnl:
-    get:
-      summary: Get wallet PnL
-      operationId: get-wallet-pnl
-      tags:
-        - Wallets
-      x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 800 (proposed; pending validation).
-
-
-        Measure lifetime realized and unrealized profit or loss using average cost, split by network
-        and token. All requested networks must be EVM networks. Pagination applies to token rows.
-        General and Premium use different methodologies and their numbers are not comparable.
-
-
-        Use pageKey until it is null.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: networks
-          in: query
-          required: true
-          description: Supported networks for this operation during private preview. All networks must be EVM.
-          schema:
-            type: array
-            minItems: 1
-            items:
-              $ref: "#/components/schemas/NetworkWalletGeneral"
-            x-shape-pending: true
-          style: form
-          explode: true
-        - name: address
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Wallet address.
-            x-shape-pending: true
-          example: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-        - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
-        - $ref: "#/components/parameters/sortBy"
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LifetimePnlResponse"
-              example:
-                data:
-                  address: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-                  realizedPnlUsd: "465692.44904367876"
-                  unrealizedPnlUsd: "-8650.833771133304"
-                  networks:
-                    - network: eth-mainnet
-                      realizedPnlUsd: "465692.44904367876"
-                      unrealizedPnlUsd: "-8650.833771133304"
-                  tokens:
-                    - network: eth-mainnet
-                      tokenAddress: "0xf280b16ef293d8e534e370794ef26bf312694126"
-                      realizedPnlUsd: "426966.15295516116"
-                      unrealizedPnlUsd: null
-                      buys:
-                        count: 189
-                        amount: "4022337788.5875463"
-                        usd: "387037.66336058924"
-                        averagePriceUsd: "0.0000962220687826664247"
-                      sells:
-                        count: 267
-                        amount: "4033593429.971638"
-                        usd: "814003.8163157504"
-                        averagePriceUsd: "0.000201806114187734093"
-                    - network: eth-mainnet
-                      tokenAddress: "0x829f4b62eebe12af653b4dd4ffc480966f7d7f09"
-                      realizedPnlUsd: "80504.5740565090454"
-                      unrealizedPnlUsd: "-125.402615774341646"
-                      buys:
-                        count: 94
-                        amount: "159546.97412937233"
-                        usd: "108278.27599193985"
-                        averagePriceUsd: "0.678660793053586349"
-                      sells:
-                        count: 86
-                        amount: "159313.54192456175"
-                        usd: "188624.4287632079"
-                        averagePriceUsd: "1.18398239399212817"
-                pageKey: null
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/wallets/{address}/pnl:
-    get:
-      summary: Get wallet PnL (Premium)
-      operationId: get-wallet-pnl-premium
-      tags:
-        - Wallets
-      x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 1,400 (proposed; pending validation).
-
-
-        Measure realized profit or loss over the selected period. History is hourly for 1d and 7d,
-        and daily for 30d and all. General and Premium use different methodologies and their numbers
-        are not comparable.
-
-
-        Omit networks to combine all supported EVM networks. To query Solana, set networks to
-        solana-mainnet alone. Do not mix Solana and EVM networks.
-
-
-        Each history point and the summary identify the combined networks in a networks array.
-      parameters:
-        - $ref: "#/components/parameters/apiKey"
-        - name: networks
-          in: query
-          required: false
-          description: >-
-            Networks to combine. Omit to combine all supported EVM networks. Request solana-mainnet
-            on its own; do not combine Solana with EVM networks.
-          schema:
-            type: array
-            minItems: 1
-            uniqueItems: true
-            items:
-              $ref: "#/components/schemas/NetworkDiscoveryPremium"
-            oneOf:
-              - items:
-                  $ref: "#/components/schemas/NetworkWalletPremiumEvm"
-              - maxItems: 1
-                items:
-                  type: string
-                  enum:
-                    - solana-mainnet
-            x-shape-pending: true
-          style: form
-          explode: true
-        - name: address
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Wallet address.
-            x-shape-pending: true
-          example: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-        - name: period
-          in: query
-          schema:
-            type: string
-            enum:
-              - 1d
-              - 7d
-              - 30d
-              - all
-            default: 30d
-            x-shape-pending: true
-          description: Realized PnL measurement period.
-      responses:
-        "200":
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PeriodPnlResponse"
-              example:
-                data:
-                  history:
-                    - timestamp: "2026-10-04T00:00:00Z"
-                      realizedPnlUsd: "-864.9089818330417"
-                      trades: 5
-                      networks:
-                        - eth-mainnet
-                    - timestamp: "2026-10-05T00:00:00Z"
-                      realizedPnlUsd: "-42.54051770975006"
-                      trades: 1
-                      networks:
-                        - eth-mainnet
-                  summary:
-                    realizedPnlUsd: "-907.4494995427917"
-                    winRate: 25
-                    trades: 6
-                    wins: 1
-                    losses: 3
-                    networks:
-                      - eth-mainnet
-        "400":
-          $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
-        "429":
-          $ref: "#/components/responses/Error429"
-        "503":
-          $ref: "#/components/responses/Error503"
   /{apiKey}/wallets/{network}/{address}/trades:
     get:
-      summary: Get wallet trades
-      operationId: get-wallet-trades
+      summary: "Get wallet trades"
+      operationId: "get-wallet-trades"
       tags:
-        - Wallets
-      x-shape-pending: true
-      description: >-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-
-        **Compute units:** 800 (proposed; pending validation).
-
-
-        Read individual trades. Range requests are limited. General wallet trades supports
-        bnb-mainnet.
-
-
-        Use pageKey until it is null.
-
-
-        Trade side and amount refer to the row’s tokenAddress.
+        - "Wallets"
+      description: "Read individual trades. Provide from and to together, or omit both. The maximum range is exactly 30 days. Pass pageKey back unchanged with the same filters. EVM and Solana networks are supported."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkWalletTradesGeneral"
-            x-shape-pending: true
-        - name: address
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Wallet address.
-            x-shape-pending: true
-          example: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
+        - $ref: "#/components/parameters/network"
+        - $ref: "#/components/parameters/address"
         - $ref: "#/components/parameters/from"
         - $ref: "#/components/parameters/to"
+        - $ref: "#/components/parameters/tradePageSize"
         - $ref: "#/components/parameters/pageKey"
-        - $ref: "#/components/parameters/pageSize"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TradesResponse"
               example:
                 data:
-                  - network: bnb-mainnet
-                    transactionHash: "0xdaf7b90482d934d2250f0298669ce26443ded7a24ee99833f5740ec167831ddd"
-                    timestamp: "2026-10-28T20:23:34Z"
-                    address: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-                    poolAddress: "0xd2605a380f8a4757e1b01e1c6a1835e99592396b7ed369744cd3e27ef12eb1ba"
-                    side: sell
-                    volumeUsd: "154.466111242623"
-                    sent:
-                      - network: bnb-mainnet
-                        tokenAddress: "0x1f12b85aac097e43aa1555b2881e98a51090e9a6"
-                        amount: "474.334226681513"
-                    received:
-                      - network: bnb-mainnet
-                        tokenAddress: "0x6c0b008499239ccedd48595763225db54ac9585c"
-                        amount: "756628.264459085"
-                    tokenAddress: "0x1f12b85aac097e43aa1555b2881e98a51090e9a6"
-                    amount: "474.334226681513"
-                  - network: bnb-mainnet
-                    transactionHash: "0xdaf7b90482d934d2250f0298669ce26443ded7a24ee99833f5740ec167831ddd"
-                    timestamp: "2026-10-28T20:23:34Z"
-                    address: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-                    poolAddress: "0x2a45d6e78af8531b026f2d50e2db238c2dbfdfbf5201eb0669b0fd5ac377d545"
-                    side: buy
-                    volumeUsd: "154.538477014601"
-                    sent:
-                      - network: bnb-mainnet
-                        tokenAddress: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
-                        amount: "154.458777886549"
-                    received:
-                      - network: bnb-mainnet
-                        tokenAddress: "0x1f12b85aac097e43aa1555b2881e98a51090e9a6"
-                        amount: "474.334226681513"
-                    tokenAddress: "0x1f12b85aac097e43aa1555b2881e98a51090e9a6"
-                    amount: "474.334226681513"
+                  - network: "eth-mainnet"
+                    id: "eth-mainnet:0x251c4bd55b410904d33eee861f15a21585e68ac390ec9867715eca47eccc4a7c:195"
+                    txHash: "0x251c4bd55b410904d33eee861f15a21585e68ac390ec9867715eca47eccc4a7c"
+                    blockNumber: 26400797
+                    timestamp: "2026-11-12T18:56:35Z"
+                    side: "buy"
+                    trader: "0x8e92d28216ac924bbf01f2e7fe4fffd575ec3f17"
+                    tokenIn:
+                      address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      amount: "0.0497594650888277"
+                      priceUsd: "2012.14"
+                    tokenOut:
+                      address: "0x43dfc4159d86f3a37a5a4b3d4580b888ad7d4ddd"
+                      amount: "3605.5573289403"
+                      priceUsd: "0.0277690800476776"
+                    volumeUsd: "100.123010083834"
+                    isAnomalous: false
+                    poolAddress: "0x68fa181c720c07b7ff7412220e2431ce90a65a14"
+                    dex:
+                      id: "uniswap-v2"
+                      name: "Uniswap V2"
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
-  /{apiKey}/premium/wallets/{network}/{address}/trades:
+      x-shape-pending: true
+  /{apiKey}/wallets/{address}/pnl:
     get:
-      summary: Get wallet trades (Premium)
-      operationId: get-wallet-trades-premium
+      summary: "Get wallet PnL"
+      operationId: "get-wallet-pnl"
       tags:
-        - Wallets
-      x-shape-pending: true
-      description: |-
-        **Private preview:** Paths, parameters, response fields, and tier names are provisional.
-
-        **Compute units:** 1,400 (proposed; pending validation).
-
-        Read individual trades.
-
-        Use pageKey until it is null.
-
-        Trade side and amount refer to the row’s tokenAddress.
+        - "Wallets"
+      description: "Read lifetime PnL with methodology: average_cost. All requested networks must be EVM, or solana-mainnet alone. Pagination applies to token rows. Pass pageKey back unchanged with the same filters."
       parameters:
         - $ref: "#/components/parameters/apiKey"
-        - name: network
-          in: path
-          required: true
-          description: Supported networks for this operation during private preview.
-          schema:
-            $ref: "#/components/schemas/NetworkWalletTradesPremium"
-            x-shape-pending: true
-        - name: address
-          in: path
-          required: true
-          schema:
-            type: string
-            description: Wallet address.
-            x-shape-pending: true
-          example: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-        - $ref: "#/components/parameters/from"
-        - $ref: "#/components/parameters/to"
-        - $ref: "#/components/parameters/pageKey"
+        - $ref: "#/components/parameters/address"
+        - $ref: "#/components/parameters/walletNetworks"
+        - $ref: "#/components/parameters/sortBy"
         - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/pageKey"
       responses:
         "200":
-          description: Successful response.
+          description: "Successful response."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TradesResponse"
+                $ref: "#/components/schemas/WalletPnlResponse"
               example:
                 data:
-                  - network: eth-mainnet
-                    transactionHash: "0xc7fb480212007c246a9c1bf5832bd78b0b913db90c0312f776dcd00ff1631761"
-                    timestamp: "2026-10-05T20:07:59Z"
-                    address: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-                    poolAddress: "0x8ecc4b7c9f59afc7d1703990e8403c5aea80b435633235faeaa7ac35666fcbef"
-                    tokenAddress: "0x50176f9b64361a1e74e79d4ee9155186b3aec829"
-                    side: sell
-                    amount: "4058425.230298265"
-                    volumeUsd: "71.30176956425312"
-                  - network: eth-mainnet
-                    transactionHash: "0x2a20e37bc7f29fb3fcc240312d45589602ad6b59d3ad4e8f00c9dacc5801ad8a"
-                    timestamp: "2026-10-04T21:15:23Z"
-                    address: "0x7942262a7a5637e6eb0eec9b91b55ec232141f87"
-                    poolAddress: "0x3a62d0a031194091efe199f2aa357b458c276e20fad01e1eb6ed8e99fb0f2132"
-                    tokenAddress: "0x36bfbf8d4603bb8e6074c59f8ad26a813e41df16"
-                    side: sell
-                    amount: "10303671.805283459"
-                    volumeUsd: "125.99942692063568"
+                  address: "0x8e92d28216ac924bbf01f2e7fe4fffd575ec3f17"
+                  realizedPnlUsd: "307281.7738573944"
+                  unrealizedPnlUsd: "-32173.192627546752"
+                  byNetwork:
+                    - network: "eth-mainnet"
+                      realizedPnlUsd: "307281.7738573944"
+                      unrealizedPnlUsd: "-32173.192627546752"
+                  tokens:
+                    - network: "eth-mainnet"
+                      tokenAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      name: "USD Coin"
+                      symbol: "USDC"
+                      decimals: 6
+                      realizedPnlUsd: "297052.4138510471"
+                      unrealizedPnlUsd: null
+                      avgBuyPriceUsd: "1.00008003779010492"
+                      avgSellPriceUsd: "0.99995091219689819"
+                      boughtAmount: "249331.78984799996"
+                      soldAmount: "546430.9827609999"
+                      boughtUsd: "249351.7458134623"
+                      soldUsd: "546404.1596645094"
+                      buyCount: 4819
+                      sellCount: 9514
+                  methodology: "average_cost"
                 pageKey: null
         "400":
           $ref: "#/components/responses/Error400"
-        "401":
-          $ref: "#/components/responses/Error401"
+        "404":
+          $ref: "#/components/responses/Error404"
         "429":
           $ref: "#/components/responses/Error429"
         "503":
           $ref: "#/components/responses/Error503"
+      x-shape-pending: true
 components:
   parameters:
     apiKey:
-      name: apiKey
-      in: path
+      name: "apiKey"
+      in: "path"
       required: true
+      description: "Alchemy API key."
       schema:
-        type: string
-        default: docs-demo
-        description: For higher throughput, [create your own API key](https://dashboard.alchemy.com/signup)
+        type: "string"
+    network:
+      name: "network"
+      in: "path"
+      required: true
+      description: "Alchemy network slug."
+      schema:
+        $ref: "#/components/schemas/Network"
+    holderNetwork:
+      name: "network"
+      in: "path"
+      required: true
+      description: "Alchemy network slug. Not yet supported on HyperEVM."
+      schema:
+        $ref: "#/components/schemas/HolderNetwork"
+    tokenAddress:
+      name: "tokenAddress"
+      in: "path"
+      required: true
+      description: "Token contract address."
+      schema:
+        type: "string"
+      example: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    poolAddress:
+      name: "poolAddress"
+      in: "path"
+      required: true
+      description: "Pool address or identifier."
+      schema:
+        type: "string"
+      example: "0xe0554a476a092703abdb3ef35c80e0d76d32939f"
+    address:
+      name: "address"
+      in: "path"
+      required: true
+      description: "Wallet address."
+      schema:
+        type: "string"
+      example: "0x8e92d28216ac924bbf01f2e7fe4fffd575ec3f17"
     pageKey:
-      name: pageKey
-      in: query
-      description: >-
-        Omit for the first page. Reuse the returned key unchanged; stop when the response key is
-        null.
+      name: "pageKey"
+      in: "query"
+      required: false
+      description: "Opaque page key. Pass back unchanged with the same filters; omit on the first request."
       schema:
-        type: string
-        x-shape-pending: true
+        type: "string"
+    tradePageSize:
+      name: "pageSize"
+      in: "query"
+      required: false
+      description: "Number of trades per page."
+      schema:
+        type: "integer"
+        minimum: 1
+        maximum: 300
+        default: 100
     pageSize:
-      name: pageSize
-      in: query
+      name: "pageSize"
+      in: "query"
+      required: false
+      description: "Maximum rows per page."
       schema:
-        type: integer
+        type: "integer"
         minimum: 1
         maximum: 100
         default: 25
-        x-shape-pending: true
-      description: Maximum rows per page; provisional limit.
-    interval:
-      name: interval
-      in: query
-      required: true
-      schema:
-        type: string
-        enum:
-          - 1m
-          - 5m
-          - 15m
-          - 1h
-          - 4h
-          - 1d
-        x-shape-pending: true
-      description: Candle interval. Empty intervals are omitted by default.
     from:
-      name: from
-      in: query
-      required: true
+      name: "from"
+      in: "query"
+      required: false
+      description: "Range start, ISO 8601 UTC or Unix seconds. Provide from and to together, or omit both. Maximum range: exactly 30 days."
       schema:
-        type: string
-        format: date-time
-        x-shape-pending: true
-      description: Start of the requested UTC time range. Boundary inclusion is pending.
+        oneOf:
+          - type: "string"
+            format: "date-time"
+          - type: "integer"
+            minimum: 0
     to:
-      name: to
-      in: query
+      name: "to"
+      in: "query"
+      required: false
+      description: "Range end, ISO 8601 UTC or Unix seconds. Provide from and to together, or omit both. Maximum range: exactly 30 days."
+      schema:
+        oneOf:
+          - type: "string"
+            format: "date-time"
+          - type: "integer"
+            minimum: 0
+    ohlcvTo:
+      name: "to"
+      in: "query"
+      required: false
+      description: "Return entries before this time, in ISO 8601 UTC or Unix seconds."
+      schema:
+        oneOf:
+          - type: "string"
+            format: "date-time"
+          - type: "integer"
+            minimum: 0
+    interval:
+      name: "interval"
+      in: "query"
       required: true
+      description: "OHLCV interval."
       schema:
-        type: string
-        format: date-time
-        x-shape-pending: true
-      description: End of the requested UTC time range. Boundary inclusion is pending.
-    sortBy:
-      name: sortBy
-      in: query
-      schema:
-        type: string
+        type: "string"
         enum:
-          - realizedPnl
-          - unrealizedPnl
-          - buyVolume
-          - sellVolume
-        x-shape-pending: true
-      description: Metric used to order token results. Default order and direction are pending.
+          - "1s"
+          - "15s"
+          - "30s"
+          - "1m"
+          - "5m"
+          - "15m"
+          - "1h"
+          - "4h"
+          - "12h"
+          - "1d"
+    ohlcvLimit:
+      name: "limit"
+      in: "query"
+      required: false
+      description: "Maximum number of OHLCV entries."
+      schema:
+        type: "integer"
+        minimum: 1
+        maximum: 1000
+    holderLimit:
+      name: "limit"
+      in: "query"
+      required: false
+      description: "Maximum number of holders. Maximum 40 on solana-mainnet. No pagination."
+      schema:
+        type: "integer"
+        minimum: 1
+        maximum: 50
+    days:
+      name: "days"
+      in: "query"
+      required: false
+      description: "Holder-history window."
+      schema:
+        type: "string"
+        enum:
+          - "7"
+          - "30"
+          - "max"
+    optionalNetwork:
+      name: "network"
+      in: "query"
+      required: false
+      description: "Omit to return pools across supported networks."
+      schema:
+        $ref: "#/components/schemas/Network"
+    window:
+      name: "window"
+      in: "query"
+      required: false
+      description: "Trending window."
+      schema:
+        type: "string"
+        enum:
+          - "5m"
+          - "1h"
+          - "6h"
+          - "24h"
+    walletNetworks:
+      name: "networks"
+      in: "query"
+      required: true
+      description: "All networks must be EVM, or solana-mainnet alone."
+      schema:
+        $ref: "#/components/schemas/WalletNetworks"
+      style: "form"
+      explode: true
+    sortBy:
+      name: "sortBy"
+      in: "query"
+      required: false
+      description: "Field used to sort token PnL rows."
+      schema:
+        type: "string"
+        enum:
+          - "realizedPnlUsd"
+          - "unrealizedPnlUsd"
+          - "boughtUsd"
+          - "soldUsd"
+    query:
+      name: "query"
+      in: "query"
+      required: true
+      description: "Token name, symbol, address, or pool address."
+      schema:
+        type: "string"
+    searchNetworks:
+      name: "networks"
+      in: "query"
+      required: false
+      description: "Optional. One network only."
+      schema:
+        type: "array"
+        items:
+          $ref: "#/components/schemas/Network"
+        minItems: 1
+        maxItems: 1
+      style: "form"
+      explode: true
   schemas:
-    NetworkPools:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - solana-mainnet
-    NetworkTokensGeneral:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - opt-mainnet
-        - matic-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - linea-mainnet
-        - solana-mainnet
-    NetworkTokensPremium:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - solana-mainnet
-        - hyperliquid-mainnet
-    NetworkHoldersPremium:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - hyperliquid-mainnet
-    NetworkNewGeneral:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - opt-mainnet
-        - matic-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-        - solana-mainnet
-    NetworkNewPremium:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-        - solana-mainnet
-        - hyperliquid-mainnet
-    NetworkDiscoveryGeneral:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - opt-mainnet
-        - matic-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - linea-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-        - solana-mainnet
-    NetworkDiscoveryPremium:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-        - solana-mainnet
-        - tempo-mainnet
-        - hyperliquid-mainnet
-    NetworkWalletGeneral:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - opt-mainnet
-        - matic-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - linea-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-    NetworkWalletTradesGeneral:
-      type: string
-      enum:
-        - bnb-mainnet
-    NetworkWalletTradesPremium:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - bnb-mainnet
-        - robinhood-mainnet
-        - solana-mainnet
     Network:
-      type: string
+      type: "string"
       enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - solana-mainnet
-        - opt-mainnet
-        - matic-mainnet
-        - avax-mainnet
-        - linea-mainnet
-        - hyperliquid-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-        - tempo-mainnet
-    PoolSummary:
-      type: object
+        - "eth-mainnet"
+        - "base-mainnet"
+        - "arb-mainnet"
+        - "opt-mainnet"
+        - "matic-mainnet"
+        - "bnb-mainnet"
+        - "avax-mainnet"
+        - "linea-mainnet"
+        - "robinhood-mainnet"
+        - "arc-mainnet"
+        - "solana-mainnet"
+        - "hyperliquid-mainnet"
+      description: "Alchemy network slug. Coverage varies by endpoint. Unsupported networks return UNSUPPORTED_NETWORK."
+      x-shape-pending: true
+    HolderNetwork:
+      type: "string"
+      enum:
+        - "eth-mainnet"
+        - "base-mainnet"
+        - "arb-mainnet"
+        - "opt-mainnet"
+        - "matic-mainnet"
+        - "bnb-mainnet"
+        - "avax-mainnet"
+        - "linea-mainnet"
+        - "robinhood-mainnet"
+        - "arc-mainnet"
+        - "solana-mainnet"
+      x-shape-pending: true
+    EvmNetwork:
+      type: "string"
+      enum:
+        - "eth-mainnet"
+        - "base-mainnet"
+        - "arb-mainnet"
+        - "opt-mainnet"
+        - "matic-mainnet"
+        - "bnb-mainnet"
+        - "avax-mainnet"
+        - "linea-mainnet"
+        - "robinhood-mainnet"
+        - "arc-mainnet"
+        - "hyperliquid-mainnet"
+      x-shape-pending: true
+    WalletNetworks:
+      oneOf:
+        - type: "array"
+          items:
+            $ref: "#/components/schemas/EvmNetwork"
+          minItems: 1
+          uniqueItems: true
+        - type: "array"
+          items:
+            type: "string"
+            enum:
+              - "solana-mainnet"
+          minItems: 1
+          maxItems: 1
+      description: "Required. Use only EVM networks, or solana-mainnet alone. Mixing VM families returns INVALID_ARGUMENT."
+      x-shape-pending: true
+    NetworkAddressItem:
+      type: "object"
+      required:
+        - "network"
+        - "address"
       properties:
         network:
           $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        poolAddress:
-          type: string
-          description: Pool address or pool identifier.
-          x-shape-pending: true
+        address:
+          type: "string"
+          description: "Public token or pool address."
+      x-shape-pending: true
+    TokenRef:
+      type: "object"
+      required:
+        - "network"
+        - "tokenAddress"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        tokenAddress:
+          type: "string"
         name:
-          type: string
-          description: Human-readable pool name.
-          x-shape-pending: true
+          type: "string"
+        symbol:
+          type: "string"
+        decimals:
+          type: "integer"
+          minimum: 0
+        logoUrl:
+          type:
+            - "string"
+            - "null"
+          description: "URL to the token logo"
+      x-shape-pending: true
+    PoolRef:
+      type: "object"
+      required:
+        - "network"
+        - "poolAddress"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        poolAddress:
+          type: "string"
+      x-shape-pending: true
+    Dex:
+      type: "object"
+      required:
+        - "id"
+        - "name"
+      properties:
+        id:
+          type: "string"
+          description: "DEX slug."
+        name:
+          type: "string"
+          description: "DEX display name."
+      x-shape-pending: true
+    WindowedDecimal:
+      type: "object"
+      properties:
+        m5:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        m15:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        m30:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        h1:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        h6:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        h24:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    TxnCounts:
+      type: "object"
+      properties:
+        buys:
+          type:
+            - "integer"
+            - "null"
+          minimum: 0
+        sells:
+          type:
+            - "integer"
+            - "null"
+          minimum: 0
+        buyers:
+          type:
+            - "integer"
+            - "null"
+          minimum: 0
+        sellers:
+          type:
+            - "integer"
+            - "null"
+          minimum: 0
+      x-shape-pending: true
+    Txns:
+      type: "object"
+      properties:
+        m5:
+          $ref: "#/components/schemas/TxnCounts"
+        m15:
+          $ref: "#/components/schemas/TxnCounts"
+        m30:
+          $ref: "#/components/schemas/TxnCounts"
+        h1:
+          $ref: "#/components/schemas/TxnCounts"
+        h6:
+          $ref: "#/components/schemas/TxnCounts"
+        h24:
+          $ref: "#/components/schemas/TxnCounts"
+      x-shape-pending: true
+    PoolSummary:
+      type: "object"
+      required:
+        - "network"
+        - "poolAddress"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        poolAddress:
+          type: "string"
+        name:
+          type: "string"
+          description: "Pool name in BASE/QUOTE fee% format; omitted when the fee is unknown."
+        dex:
+          $ref: "#/components/schemas/Dex"
+        baseToken:
+          $ref: "#/components/schemas/TokenRef"
+        quoteToken:
+          $ref: "#/components/schemas/TokenRef"
+          description: "The pool’s primary quote token."
+        quoteTokens:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/TokenRef"
+          description: "All quote tokens for a multi-token pool."
         priceUsd:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Price of the selected token in USD. Decimal string; null means unknown.
-          x-shape-pending: true
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Price of the base token in USD."
+        quotePriceUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Price of the quote token in USD."
+        priceInQuote:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Base token price in quote-token units."
         liquidityUsd:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Pool liquidity in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        volumeUsd:
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        fdvUsd:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Trading volume over the last 24 hours, in USD. Decimal string; null means unknown.
-          x-shape-pending: true
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        marketCapUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        feePercent:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Pool fee percentage. Returned by single and batch pool endpoints."
         createdAt:
           type:
-            - string
+            - "string"
             - "null"
-          format: date-time
-          description: ISO 8601 UTC timestamp; null means unknown.
-          x-shape-pending: true
-        tokenAddress:
-          type: string
-          description: Token address that defines price and trade direction in this row.
-          x-shape-pending: true
-        dexName:
-          type: string
-          description: Human-readable DEX name, when available.
-          x-shape-pending: true
-        feePercent:
-          type: string
-          description: Pool fee as a percentage, expressed as a decimal string.
-          x-shape-pending: true
-        buys:
-          type: integer
-          minimum: 0
-          description: Number of buys in the last 24 hours.
-          x-shape-pending: true
-        sells:
-          type: integer
-          minimum: 0
-          description: Number of sells in the last 24 hours.
-          x-shape-pending: true
-      required:
-        - network
-        - poolAddress
-    Candle:
-      type: object
-      properties:
-        network:
-          $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        timestamp:
-          type: integer
-          description: Start of the candle interval, in Unix seconds UTC.
-          x-shape-pending: true
-        open:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Opening price in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        high:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Highest price in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        low:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Lowest price in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        close:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Closing price in USD. Decimal string; null means unknown.
-          x-shape-pending: true
+          format: "date-time"
+        priceChangePercent:
+          $ref: "#/components/schemas/WindowedDecimal"
         volumeUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Trading volume during the interval in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        tokenAddress:
-          type: string
-          description: Token address that defines price and trade direction in this row.
-          x-shape-pending: true
-      required:
-        - network
-        - timestamp
-        - open
-        - high
-        - low
-        - close
-        - volumeUsd
-        - tokenAddress
-    TradeRow:
-      type: object
-      properties:
-        network:
-          $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        transactionHash:
-          type: string
-          description: Onchain transaction hash.
-          x-shape-pending: true
-        timestamp:
-          type:
-            - string
-            - "null"
-          format: date-time
-          description: ISO 8601 UTC timestamp; null means unknown.
-          x-shape-pending: true
-        address:
-          type: string
-          description: Wallet address that made the trade.
-          x-shape-pending: true
-        poolAddress:
-          type: string
-          description: Pool address or pool identifier.
-          x-shape-pending: true
-        tokenAddress:
-          type: string
-          description: Token address that defines price and trade direction in this row.
-          x-shape-pending: true
-        side:
-          type: string
-          enum:
-            - buy
-            - sell
-          description: Buy or sell relative to this row’s tokenAddress.
-          x-shape-pending: true
-        amount:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Traded token amount. Decimal string; null means unknown.
-          x-shape-pending: true
-        volumeUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Trade value in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        sent:
-          type: array
-          items:
-            $ref: "#/components/schemas/TokenAmount"
-          description: Tokens sent in the trade.
-          x-shape-pending: true
-        received:
-          type: array
-          items:
-            $ref: "#/components/schemas/TokenAmount"
-          description: Tokens received in the trade.
-          x-shape-pending: true
-      required:
-        - network
-        - transactionHash
-        - timestamp
-        - address
-        - side
-        - volumeUsd
-        - tokenAddress
-    TokenAmount:
-      type: object
-      properties:
-        network:
-          $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        tokenAddress:
-          type: string
-          description: Token address.
-          x-shape-pending: true
-        amount:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Token amount. Decimal string; null means unknown.
-          x-shape-pending: true
-      required:
-        - network
-        - tokenAddress
-        - amount
-    Holder:
-      type: object
-      properties:
-        network:
-          $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        address:
-          type: string
-          description: Holder address.
-          x-shape-pending: true
-        amount:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Tokens held. Decimal string; null means unknown.
-          x-shape-pending: true
-        valueUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Value of the holding in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-      required:
-        - network
-        - address
-        - amount
-        - valueUsd
+          $ref: "#/components/schemas/WindowedDecimal"
+        txns:
+          $ref: "#/components/schemas/Txns"
+      x-shape-pending: true
     Token:
-      type: object
-      properties:
-        network:
-          $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        tokenAddress:
-          type: string
-          description: Token address.
-          x-shape-pending: true
-        name:
-          type: string
-          description: Token name.
-          x-shape-pending: true
-        symbol:
-          type: string
-          description: Token symbol.
-          x-shape-pending: true
-        decimals:
-          type: integer
-          minimum: 0
-          description: Number of decimal places in the token denomination.
-          x-shape-pending: true
+      type: "object"
       required:
-        - network
-        - tokenAddress
-        - name
-        - symbol
-        - decimals
-    SearchResult:
-      type: object
+        - "network"
+        - "tokenAddress"
+        - "symbol"
+        - "priceUsd"
       properties:
         network:
           $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
         tokenAddress:
-          type: string
-          description: Token address that defines price and trade direction in this row.
-          x-shape-pending: true
-        poolAddress:
-          type: string
-          description: Pool address, when the match identifies a pool.
-          x-shape-pending: true
+          type: "string"
         name:
-          type: string
-          description: Name of the matched token or pool.
-          x-shape-pending: true
+          type: "string"
+        symbol:
+          type: "string"
+        decimals:
+          type: "integer"
+          minimum: 0
+        logoUrl:
+          type:
+            - "string"
+            - "null"
+          description: "URL to the token logo"
         priceUsd:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Selected token price in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-      required:
-        - network
-        - name
-        - priceUsd
-    TradingStats:
-      type: object
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        marketCapUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        fdvUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        liquidityUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Total liquidity across the token’s pools in USD."
+        volumeUsd:
+          type: "object"
+          properties:
+            h24:
+              type:
+                - "string"
+                - "null"
+              pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+              description: "Decimal string; null means unknown."
+        totalSupply:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Total supply in human-readable token units."
+        topPools:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/PoolRef"
+          description: "Pool references only. Present when include=topPools."
+      x-shape-pending: true
+    HolderDistribution:
+      type:
+        - "object"
+        - "null"
       properties:
-        count:
-          type: integer
-          minimum: 0
-          description: Number of trades.
-          x-shape-pending: true
-        amount:
+        top10:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Total token amount. Decimal string; null means unknown.
-          x-shape-pending: true
-        usd:
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        ranks11To30:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Total trade value in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        averagePriceUsd:
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        ranks31To50:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Average execution price in USD. Decimal string; null means unknown.
-          x-shape-pending: true
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        rest:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    TokenMetadata:
+      type: "object"
       required:
-        - count
-        - amount
-        - usd
-        - averagePriceUsd
-    TokenPnl:
-      type: object
+        - "network"
+        - "tokenAddress"
       properties:
         network:
           $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
         tokenAddress:
-          type: string
-          description: Token address.
-          x-shape-pending: true
-        realizedPnlUsd:
+          type: "string"
+        name:
+          type: "string"
+        symbol:
+          type: "string"
+        decimals:
+          type: "integer"
+          minimum: 0
+        logoUrl:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Realized profit or loss in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        unrealizedPnlUsd:
+          description: "URL to the token logo"
+        description:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Unrealized profit or loss in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        buys:
-          $ref: "#/components/schemas/TradingStats"
-          x-shape-pending: true
-        sells:
-          $ref: "#/components/schemas/TradingStats"
-          x-shape-pending: true
+        websites:
+          type: "array"
+          items:
+            type: "string"
+        twitter:
+          type:
+            - "string"
+            - "null"
+        telegram:
+          type:
+            - "string"
+            - "null"
+        discord:
+          type:
+            - "string"
+            - "null"
+        farcaster:
+          type:
+            - "string"
+            - "null"
+        categories:
+          type: "array"
+          items:
+            type: "string"
+        holders:
+          type: "object"
+          properties:
+            count:
+              type:
+                - "integer"
+                - "null"
+              minimum: 0
+            distribution:
+              $ref: "#/components/schemas/HolderDistribution"
+            updatedAt:
+              type:
+                - "string"
+                - "null"
+              format: "date-time"
+        security:
+          type: "object"
+          properties:
+            isHoneypot:
+              type:
+                - "boolean"
+                - "null"
+            mintAuthority:
+              type:
+                - "string"
+                - "null"
+            freezeAuthority:
+              type:
+                - "string"
+                - "null"
+      x-shape-pending: true
+    TradeLeg:
+      type: "object"
       required:
-        - network
-        - tokenAddress
-        - realizedPnlUsd
-        - unrealizedPnlUsd
-        - buys
-        - sells
-    NetworkPnl:
-      type: object
-      properties:
-        network:
-          $ref: "#/components/schemas/Network"
-          description: Alchemy network slug.
-          x-shape-pending: true
-        realizedPnlUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Realized profit or loss in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        unrealizedPnlUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Unrealized profit or loss in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-      required:
-        - network
-        - realizedPnlUsd
-        - unrealizedPnlUsd
-    LifetimePnl:
-      type: object
+        - "address"
+        - "amount"
+        - "priceUsd"
       properties:
         address:
-          type: string
-          description: Wallet address.
-          x-shape-pending: true
+          type: "string"
+        amount:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        priceUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    Trade:
+      type: "object"
+      required:
+        - "network"
+        - "id"
+        - "txHash"
+        - "timestamp"
+        - "side"
+        - "tokenIn"
+        - "tokenOut"
+        - "volumeUsd"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        id:
+          type: "string"
+          description: "Unique per swap. Format: {network}:{txHash}:{logIndex}."
+        txHash:
+          type: "string"
+        blockNumber:
+          type: "integer"
+          minimum: 0
+        timestamp:
+          type: "string"
+          format: "date-time"
+        side:
+          type: "string"
+          enum:
+            - "buy"
+            - "sell"
+        trader:
+          type: "string"
+        poolAddress:
+          type: "string"
+          description: "Present for token and wallet trades."
+        dex:
+          $ref: "#/components/schemas/Dex"
+          description: "Present for token and wallet trades."
+        tokenIn:
+          $ref: "#/components/schemas/TradeLeg"
+        tokenOut:
+          $ref: "#/components/schemas/TradeLeg"
+        volumeUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        isAnomalous:
+          type: "boolean"
+      x-shape-pending: true
+    OHLCV:
+      type: "object"
+      required:
+        - "network"
+        - "timestamp"
+        - "open"
+        - "high"
+        - "low"
+        - "close"
+        - "volumeUsd"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        timestamp:
+          type: "string"
+          format: "date-time"
+          description: "Start of the interval in ISO 8601 UTC."
+        open:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        high:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        low:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        close:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        volumeUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    OHLCVData:
+      type: "object"
+      required:
+        - "baseToken"
+        - "quoteToken"
+        - "ohlcv"
+      properties:
+        baseToken:
+          $ref: "#/components/schemas/TokenRef"
+        quoteToken:
+          $ref: "#/components/schemas/TokenRef"
+        ohlcv:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/OHLCV"
+      x-shape-pending: true
+    Holder:
+      type: "object"
+      required:
+        - "network"
+        - "rank"
+        - "address"
+        - "amount"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        rank:
+          type: "integer"
+          minimum: 1
+        address:
+          type: "string"
+        label:
+          type:
+            - "string"
+            - "null"
+        amount:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        percentOfSupply:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        valueUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    Holders:
+      type: "object"
+      required:
+        - "updatedAt"
+        - "holders"
+      properties:
+        updatedAt:
+          type:
+            - "string"
+            - "null"
+          format: "date-time"
+        holders:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Holder"
+      x-shape-pending: true
+    HolderHistoryPoint:
+      type: "object"
+      required:
+        - "network"
+        - "timestamp"
+        - "holderCount"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        timestamp:
+          type: "string"
+          format: "date-time"
+        holderCount:
+          type: "integer"
+          minimum: 0
+      x-shape-pending: true
+    Trader:
+      type: "object"
+      required:
+        - "network"
+        - "rank"
+        - "address"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        rank:
+          type: "integer"
+          minimum: 1
+        address:
+          type: "string"
         realizedPnlUsd:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Lifetime realized profit or loss in USD. Decimal string; null means unknown.
-          x-shape-pending: true
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
         unrealizedPnlUsd:
           type:
-            - string
+            - "string"
             - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Current unrealized profit or loss in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        networks:
-          type: array
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        avgBuyPriceUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        avgSellPriceUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        boughtAmount:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        soldAmount:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        boughtUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        soldUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        buyCount:
+          type: "integer"
+          minimum: 0
+        sellCount:
+          type: "integer"
+          minimum: 0
+        tokenBalance:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    TopTraders:
+      type: "object"
+      required:
+        - "network"
+        - "tokenAddress"
+        - "traders"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        tokenAddress:
+          type: "string"
+        traders:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Trader"
+      x-shape-pending: true
+    NetworkPnl:
+      type: "object"
+      required:
+        - "network"
+        - "realizedPnlUsd"
+        - "unrealizedPnlUsd"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        realizedPnlUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        unrealizedPnlUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+      x-shape-pending: true
+    TokenPnl:
+      type: "object"
+      required:
+        - "network"
+        - "tokenAddress"
+        - "realizedPnlUsd"
+        - "unrealizedPnlUsd"
+      properties:
+        network:
+          $ref: "#/components/schemas/Network"
+        tokenAddress:
+          type: "string"
+        name:
+          type: "string"
+        symbol:
+          type: "string"
+        decimals:
+          type: "integer"
+          minimum: 0
+        realizedPnlUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        unrealizedPnlUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        avgBuyPriceUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        avgSellPriceUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        boughtAmount:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        soldAmount:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        boughtUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        soldUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        buyCount:
+          type: "integer"
+          minimum: 0
+        sellCount:
+          type: "integer"
+          minimum: 0
+      x-shape-pending: true
+    WalletPnl:
+      type: "object"
+      required:
+        - "address"
+        - "realizedPnlUsd"
+        - "unrealizedPnlUsd"
+        - "byNetwork"
+        - "tokens"
+        - "methodology"
+      properties:
+        address:
+          type: "string"
+        realizedPnlUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        unrealizedPnlUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Decimal string; null means unknown."
+        byNetwork:
+          type: "array"
           items:
             $ref: "#/components/schemas/NetworkPnl"
-          x-shape-pending: true
         tokens:
-          type: array
+          type: "array"
           items:
             $ref: "#/components/schemas/TokenPnl"
-          x-shape-pending: true
-      required:
-        - address
-        - realizedPnlUsd
-        - unrealizedPnlUsd
-        - networks
-        - tokens
-    PnlPoint:
-      type: object
-      properties:
-        timestamp:
-          type:
-            - string
-            - "null"
-          format: date-time
-          description: ISO 8601 UTC timestamp; null means unknown.
-          x-shape-pending: true
-        realizedPnlUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: Realized profit or loss in this interval, in USD. Decimal string; null means unknown.
-          x-shape-pending: true
-        trades:
-          type: integer
-          minimum: 0
-          description: Number of trades in this interval.
-          x-shape-pending: true
-        networks:
-          type: array
-          minItems: 1
-          uniqueItems: true
-          items:
-            $ref: "#/components/schemas/NetworkDiscoveryPremium"
-          oneOf:
-            - items:
-                $ref: "#/components/schemas/NetworkWalletPremiumEvm"
-            - maxItems: 1
-              items:
-                type: string
-                enum:
-                  - solana-mainnet
-          x-shape-pending: true
-          description: Networks combined in this result. Solana is returned on its own.
-      required:
-        - networks
-        - timestamp
-        - realizedPnlUsd
-        - trades
-    PnlSummary:
-      type: object
-      properties:
-        realizedPnlUsd:
-          type:
-            - string
-            - "null"
-          pattern: ^-?[0-9]+(\.[0-9]+)?$
-          description: >-
-            Realized profit or loss over the selected period, in USD. Decimal string; null means
-            unknown.
-          x-shape-pending: true
-        trades:
-          type: integer
-          minimum: 0
-          description: Number of trades.
-          x-shape-pending: true
-        wins:
-          type: integer
-          minimum: 0
-          description: Number of winning outcomes.
-          x-shape-pending: true
-        losses:
-          type: integer
-          minimum: 0
-          description: Number of losing outcomes.
-          x-shape-pending: true
-        winRate:
-          type: number
-          minimum: 0
-          maximum: 100
-          description: Win rate as a percentage.
-          x-shape-pending: true
-        networks:
-          type: array
-          minItems: 1
-          uniqueItems: true
-          items:
-            $ref: "#/components/schemas/NetworkDiscoveryPremium"
-          oneOf:
-            - items:
-                $ref: "#/components/schemas/NetworkWalletPremiumEvm"
-            - maxItems: 1
-              items:
-                type: string
-                enum:
-                  - solana-mainnet
-          x-shape-pending: true
-          description: Networks combined in this result. Solana is returned on its own.
-      required:
-        - networks
-        - realizedPnlUsd
-        - trades
-        - wins
-        - losses
-        - winRate
-    PeriodPnl:
-      type: object
-      properties:
-        history:
-          type: array
-          items:
-            $ref: "#/components/schemas/PnlPoint"
-          x-shape-pending: true
-        summary:
-          $ref: "#/components/schemas/PnlSummary"
-          x-shape-pending: true
-      required:
-        - history
-        - summary
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-              description: Detailed error message.
-              x-shape-pending: true
-          required:
-            - message
-          x-shape-pending: true
-      required:
-        - error
+        methodology:
+          type: "string"
+          enum:
+            - "average_cost"
+          description: "Accounting method used for lifetime PnL."
+      x-shape-pending: true
     PoolResponse:
-      type: object
+      type: "object"
+      required:
+        - "data"
       properties:
         data:
           $ref: "#/components/schemas/PoolSummary"
-          x-shape-pending: true
-      required:
-        - data
+      x-shape-pending: true
     PoolsResponse:
-      type: object
+      type: "object"
+      required:
+        - "data"
+        - "pageKey"
       properties:
         data:
-          type: array
+          type: "array"
           items:
             $ref: "#/components/schemas/PoolSummary"
-          x-shape-pending: true
         pageKey:
           type:
-            - string
+            - "string"
             - "null"
-          description: >-
-            Opaque continuation key. Pass it unchanged to the next request; null marks the last
-            page.
-          x-shape-pending: true
+          description: "Opaque page key. Pass back unchanged with the same filters. Null means there are no more pages."
+      x-shape-pending: true
+    PoolListResponse:
+      type: "object"
       required:
-        - data
-        - pageKey
-    CandlesResponse:
-      type: object
+        - "data"
       properties:
         data:
-          type: array
+          type: "array"
           items:
-            $ref: "#/components/schemas/Candle"
-          x-shape-pending: true
+            $ref: "#/components/schemas/PoolSummary"
+      x-shape-pending: true
+    TokenResponse:
+      type: "object"
       required:
-        - data
-    TradesResponse:
-      type: object
+        - "data"
       properties:
         data:
-          type: array
-          items:
-            $ref: "#/components/schemas/TradeRow"
-          x-shape-pending: true
-        pageKey:
-          type:
-            - string
-            - "null"
-          description: >-
-            Opaque continuation key. Pass it unchanged to the next request; null marks the last
-            page.
-          x-shape-pending: true
+          $ref: "#/components/schemas/Token"
+      x-shape-pending: true
+    TokenListResponse:
+      type: "object"
       required:
-        - data
-        - pageKey
-    HoldersResponse:
-      type: object
+        - "data"
       properties:
         data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Holder"
-          x-shape-pending: true
-        pageKey:
-          type:
-            - string
-            - "null"
-          description: >-
-            Opaque continuation key. Pass it unchanged to the next request; null marks the last
-            page.
-          x-shape-pending: true
-      required:
-        - data
-        - pageKey
-    TokensResponse:
-      type: object
-      properties:
-        data:
-          type: array
+          type: "array"
           items:
             $ref: "#/components/schemas/Token"
-          x-shape-pending: true
-        pageKey:
-          type:
-            - string
-            - "null"
-          description: >-
-            Opaque continuation key. Pass it unchanged to the next request; null marks the last
-            page.
-          x-shape-pending: true
+      x-shape-pending: true
+    TokenMetadataResponse:
+      type: "object"
       required:
-        - data
-        - pageKey
-    SearchResponse:
-      type: object
+        - "data"
       properties:
         data:
-          type: array
+          $ref: "#/components/schemas/TokenMetadata"
+      x-shape-pending: true
+    OHLCVResponse:
+      type: "object"
+      required:
+        - "data"
+      properties:
+        data:
+          $ref: "#/components/schemas/OHLCVData"
+      x-shape-pending: true
+    TradesResponse:
+      type: "object"
+      required:
+        - "data"
+        - "pageKey"
+      properties:
+        data:
+          type: "array"
           items:
-            $ref: "#/components/schemas/SearchResult"
-          x-shape-pending: true
+            $ref: "#/components/schemas/Trade"
         pageKey:
           type:
-            - string
+            - "string"
             - "null"
-          description: >-
-            Opaque continuation key. Pass it unchanged to the next request; null marks the last
-            page.
-          x-shape-pending: true
+          description: "Opaque page key. Pass back unchanged with the same filters. Null means there are no more pages."
+      x-shape-pending: true
+    HoldersResponse:
+      type: "object"
       required:
-        - data
-        - pageKey
-    LifetimePnlResponse:
-      type: object
+        - "data"
       properties:
         data:
-          $ref: "#/components/schemas/LifetimePnl"
-          x-shape-pending: true
+          $ref: "#/components/schemas/Holders"
+      x-shape-pending: true
+    HolderHistoryResponse:
+      type: "object"
+      required:
+        - "data"
+      properties:
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/HolderHistoryPoint"
+      x-shape-pending: true
+    WalletPnlResponse:
+      type: "object"
+      required:
+        - "data"
+        - "pageKey"
+      properties:
+        data:
+          $ref: "#/components/schemas/WalletPnl"
         pageKey:
           type:
-            - string
+            - "string"
             - "null"
-          description: >-
-            Opaque continuation key. Pass it unchanged to the next request; null marks the last
-            page.
-          x-shape-pending: true
+          description: "Opaque page key. Pass back unchanged with the same filters. Null means there are no more pages."
+      x-shape-pending: true
+    ErrorResponse:
+      type: "object"
       required:
-        - data
-        - pageKey
-    PeriodPnlResponse:
-      type: object
+        - "error"
+      properties:
+        error:
+          type: "object"
+          required:
+            - "code"
+            - "message"
+          properties:
+            code:
+              type: "string"
+              enum:
+                - "INVALID_ARGUMENT"
+                - "NOT_FOUND"
+                - "RATE_LIMITED"
+                - "UPSTREAM_UNAVAILABLE"
+                - "UNSUPPORTED_NETWORK"
+            message:
+              type: "string"
+      x-shape-pending: true
+    PoolFilters:
+      type: "object"
+      required:
+        - "networks"
+      properties:
+        networks:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Network"
+          minItems: 1
+        dexes:
+          type: "array"
+          items:
+            type: "string"
+            description: "DEX slug."
+        minLiquidityUsd:
+          type:
+            - "string"
+            - "null"
+          pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: "Minimum pool liquidity in USD."
+        sortBy:
+          type: "string"
+          enum:
+            - "volumeUsdH24Desc"
+          description: "Sort by descending 24-hour USD volume."
+        quoteTokenAddresses:
+          type: "array"
+          items:
+            type: "string"
+          maxItems: 50
+        excludeHoneypots:
+          type: "boolean"
+          description: "Exclude honeypots. Not supported on Solana."
+        pageKey:
+          type: "string"
+          description: "Opaque page key. Pass back unchanged with the same filters."
+      x-shape-pending: true
+    TopTradersResponse:
+      type: "object"
+      required:
+        - "data"
       properties:
         data:
-          $ref: "#/components/schemas/PeriodPnl"
-          x-shape-pending: true
-      required:
-        - data
-    NetworkWalletPremiumEvm:
-      type: string
-      enum:
-        - eth-mainnet
-        - base-mainnet
-        - arb-mainnet
-        - bnb-mainnet
-        - avax-mainnet
-        - robinhood-mainnet
-        - arc-mainnet
-        - tempo-mainnet
-        - hyperliquid-mainnet
+          $ref: "#/components/schemas/TopTraders"
+      x-shape-pending: true
   responses:
     Error400:
-      description: Invalid request parameters.
+      description: "Invalid request or unsupported network."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            invalidArgument:
+              value:
+                error:
+                  code: "INVALID_ARGUMENT"
+                  message: "Invalid request parameters."
+            unsupportedNetwork:
+              value:
+                error:
+                  code: "UNSUPPORTED_NETWORK"
+                  message: "Unsupported network."
+    Error404:
+      description: "Requested resource was not found."
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
-              message: Invalid request parameters.
-    Error401:
-      description: Invalid API key.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            error:
-              message: Invalid API key.
+              code: "NOT_FOUND"
+              message: "Resource not found."
     Error429:
-      description: Request limit reached. Retry with backoff.
+      description: "Rate limit exceeded. Honor Retry-After before retrying."
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
-              message: Request limit reached. Retry with backoff.
+              code: "RATE_LIMITED"
+              message: "Rate limit exceeded."
+      headers:
+        Retry-After:
+          description: "Delay in seconds or an HTTP date before retrying."
+          schema:
+            type: "string"
     Error503:
-      description: Data temporarily unavailable. Retry with backoff.
+      description: "Request temporarily unavailable."
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
-              message: Data temporarily unavailable. Retry with backoff.
+              code: "UPSTREAM_UNAVAILABLE"
+              message: "Request could not be completed. Retry later."
