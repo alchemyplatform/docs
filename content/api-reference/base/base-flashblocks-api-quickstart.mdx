@@ -26,8 +26,6 @@ Use the migration steps below to update your Base integration. For a new integra
 | **`eth_subscribe("pendingLogs")`** | Use **`eth_subscribe("logs")`**. |
 | **`eth_subscribe("newFlashblockTransactions")`** | Use **`eth_subscribe("newHeads")`**, then fetch transactions for each canonical block. |
 | **`"pending"` in `eth_getBalance`, `eth_getTransactionCount`, `eth_call`, `eth_estimateGas`, `eth_simulateV1`, `eth_getBlockByNumber`, `eth_getBlockTransactionCountByNumber`** | Use normal RPC calls to read the **`"latest"`** canonical state / blocks. |
-| **`eth_getTransactionReceipt`** for preconfirmed receipts | Keep polling for a receipt after inclusion in a canonical block. |
-| **`eth_getTransactionByHash`** for preconfirmed transactions | Use canonical transaction data; block fields are set after inclusion in a canonical block. |
 | **`eth_getLogs`** with a range ending at **`"pending"`** | Query through **`"latest"`** or a specific canonical block number. |
 
 <Warning>
@@ -35,7 +33,3 @@ Use the migration steps below to update your Base integration. For a new integra
 </Warning>
 
 Check the [Base Flashblocks migration guide](https://docs.base.org/upgrades/denim/migrate-from-flashblocks) for more information.
-
-## Flashblocks on other chains
-
-Flashblocks remain supported on [Optimism](/docs/reference/op-mainnet-flashblocks-api-quickstart) and [Unichain](/docs/reference/unichain-flashblocks-api-quickstart). Follow the quickstart for your chain; the Base migration above applies only to Base.
