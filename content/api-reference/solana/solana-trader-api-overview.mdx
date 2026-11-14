@@ -1,0 +1,50 @@
+---
+title: Solana Trader API
+description: Alchemy's REST endpoints for pricing and building Solana token swaps.
+subtitle: Alchemy's REST endpoints for pricing and building Solana token swaps.
+---
+
+*Powered by [Metis](https://metis.builders/).*
+
+## Background
+
+The Solana Trader API returns swap quotes and, when you provide a wallet
+address, either an unsigned transaction for that wallet to sign and
+broadcast or the instructions to build one yourself. Use it to price a swap
+ahead of time, present a route to a user, or hand a signable transaction to
+a wallet. Requests use the same Alchemy API key as your other Solana calls.
+
+The Solana Trader API is powered by [Metis](https://metis.builders/), a Solana swap routing engine. Requests and responses follow the Swap V2 `/order` format, so existing integrations need minimal changes. Two differences worth calling out:
+
+* Alchemy carries auth in the URL path (see [Endpoint](#endpoint)), not in an `x-api-key` header.
+* `/quote-multiple-output-mints` is an Alchemy-specific endpoint that returns quotes for one input mint against up to 32 candidate output mints in a single request.
+
+The API exposes three endpoints:
+
+* `GET /order` returns a swap quote. Pass a `taker` to also receive an unsigned base64 transaction; omit `taker` for a quote-only response. Optional `payer` compiles a sponsor as the fee payer; optional `referralFee` + `referralAccount` charge an integrator fee.
+* `GET /build` returns raw swap instructions for composing into your own transaction (multi-leg flows, program deposits, cleanup steps). Optional `payer` rewrites rent and account-creation instructions onto a sponsor; optional `referralFee` + `referralAccount` charge an integrator fee.
+* `POST /quote-multiple-output-mints` returns quotes for a single input against up to 32 output mints in one call.
+
+## Endpoint
+
+Solana Trader API is available on **Solana Mainnet** through the standard Alchemy Solana endpoint. Devnet is not supported.
+
+```text
+https://solana-mainnet.g.alchemy.com/v2/{apiKey}
+```
+
+Use your Solana Mainnet API key from the [Alchemy Dashboard](https://dashboard.alchemy.com/apps). The `docs-demo` key powers the Try It widget on the method pages below.
+
+## Methods
+
+| Method | Function | CU cost | Throughput CUs (counted against your per-second rate limit) |
+| --- | --- | --- | --- |
+| [GET /order](/docs/chains/solana/solana-trader-api/get-swap-order) | Get a swap quote. Include a `taker` to also receive an unsigned base64 transaction; omit `taker` for quote fields only. | 100 | 80 |
+| [GET /build](/docs/chains/solana/solana-trader-api/build-swap-instructions) | Return raw swap instructions for composing into your own transaction. | 100 | 60 |
+| [POST /quote-multiple-output-mints](/docs/chains/solana/solana-trader-api/quote-multiple-output-mints) | Quote a single input mint against up to 32 candidate output mints in one call. | 100 | 100 |
+
+## Related
+
+* [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction) — submit the signed transaction returned by `/order` to the cluster.
+* [Solana Jito Bundles and Transactions](/docs/chains/solana/solana-jito-bundles-and-transactions) — pair a signed swap with a Jito tip for atomic, low-latency inclusion.
+* [Solana API Overview](/docs/solana/solana-api-overview) — the full Solana JSON-RPC surface.
