@@ -1,67 +1,48 @@
 ---
 title: "Trading API"
-description: "Explore DEX market data and wallet trading analytics in private preview."
+description: "Explore DEX market data, token metadata, and wallet trading analytics."
 ---
 
-<Markdown src="../../shared/preview-notice.mdx" />
+<Markdown src="../../shared/preview-notice-trading-beta.mdx" />
 
-Find decentralized exchange (DEX) markets, chart trading activity, and analyze wallet outcomes with your existing Alchemy API key. Responses follow the same conventions as the other Alchemy Data APIs: network slugs, opaque `pageKey` pagination, and the `{ error: { message } }` error format.
+Find decentralized exchange (DEX) markets, chart trading activity, and analyze wallet outcomes with your Alchemy API key. Responses use Alchemy network slugs, decimal strings for amounts, and ISO 8601 timestamps.
 
 ## Choose a task
 
 | I want to… | Use |
 | --- | --- |
-| Inspect a pool | [Get pool](/docs/data/trading-api/endpoints/pools/get-pool) |
-| Chart a pool | [Get pool candles](/docs/data/trading-api/endpoints/pools/get-pool-candles) |
-| Read pool trades | [Get pool trades](/docs/data/trading-api/endpoints/pools/get-pool-trades) |
-| Chart a token | [Get token candles](/docs/data/trading-api/endpoints/tokens/get-token-candles) |
+| Get market data for many tokens | [Get token market data (batch)](/docs/data/trading-api/endpoints/tokens/get-token-market-data-batch) |
+| Get token market data | [Get token market data](/docs/data/trading-api/endpoints/tokens/get-token-market-data) |
+| Read token metadata and socials | [Get token metadata](/docs/data/trading-api/endpoints/tokens/get-token-metadata) |
+| Chart a token | [Get token OHLCV](/docs/data/trading-api/endpoints/tokens/get-token-ohlcv) |
 | Read token trades | [Get token trades](/docs/data/trading-api/endpoints/tokens/get-token-trades) |
 | Find a token’s pools | [Get pools for a token](/docs/data/trading-api/endpoints/tokens/get-pools-for-a-token) |
 | Inspect the largest holders | [Get top holders](/docs/data/trading-api/endpoints/tokens/get-top-holders) |
+| Track holder count | [Get holder history](/docs/data/trading-api/endpoints/tokens/get-holder-history) |
+| Inspect top traders | [Get top traders](/docs/data/trading-api/endpoints/tokens/get-top-traders) |
+| Inspect a pool | [Get pool](/docs/data/trading-api/endpoints/pools/get-pool) |
+| Inspect many pools | [Get pools (batch)](/docs/data/trading-api/endpoints/pools/get-pools-batch) |
+| Chart a pool | [Get pool OHLCV](/docs/data/trading-api/endpoints/pools/get-pool-ohlcv) |
+| Read pool trades | [Get pool trades](/docs/data/trading-api/endpoints/pools/get-pool-trades) |
 | Find newly created pools | [Get new pools](/docs/data/trading-api/endpoints/discovery/get-new-pools) |
-| Screen pools | [Screen pools](/docs/data/trading-api/endpoints/discovery/screen-pools) |
-| Find tokens and pools | [Search tokens and pools](/docs/data/trading-api/endpoints/discovery/search-tokens-and-pools) |
-| List tokens on a network | [Get token list](/docs/data/trading-api/endpoints/discovery/get-token-list) |
-| Measure wallet profit and loss | [Get wallet PnL](/docs/data/trading-api/endpoints/wallets/get-wallet-pnl) |
-| Read a wallet’s trades | [Get wallet trades](/docs/data/trading-api/endpoints/wallets/get-wallet-trades) |
+| Find trending pools | [Get trending pools](/docs/data/trading-api/endpoints/discovery/get-trending-pools) |
+| Filter pools | [Screen pools](/docs/data/trading-api/endpoints/discovery/screen-pools) |
+| Search pools | [Search pools](/docs/data/trading-api/endpoints/discovery/search-pools) |
+| Read wallet trades | [Get wallet trades](/docs/data/trading-api/endpoints/wallets/get-wallet-trades) |
+| Read lifetime wallet PnL | [Get wallet PnL](/docs/data/trading-api/endpoints/wallets/get-wallet-pnl) |
 
-## Choose General or Premium
+## Read market activity
 
-General combines lower proposed compute-unit (CU) costs with broader coverage for several capabilities. Premium adds period-based wallet PnL history and a trading summary. Network coverage varies by operation; check the [coverage tables](/docs/data/trading-api/networks-and-conventions) before choosing a variant.
+Pool responses include nested tokens and DEX details, with activity grouped by time window. Token market data can include `topPools` references; use the pool endpoints for their details. OHLCV entries use named fields and are ordered by timestamp.
 
-General wallet PnL uses average cost to calculate lifetime realized and unrealized results, split by network and token. Premium reports realized PnL for a selected period, with history, trades, wins, losses, and win rate. **These methodologies differ, so the numbers are not comparable.**
+Top traders and holders have coverage that varies by token. Check [Networks and conventions](/docs/data/trading-api/networks-and-conventions) for endpoint coverage and pagination limits.
 
-### Proposed compute units
+## Interpret wallet PnL
 
-All CU values are proposals awaiting validation. Premium is proposed at 1.75 times General. The names General and Premium and the `/premium` prefix are also provisional.
-
-| Capability | General CU | Premium CU |
-| --- | --- | --- |
-| Get pool | 200 | 350 |
-| Get pool candles | 400 | 700 |
-| Get pool trades | 400 | 700 |
-| Get token candles | 400 | 700 |
-| Get token trades | 400 | 700 |
-| Get pools for a token | 200 | 350 |
-| Get top holders | 200 | 350 |
-| Get new pools | 400 | 700 |
-| Screen pools | 400 | 700 |
-| Search tokens and pools | 200 | 350 |
-| Get token list | 200 | 350 |
-| Get wallet PnL | 800 | 1,400 |
-| Get wallet trades | 800 | 1,400 |
+Wallet PnL is lifetime only and returns `methodology: "average_cost"`. Results include realized and unrealized PnL by network and token. A request must use only EVM networks, or `solana-mainnet` alone.
 
 <CardGroup cols={3}>
-  <Card title="Quickstart" href="/docs/data/trading-api/quickstart">Find a market, read trades, and interpret PnL.</Card>
-  <Card title="Networks and conventions" href="/docs/data/trading-api/networks-and-conventions">Check coverage and request conventions.</Card>
-  <Card title="Endpoint reference" href="/docs/data/trading-api/endpoints/pools/get-pool">Inspect request and response schemas.</Card>
+  <Card title="Quickstart" href="/docs/data/trading-api/quickstart">Find a pool, chart OHLCV, and read trades and wallet PnL.</Card>
+  <Card title="Networks and conventions" href="/docs/data/trading-api/networks-and-conventions">Check coverage, pagination, and error handling.</Card>
+  <Card title="Endpoint reference" href="/docs/data/trading-api/endpoints/tokens/get-token-market-data">Inspect request and response schemas.</Card>
 </CardGroup>
-
-## Pending
-
-* Request paths, parameter placement, and response fields are provisional.
-* Tier names and the `/premium` path prefix remain under review.
-* The base URL is provisional until confirmed before general availability.
-* Compute-unit costs await validation.
-* Update frequency is not yet defined.
-* Support for more networks is planned.
