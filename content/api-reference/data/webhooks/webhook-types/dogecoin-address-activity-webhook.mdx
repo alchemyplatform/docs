@@ -1,0 +1,171 @@
+---
+title: Dogecoin Address Activity Webhook
+description: Get real-time updates of Dogecoin transactions that send from or pay to the addresses that you track using the Dogecoin Address Activity webhook
+subtitle: Get real-time updates of Dogecoin transactions that send from or pay to the addresses that you track using the Dogecoin Address Activity webhook
+slug: reference/dogecoin-address-activity-webhook
+---
+
+<Callout intent="info" title="Beta">
+  The Dogecoin Address Activity webhook is in beta. Payload fields, limits, and behavior may change, including breaking changes.
+</Callout>
+
+<Info>
+  See the [Feature Support by Chain](/docs/reference/feature-support-by-chain) page for details about product and chain support!
+</Info>
+
+# Introduction
+
+Alchemy's Dogecoin Address Activity webhook notifies your app when a transaction in a new block spends from or pays to one of the addresses that you configure. Each notification gives the transaction from the point of view of your address: whether the address received or sent DOGE, its net balance change, the fee, and every input and output of the transaction.
+
+The webhook supports the standard Dogecoin address types: P2PKH (`D...`) and P2SH (`9...` or `A...`). It is available on Dogecoin Mainnet.
+
+The payload has the same format as the [Bitcoin Address Activity webhook](/docs/reference/bitcoin-address-activity-webhook).
+
+# How activity is reported
+
+Dogecoin uses unspent transaction outputs (UTXOs), not account balances. A transaction spends one or more earlier outputs (its inputs) and creates new outputs, so one transaction can involve many addresses. For this reason the webhook reports one activity entry per transaction and tracked address, not one entry per transfer.
+
+* **Direction.** `incoming` if your address does not spend any input of the transaction. `self` if it spends an input and every output with an address pays back to it. `outgoing` in all other cases.
+* **Net value.** The total of the outputs that pay your address, minus the total of the inputs that it spends. A negative value means that the balance of the address went down.
+* **Fee.** The total of the inputs minus the total of the outputs.
+* **Inputs and outputs.** The full lists for the transaction, so that you can identify change outputs and the other parties.
+* **Amounts.** Integer strings in koinu, the smallest unit of DOGE (1 DOGE = 100,000,000 koinu).
+
+<Info>
+  We send a notification when a block is added to the chain (one confirmation). Unconfirmed mempool transactions are not reported. If a block is removed by a chain reorganization, we send the activity from that block again with `status` set to `removed` and `removed` set to `true`.
+</Info>
+
+<Info>
+  One notification can contain several activity entries: all matching transactions in a block, for each tracked address that they involve. A busy address can have many entries in one block.
+</Info>
+
+# Example response
+
+When a transaction in a new block involves one of the addresses that you track, you receive a response like this:
+
+<CodeGroup>
+  ```json Dogecoin Address Activity Response
+  {
+    "webhookId": "wh_7fd2qk9xn3vbm0ly",
+    "id": "whevt_c8w1zr6tpk4yq2hs",
+    "createdAt": "2026-11-09T15:43:12.508Z",
+    "type": "ADDRESS_ACTIVITY",
+    "event": {
+      "network": "DOGECOIN_MAINNET",
+      "source": "dogecoin-core",
+      "activity": [
+        {
+          "address": "DLdSgSUbrdDEFLhtjwooK32Z4nzeywqzC4",
+          "txid": "669bf7d6ad940eaa03d66f17b631ca3f2652a2a796ea7ccdab4a37800d0e6545",
+          "blockHeight": 6450600,
+          "blockHash": "c56b6925180c8abece27025eeef03d152c1e09741cdc84335c0892ec77ed191e",
+          "blockTimestamp": "2026-11-09T15:43:03Z",
+          "confirmations": 1,
+          "status": "confirmed",
+          "direction": "outgoing",
+          "netValue": "-21525700000",
+          "fee": "91200000",
+          "coinbase": false,
+          "inputs": [
+            {
+              "address": "DLdSgSUbrdDEFLhtjwooK32Z4nzeywqzC4",
+              "value": "4496604200000",
+              "prevTxid": "d695c26beb469ba757689ed643f304d3f9943ec4de37b5d6a31798580bf6a09b",
+              "prevVout": 1
+            }
+          ],
+          "outputs": [
+            {
+              "address": "DGW15imk4bETHrKkmfzExWSNgf2yAbAKDm",
+              "value": "21434500000",
+              "vout": 0,
+              "scriptType": "pubkeyhash"
+            },
+            {
+              "address": "DLdSgSUbrdDEFLhtjwooK32Z4nzeywqzC4",
+              "value": "4475078500000",
+              "vout": 1,
+              "scriptType": "pubkeyhash"
+            }
+          ],
+          "removed": false
+        }
+      ]
+    }
+  }
+  ```
+</CodeGroup>
+
+# Field definitions
+
+Below you can find descriptions for each field of the response.
+
+| Field                   | Description                                                                                                                                                              | Value                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `webhookId`             | Unique ID of the webhook destination.                                                                                                                                    | `wh_7fd2qk9xn3vbm0ly`                                   |
+| `id`                    | ID of the event.                                                                                                                                                         | `whevt_c8w1zr6tpk4yq2hs`                                |
+| `createdAt`             | Timestamp when the webhook event was created.                                                                                                                            | `2026-11-09T15:43:12.508Z`                              |
+| `type`                  | Webhook event type.                                                                                                                                                      | `ADDRESS_ACTIVITY`                                      |
+| `event`                 | Object containing the network, source, and list of activity entries.                                                                                                     | `N/A`                                                   |
+| `network`               | The Dogecoin network the webhook is on.                                                                                                                                  | `DOGECOIN_MAINNET`                                      |
+| `source`                | The source used to produce the event stream.                                                                                                                             | `dogecoin-core`                                         |
+| `activity`              | List of activity entries, one for each transaction and tracked address.                                                                                                  | `N/A`                                                   |
+| `address`               | The tracked address that the entry is for.                                                                                                                               | `DLdSgSUbrdDEFLhtjwooK32Z4nzeywqzC4`                    |
+| `txid`                  | The transaction ID.                                                                                                                                                      | `669bf7d6...0d0e6545`                                   |
+| `blockHeight`           | The height of the block that includes the transaction.                                                                                                                   | `6450600`                                               |
+| `blockHash`             | The hash of the block that includes the transaction.                                                                                                                     | `c56b6925...ec77ed191e`                                 |
+| `blockTimestamp`        | The ISO 8601 timestamp of the block.                                                                                                                                     | `2026-11-09T15:43:03Z`                                  |
+| `confirmations`         | The number of confirmations of the block when the event was sent.                                                                                                        | `1`                                                     |
+| `status`                | `confirmed` for a transaction in a new block. `removed` for a transaction in a block that a chain reorganization removed.                                                | `confirmed` or `removed`                                |
+| `direction`             | The direction of the transaction for the tracked address. See [How activity is reported](#how-activity-is-reported).                                                     | `incoming`, `outgoing`, or `self`                       |
+| `netValue`              | The balance change of the tracked address in koinu: outputs that pay the address minus inputs that it spends. Negative when the address sends more than it receives.     | `-21525700000`                                          |
+| `fee`                   | The transaction fee in koinu: inputs minus outputs. Omitted for a coinbase transaction.                                                                                  | `91200000`                                              |
+| `coinbase`              | Whether the transaction is the coinbase transaction (the block reward). A coinbase transaction has no inputs.                                                            | `false`                                                 |
+| `inputs`                | All inputs of the transaction. See fields below.                                                                                                                         | `N/A`                                                   |
+| `inputs[].address`      | The address of the output that the input spends. Omitted for a script without an address.                                                                                | `DLdSgSUbrdDEFLhtjwooK32Z4nzeywqzC4`                    |
+| `inputs[].value`        | The value of the spent output in koinu.                                                                                                                                  | `4496604200000`                                         |
+| `inputs[].prevTxid`     | The ID of the transaction that created the spent output.                                                                                                                 | `d695c26b...f6a09b`                                     |
+| `inputs[].prevVout`     | The index of the spent output in that transaction.                                                                                                                       | `1`                                                     |
+| `outputs`               | All outputs of the transaction. See fields below.                                                                                                                        | `N/A`                                                   |
+| `outputs[].address`     | The address that the output pays. Omitted for a script without an address, for example an `OP_RETURN` output.                                                           | `DGW15imk4bETHrKkmfzExWSNgf2yAbAKDm`                    |
+| `outputs[].value`       | The value of the output in koinu.                                                                                                                                        | `21434500000`                                           |
+| `outputs[].vout`        | The index of the output in the transaction.                                                                                                                              | `0`                                                     |
+| `outputs[].scriptType`  | The script type of the output, as reported by Dogecoin Core.                                                                                                             | `pubkeyhash`, `scripthash`, `pubkey`, `multisig`, `nulldata` |
+| `removed`               | `true` if a chain reorganization removed the block. Equal to `status` being `removed`.                                                                                   | `false`                                                 |
+
+# How to set up a Dogecoin Address Activity webhook
+
+<Steps>
+  <Step title="Open the Webhooks page">
+    Go to the [Webhooks page](https://dashboard.alchemy.com/apps/latest/webhooks) in your Alchemy Dashboard.
+
+    <Tip>Make sure you have the correct app selected in the top left of the dashboard.</Tip>
+  </Step>
+
+  <Step title="Create the webhook">
+    Click **Create Webhook**, and choose **Address Activity** as the webhook type.
+  </Step>
+
+  <Step title="Choose the network">
+    Select **Dogecoin** in the **CHAIN** dropdown. Then choose **Mainnet** as the **NETWORK**.
+  </Step>
+
+  <Step title="Add your URL and addresses">
+    Paste your webhook URL into the **WEBHOOK URL** field. Then enter one or more **Dogecoin Addresses** that you want to track. Addresses start with `D`, `9`, or `A`.
+  </Step>
+
+  <Step title="Test and create">
+    Click **Test Webhook** to send an example event to your URL. After the test is successful, click **Create Webhook**. Your webhook appears in the list.
+  </Step>
+</Steps>
+
+Events start with the next block after you create the webhook. Earlier transactions are not sent.
+
+# Useful endpoints
+
+| Endpoint                                                                                       | Description                                                 |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Webhook Addresses](/docs/data/webhooks/webhooks-api-endpoints/get-webhook-addresses)          | Get all addresses for an Address Activity webhook.          |
+| [Update Webhook Addresses](/docs/data/webhooks/webhooks-api-endpoints/update-webhook-addresses) | Add or remove addresses from a specific webhook.            |
+| [Delete Webhook](/docs/data/webhooks/webhooks-api-endpoints/delete-webhook)                    | Delete a webhook.                                           |
+| [Update Webhook](/docs/data/webhooks/webhooks-api-endpoints/update-webhook)                    | Set the status of a webhook to active or inactive.          |
