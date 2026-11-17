@@ -1,0 +1,35 @@
+---
+title: "User Operations"
+description: "Send a transaction from a smart account, step by step."
+subtitle: "Send a transaction from a smart account, step by step."
+slug: documentation/writes/user-operations
+---
+
+Smart accounts don't send transactions directly. They sign a **user operation**, and a bundler packs it into a transaction and submits it onchain through an EntryPoint contract. Gas can be paid by the account, or by a [gas sponsorship](/docs/wallets/transactions/sponsor-gas) policy.
+
+A user operation goes through the [Bundler API](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) in this order:
+
+| Step | Method | What it does |
+| - | - | - |
+| 1 | [Estimate Gas](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) | Get the gas limits to set before signing. |
+| 2 | [Send User Operation](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) | Submit the signed user operation. Returns its hash. |
+| 3 | [Get User Operation](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) | Check whether it's still pending or included in a block. |
+| 4 | [Get Receipt](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) | Once included, see whether it succeeded, the gas it used and its logs. |
+
+[List Entry Points](/docs/wallets/api-reference/bundler-api/bundler-api-endpoints/eth-send-user-operation) returns the EntryPoint versions the bundler supports. You only need it to check compatibility, not for each operation.
+
+## 1. Estimate gas
+
+Build the user operation with your account's `sender`, `nonce` and `callData`, then call Estimate Gas. Copy the returned limits into the operation. If you use a paymaster, get its fields first, since they change the estimate.
+
+## 2. Sign and send
+
+Sign the user operation with the account's signer, then call Send User Operation. A validation error, such as `AA21` for an account that can't pay, comes back straight away with an `AAxx` code.
+
+## 3. Track it
+
+Poll Get User Operation with the returned hash. While it's waiting in the bundler's mempool, the block fields are `null`.
+
+## 4. Get the receipt
+
+Once it's included, Get Receipt returns `success`, the actual gas cost and the logs emitted. A receipt means the operation is in a block, not that it's final. See [Commitment Levels](/docs/documentation/architecture/engine/consistency/commitment-levels).

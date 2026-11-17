@@ -1,0 +1,19 @@
+---
+title: "eth_sendRawTransactionSync"
+description: "Send a transaction and get its receipt in one call."
+subtitle: "Send a transaction and get its receipt in one call."
+slug: documentation/experiments/send-raw-transaction-sync
+---
+
+`eth_sendRawTransaction` returns a transaction hash, and you then poll `eth_getTransactionReceipt` until the transaction is included. `eth_sendRawTransactionSync` ([EIP-7966](https://eips.ethereum.org/EIPS/eip-7966)) waits for the transaction to be included and returns the receipt directly.
+
+```bash
+curl https://base-mainnet.g.alchemy.com/v2 \
+  --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --header 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"eth_sendRawTransactionSync","params":["0xSIGNED_TRANSACTION"]}'
+```
+
+This saves round trips and latency, most of all on networks with fast blocks.
+
+If the transaction isn't included before the timeout, you get an error with the transaction hash. Fall back to polling `eth_getTransactionReceipt` with it.

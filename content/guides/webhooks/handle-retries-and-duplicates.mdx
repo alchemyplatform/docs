@@ -1,0 +1,71 @@
+---
+title: "Handle Retries and Duplicates"
+description: "Acknowledge events quickly and process each one exactly once."
+subtitle: "Acknowledge events quickly and process each one exactly once."
+slug: guides/webhooks/handle-retries-and-duplicates
+---
+
+## Respond within 5 seconds
+
+A delivery succeeds when your server responds with any `2xx` status within 5 seconds. Respond as soon as you've stored the event, and do slow work, such as database writes, emails or onchain calls, afterwards in a queue or background job.
+
+```ts
+async POST(req) {
+  const rawBody = await req.text();
+  // verify the signature first
+  await queue.add("alchemy-event", JSON.parse(rawBody));
+  return new Response(null, { status: 200 });
+}
+```
+
+## How retries work
+
+If a delivery fails, with a status other than `2xx`, a timeout or a connection error, Alchemy retries it with a growing delay:
+
+**1. First delivery**
+
+Sent as soon as the event happens.
+
+**2. Retry after 15 seconds**
+
+Catches brief blips, such as a deploy or a restart.
+
+**3. Retry after 1 minute**
+
+**4. Retry after 10 minutes**
+
+On Free and Pay As You Go, this is the last attempt, about 11 minutes after the first.
+
+**5. Retry after 1 hour, on Enterprise**
+
+The last attempt on Enterprise, about 1 hour 11 minutes after the first. Need longer? [Contact us](mailto:support@alchemy.com) to retry for up to 7 days, every 6 hours.
+
+**6. Give up**
+
+If the last attempt fails, the event is dropped. On the Free plan, the webhook is also turned off and you get an email. Pay As You Go and Enterprise webhooks stay on.
+
+Events are delivered in order the first time. A retried event can arrive after newer ones, so don't rely on order across retries. Use the block number in the event when order matters.
+
+## If your webhook was turned off
+
+A turned-off webhook sends no events, and shows `"is_active": false` in [Get Webhook](/docs/reference/webhooks-overview). Fix your endpoint, then turn the webhook back on with [Update Webhook](/docs/reference/webhooks-overview) and `"is_active": true`.
+
+You can also turn a webhook off yourself while you fix a problem. Retries waiting for it are dropped too, so fill the gap afterwards.
+
+## Skip duplicates
+
+A retry can deliver an event you already processed, for example if your server handled it but the response was lost. Every event has a unique `id`, such as `whevt_ogrc5v64myey69ux`. Record the IDs you've processed, and skip any you've seen:
+
+```ts
+async function handle(event) {
+  const isNew = await db.processedEvents.insertIfMissing(event.id);
+  if (!isNew) return; // already processed
+  await creditDeposit(event.event);
+}
+```
+
+Make the insert and the work happen in one transaction where you can, so a crash between them doesn't drop or repeat the event.
+
+## Fill gaps after an outage
+
+Dropped events aren't delivered again. To catch up after an outage, or after your webhook was turned off, fetch what you missed from the [Activity](/docs/reference/transfers-api-quickstart) endpoint for your tracked addresses, starting from the last block you processed.

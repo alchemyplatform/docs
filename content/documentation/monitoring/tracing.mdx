@@ -1,0 +1,62 @@
+---
+title: "Tracing"
+description: "Match each request in your logs to the same request on our side."
+subtitle: "Match each request in your logs to the same request on our side."
+slug: documentation/monitoring/tracing
+---
+
+## Every request has a trace ID
+
+Every response includes an `x-alchemy-trace-id` header. It identifies the request across our systems, so log it next to your own request logs.
+
+```http
+HTTP/2 200
+content-type: application/json
+x-alchemy-trace-id: d762de73-aa9d-45e1-a1ce-47448f361bf0
+```
+
+Errors carry it too, including JSON-RPC errors and `401` responses.
+
+## Use your own ID
+
+Send an `X-Alchemy-Trace-Id` header, and we use your value instead of generating one. It comes back unchanged in the response, so one ID links your telemetry to our logs.
+
+```bash
+curl -i https://eth-mainnet.g.alchemy.com/v2 \
+  --header 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --header 'Content-Type: application/json' \
+  --header 'X-Alchemy-Trace-Id: checkout-7f3a9c2e-4b1d-4e8a-9f6c-2d5e8a1b3c7f' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
+```
+
+```ts
+const traceId = `checkout-${crypto.randomUUID()}`;
+
+const res = await fetch("https://eth-mainnet.g.alchemy.com/v2", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.ALCHEMY_TOKEN}`,
+    "Content-Type": "application/json",
+    "X-Alchemy-Trace-Id": traceId,
+  },
+  body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }),
+});
+
+console.log(res.headers.get("x-alchemy-trace-id")); // checkout-7f3a9c2e-…
+```
+
+## Choosing a trace ID
+
+* **Make it unique per request.** A UUID, or the request or span ID your app already uses, works well.
+* **Add a short prefix** for the part of your app that sent it, such as `checkout-` or `indexer-`, to make it easy to filter.
+* **Use a new ID for each retry**, such as `checkout-7f3a…-retry-1`, so you can tell attempts apart.
+* **Keep it short and plain:** letters, numbers, `-` and `_`, up to 128 characters.
+* **Don't include secrets or personal data.** Trace IDs are stored in our logs.
+
+## Batches
+
+A [batch request](/docs/reference/batch-requests) has one trace ID for the whole HTTP request, shared by every call in the batch.
+
+## Getting help
+
+When you [contact us](mailto:support@alchemy.com) about a failed or slow request, include its trace ID. It lets us find that exact request in our logs.

@@ -1,0 +1,28 @@
+---
+title: "Sticky Routing"
+description: "How transactions and filters stay on the node that has them."
+subtitle: "How transactions and filters stay on the node that has them."
+slug: documentation/architecture/engine/consistency/sticky-routing
+---
+
+Some requests only make sense on the node that handled an earlier one. A transaction you just sent sits in that node's mempool before it's shared with the network, and a filter you create lives on the node that created it.
+
+Sticky routing sends these follow-up requests to the same node, so:
+
+* `eth_getTransactionCount` with `pending` counts the transaction you just sent, so your next nonce is right.
+* `eth_getTransactionByHash` finds your transaction straight away, before it reaches other nodes.
+* `eth_getFilterChanges` reaches the node that holds your filter from `eth_newFilter`.
+
+It works automatically, with no change to your requests.
+
+## Retrying a transaction
+
+If a transaction isn't included, for example because its gas price is too low, it can stay in the node's mempool. Sending the exact same signed transaction again then returns `already known`, because the request goes back to that node.
+
+To retry, replace it instead: sign a new transaction with the **same nonce** and a **higher gas price**, at least 10% more. The node swaps it in for the stuck one.
+
+## Tips
+
+* **Track nonces yourself** when you send many transactions quickly, instead of calling `eth_getTransactionCount` before each one.
+* **Wait for the right level.** A receipt means your transaction is in a block, not that it's final. See [Commitment Levels](/docs/documentation/architecture/engine/consistency/commitment-levels).
+* **Recreate filters** if `eth_getFilterChanges` returns `filter not found`. Filters expire after a few minutes without being polled.

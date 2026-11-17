@@ -1,0 +1,21 @@
+---
+title: "Fast Confirmation Rule"
+description: "Confirm Ethereum blocks in seconds instead of minutes."
+subtitle: "Confirm Ethereum blocks in seconds instead of minutes."
+slug: documentation/experiments/fast-confirmation
+---
+
+On Ethereum, a block becomes [`safe`](/docs/documentation/architecture/engine/consistency/commitment-levels) after about 6 minutes and `finalized` after about 13. The [Fast Confirmation Rule](https://fastconfirmation.it) (FCR) lets a block be confirmed within a few slots, about 30 seconds, as long as the network is running normally.
+
+FCR is computed by the consensus client from validator votes. A confirmed block won't be reorged unless the network has a major outage or an attack.
+
+## When to use it
+
+* Bridges and cross-chain messaging that wait on Ethereum confirmations.
+* Deposits and payments that need confidence faster than `safe`.
+
+Keep using `finalized` when you need a guarantee that holds even during an outage.
+
+## Availability
+
+FCR is in early access on Ethereum mainnet and Sepolia. [Contact us](mailto:support@alchemy.com) to enable it.
