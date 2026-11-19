@@ -1,0 +1,163 @@
+---
+title: "Token Protection API quickstart"
+description: "Check an ERC-20 token, choose how to display it, and handle slow first requests and errors."
+---
+
+<Markdown src="../../shared/preview-notice.mdx" />
+
+Check USDC on Ethereum and use its classification to decide how your app displays it. You need access to the private preview and an Alchemy API key.
+
+Use Node.js 18 or later for the TypeScript example. Copy the TypeScript blocks below, in order, into `token-protection.mts`, replace `YOUR_API_KEY`, and run `npx tsx token-protection.mts`. The example includes timeout and retry handling.
+
+<Steps>
+  <Step title="Get an API key">
+    Follow [Create an Alchemy API key](/docs/create-an-api-key) to create or select an app and copy its key.
+  </Step>
+
+  <Step title="Check a token">
+    Send one contract address and its network. Replace `YOUR_API_KEY` with your key. The base URL is provisional during the preview.
+
+    ```bash
+    curl --request POST \
+      --url 'https://api.g.alchemy.com/data/v1/YOUR_API_KEY/tokens/scan' \
+      --header 'Content-Type: application/json' \
+      --max-time 90 \
+      --data '{"contract":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","network":"eth-mainnet"}'
+    ```
+
+    The TypeScript version retries temporary HTTP errors. The final step explains that behavior.
+
+    ```typescript
+    interface TokenProtection {
+      contractAddress: string;
+      network: string;
+      name?: string;
+      symbol?: string;
+      decimals?: number;
+      logo?: string;
+      classification: "benign" | "spam" | "scam" | "unknown";
+      riskFeatures: string[];
+      confidence: number;
+      scannedAt: string;
+    }
+
+    interface ProtectionResponse {
+      data: TokenProtection;
+    }
+
+    function retryDelayMs(retryAfter: string | null, attempt: number): number {
+      const backoff = 1_000 * 2 ** attempt;
+      if (retryAfter === null) {
+        return backoff;
+      }
+      const seconds = Number(retryAfter);
+      if (Number.isFinite(seconds) && seconds >= 0) {
+        return Math.max(backoff, seconds * 1_000);
+      }
+      const retryAt = Date.parse(retryAfter);
+      return Number.isNaN(retryAt)
+        ? backoff
+        : Math.max(backoff, retryAt - Date.now());
+    }
+
+    async function getTokenProtection({
+      apiKey,
+      contract,
+      network,
+    }: {
+      apiKey: string;
+      contract: string;
+      network: string;
+    }): Promise<TokenProtection> {
+      const url = `https://api.g.alchemy.com/data/v1/${encodeURIComponent(apiKey)}/tokens/scan`;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 90_000);
+        let delay = 0;
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contract, network }),
+            signal: controller.signal,
+          });
+          if (response.ok) {
+            const body = (await response.json()) as ProtectionResponse;
+            return body.data;
+          }
+          const message = await response.text();
+          if (![429, 502, 503].includes(response.status) || attempt === 3) {
+            throw new Error(`HTTP ${response.status}: ${message}`);
+          }
+          delay = retryDelayMs(response.headers.get("Retry-After"), attempt);
+        } finally {
+          clearTimeout(timeout);
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+      throw new Error("Request attempts exhausted");
+    }
+
+    const protection = await getTokenProtection({
+      apiKey: "YOUR_API_KEY",
+      contract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      network: "eth-mainnet",
+    });
+    console.log(JSON.stringify({ data: protection }, null, 2));
+    ```
+
+    Expect a `data` object in this shape. This is an illustrative result; the returned values and timestamp can differ, and metadata fields may be omitted.
+
+    ```json
+    {
+      "data": {
+        "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "network": "eth-mainnet",
+        "name": "USD Coin",
+        "symbol": "USDC",
+        "decimals": 6,
+        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+        "classification": "benign",
+        "riskFeatures": ["verified_legit"],
+        "confidence": 1,
+        "scannedAt": "2026-11-18T12:00:00Z"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Act on the result">
+    Choose the display policy for your app. This example shows benign tokens, hides spam, and warns about scam or unknown classifications. It also warns if a future response contains an unfamiliar classification.
+
+    ```typescript
+    function displayAction(classification: string): "show" | "hide" | "warn" {
+      switch (classification) {
+        case "benign":
+          return "show";
+        case "spam":
+          return "hide";
+        case "scam":
+        case "unknown":
+        default:
+          return "warn";
+      }
+    }
+
+    console.log(displayAction(protection.classification));
+    ```
+
+    For the illustrative benign result above, this prints `show`.
+  </Step>
+
+  <Step title="Handle slow first requests and errors">
+    The first request for a token we haven't seen can take noticeably longer because we analyze it on demand. Later requests return the stored result. We're working on making first requests faster.
+
+    Set client timeouts to at least 60 seconds. Both examples use a 90-second timeout; this is a client setting, not a response-time promise.
+
+    The TypeScript helper makes at most four attempts. It retries HTTP `429`, `502` and `503` with exponential backoff, waiting at least as long as `Retry-After` when present. It accepts that header as seconds or an HTTP date.
+
+    HTTP `400` and `404` are surfaced without retrying, as are other HTTP errors. Transport errors and timeouts are surfaced so your app can decide what to do next.
+  </Step>
+</Steps>
+
+See the [endpoint reference](/docs/data/token-protection-api/token-protection-api-endpoints/token-protection/get-token-protection) for the complete request, response and risk feature definitions.

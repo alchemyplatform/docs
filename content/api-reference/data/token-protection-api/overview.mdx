@@ -1,0 +1,62 @@
+---
+title: "Token Protection API"
+description: "Check ERC-20 tokens for spam and scam signals before displaying them or enabling trades."
+---
+
+<Markdown src="../../shared/preview-notice.mdx" />
+
+Check whether an ERC-20 token is spam or a scam before you show it in your app or let people trade it. Send one request with your existing Alchemy API key to get a classification, confidence and the features behind the result.
+
+## What you get
+
+The response contains a `data` object with these fields:
+
+| Field | What it tells you |
+| --- | --- |
+| `contractAddress` | The token contract address, lowercased. |
+| `network` | The network slug from your request. |
+| `name`, `symbol`, `decimals`, `logo` | Token metadata. Any of these fields may be omitted. |
+| `classification` | `benign`, `spam`, `scam` or `unknown`. |
+| `riskFeatures` | Feature names behind the classification. The list can be empty. |
+| `confidence` | 0 to 1; higher means stronger evidence for the classification. |
+| `scannedAt` | When this result was produced. |
+
+## Classifications
+
+These handling choices are suggestions. You decide the policy for your app.
+
+| Classification | Meaning | Suggested handling |
+| --- | --- | --- |
+| `benign` | No risk signals found. | Show the token. |
+| `spam` | Unsolicited or low-value token activity. | Hide or collapse the token. |
+| `scam` | Signals of harmful behavior, such as fake balances, phishing or restrictions on selling. | Block the action or show a warning. |
+| `unknown` | We couldn't determine a classification. | Treat the token with caution. |
+
+## Risk features
+
+Use `riskFeatures` to explain a classification in your interface. For example, `phishing_lure` means the token's metadata directs holders to an outside site or claim action; `airdrop_dust` indicates unsolicited distribution to many wallets.
+
+See the [endpoint reference](/docs/data/token-protection-api/token-protection-api-endpoints/token-protection/get-token-protection) for the full feature table. The list can be empty, and new features may be added.
+
+## Supported networks
+
+| Network | Slug |
+| --- | --- |
+| Ethereum | `eth-mainnet` |
+| Base | `base-mainnet` |
+| BNB Smart Chain | `bnb-mainnet` |
+| Polygon | `matic-mainnet` |
+| Arbitrum | `arb-mainnet` |
+| Optimism | `opt-mainnet` |
+| Robinhood Chain | `robinhood-mainnet` |
+
+## During the beta
+
+<Note>
+  The first request for a token we haven't analyzed before can take noticeably longer because we analyze it on demand. Later requests for the same token return the stored result. We're working on making first requests faster; set client timeouts generously. Endpoints and fields may change during the preview. Pricing and request quotas are pending.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" href="/docs/data/token-protection-api/quickstart">Check a token and handle its classification in your app.</Card>
+  <Card title="Endpoint reference" href="/docs/data/token-protection-api/token-protection-api-endpoints/token-protection/get-token-protection">Inspect request fields, response fields and risk features.</Card>
+</CardGroup>
