@@ -21,8 +21,8 @@ The Solana Trader API is powered by [Metis](https://metis.builders/), a Solana s
 
 The API exposes three endpoints:
 
-* `GET /order` returns a swap quote. Pass a `taker` to also receive an unsigned base64 transaction; omit `taker` for a quote-only response. Optional `payer` compiles a sponsor as the fee payer; optional `referralFee` + `referralAccount` charge an integrator fee.
-* `GET /build` returns raw swap instructions for composing into your own transaction (multi-leg flows, program deposits, cleanup steps). Optional `payer` rewrites rent and account-creation instructions onto a sponsor; optional `referralFee` + `referralAccount` charge an integrator fee.
+* `GET /swap/v2/order` returns a swap quote. Pass a `taker` to also receive an unsigned base64 transaction; omit `taker` for a quote-only response. Optional `payer` compiles a sponsor as the fee payer; optional `referralFee` + `referralAccount` charge an integrator fee.
+* `GET /swap/v2/build` returns raw swap instructions for composing into your own transaction (multi-leg flows, program deposits, cleanup steps). Optional `payer` rewrites rent and account-creation instructions onto a sponsor; optional `referralFee` + `referralAccount` charge an integrator fee.
 * `POST /quote-multiple-output-mints` returns quotes for a single input against up to 32 output mints in one call.
 
 ## Endpoint
@@ -39,12 +39,12 @@ Use your Solana Mainnet API key from the [Alchemy Dashboard](https://dashboard.a
 
 | Method | Function | CU cost | Throughput CUs (counted against your per-second rate limit) |
 | --- | --- | --- | --- |
-| [GET /order](/docs/chains/solana/solana-trader-api/get-swap-order) | Get a swap quote. Include a `taker` to also receive an unsigned base64 transaction; omit `taker` for quote fields only. | 100 | 80 |
-| [GET /build](/docs/chains/solana/solana-trader-api/build-swap-instructions) | Return raw swap instructions for composing into your own transaction. | 100 | 60 |
+| [GET /swap/v2/order](/docs/chains/solana/solana-trader-api/get-swap-order) | Get a swap quote. Include a `taker` to also receive an unsigned base64 transaction; omit `taker` for quote fields only. | 100 | 80 |
+| [GET /swap/v2/build](/docs/chains/solana/solana-trader-api/build-swap-instructions) | Return raw swap instructions for composing into your own transaction. | 100 | 60 |
 | [POST /quote-multiple-output-mints](/docs/chains/solana/solana-trader-api/quote-multiple-output-mints) | Quote a single input mint against up to 32 candidate output mints in one call. | 100 | 100 |
 
 ## Related
 
-* [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction) — submit the signed transaction returned by `/order` to the cluster.
+* [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction) — submit the signed transaction returned by `/swap/v2/order` to the cluster.
 * [Solana Jito Bundles and Transactions](/docs/chains/solana/solana-jito-bundles-and-transactions) — pair a signed swap with a Jito tip for atomic, low-latency inclusion.
 * [Solana API Overview](/docs/solana/solana-api-overview) — the full Solana JSON-RPC surface.
