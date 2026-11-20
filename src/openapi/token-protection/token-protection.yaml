@@ -1,0 +1,269 @@
+# Hand-maintained copy for the private preview.
+# This will move to a remote spec once the service publishes it.
+openapi: 3.1.0
+info:
+  title: Token Protection API
+  version: "1.0.0"
+  description: >-
+    Check an ERC-20 token's classification and the risk features behind the result.
+    We analyze the token's contract, onchain activity and market data.
+servers:
+  - url: https://api.g.alchemy.com
+    description: Provisional base URL; it will be confirmed before general availability.
+tags:
+  - name: Token Protection
+    description: Spam and scam classifications for token contracts.
+paths:
+  /data/v1/{apiKey}/tokens/scan:
+    post:
+      operationId: getTokenProtection
+      tags:
+        - Token Protection
+      summary: Get token protection
+      description: |-
+        **Private preview:** Check the classification and risk features for one ERC-20 token contract.
+
+        During the beta, the first request for a token we haven't seen can take noticeably longer because we analyze it on demand. Later requests return the stored result. We're working on making first requests faster; set client timeouts generously.
+
+        **Compute units:** pending
+
+        Send your Alchemy API key in the URL path:
+
+        ```bash
+        curl --request POST \
+          --url 'https://api.g.alchemy.com/data/v1/YOUR_API_KEY/tokens/scan' \
+          --header 'Content-Type: application/json' \
+          --max-time 90 \
+          --data '{"contract":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48","network":"eth-mainnet"}'
+        ```
+      parameters:
+        - name: apiKey
+          in: path
+          required: true
+          description: Your Alchemy API key.
+          schema:
+            type: string
+            default: docs-demo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+            examples:
+              usdc:
+                summary: USDC on Ethereum
+                value:
+                  contract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                  network: eth-mainnet
+      responses:
+        "200":
+          description: The classification result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ScanResult"
+              examples:
+                benign:
+                  summary: Benign classification
+                  description: Illustrative result for USDC on Ethereum. Your result and timestamp can differ.
+                  value:
+                    data:
+                      contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                      network: eth-mainnet
+                      name: USD Coin
+                      symbol: USDC
+                      decimals: 6
+                      logo: "https://static.alchemyapi.io/images/assets/3408.png"
+                      classification: benign
+                      riskFeatures:
+                        - verified_legit
+                      confidence: 1
+                      scannedAt: "2026-11-18T12:00:00Z"
+                spam:
+                  summary: Illustrative spam classification
+                  description: Fictional token and address to demonstrate the response shape.
+                  value:
+                    data:
+                      contractAddress: "0x0000000000000000000000000000000000000011"
+                      network: eth-mainnet
+                      name: Example Rewards
+                      symbol: EXAMPLE
+                      decimals: 18
+                      classification: spam
+                      riskFeatures:
+                        - airdrop_dust
+                        - spammy_metadata
+                      confidence: 0.91
+                      scannedAt: "2026-11-18T12:00:00Z"
+                scam:
+                  summary: Illustrative scam classification
+                  description: Fictional token and address to demonstrate the response shape.
+                  value:
+                    data:
+                      contractAddress: "0x0000000000000000000000000000000000000022"
+                      network: eth-mainnet
+                      name: Example Claim Token
+                      symbol: CLAIM
+                      decimals: 18
+                      classification: scam
+                      riskFeatures:
+                        - fake_balance
+                        - phishing_lure
+                      confidence: 1
+                      scannedAt: "2026-11-18T12:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: The token could not be found on this network.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: >-
+            Too many requests. Retry with backoff and honor `Retry-After`.
+        "502":
+          description: The request failed; retry later.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: Token protection is temporarily unavailable; retry later.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  responses:
+    BadRequest:
+      description: >-
+        The body is not valid JSON, the contract address is malformed, or the
+        network is not supported.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid API key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    ScanRequest:
+      type: object
+      required:
+        - contract
+        - network
+      properties:
+        contract:
+          type: string
+          description: The ERC-20 token contract address.
+          pattern: "^0x[0-9a-fA-F]{40}$"
+        network:
+          type: string
+          description: The network on which the token contract is deployed.
+          enum:
+            - eth-mainnet
+            - base-mainnet
+            - bnb-mainnet
+            - matic-mainnet
+            - arb-mainnet
+            - opt-mainnet
+            - robinhood-mainnet
+    ScanResult:
+      type: object
+      required:
+        - contractAddress
+        - network
+        - classification
+        - riskFeatures
+        - confidence
+        - scannedAt
+      properties:
+        contractAddress:
+          type: string
+          description: The token contract address, lowercased.
+        network:
+          type: string
+          description: The network slug from the request.
+          example: eth-mainnet
+        name:
+          type: string
+          description: Token name. May be omitted.
+        symbol:
+          type: string
+          description: Token symbol. May be omitted.
+        decimals:
+          type: integer
+          description: Number of decimal places used by the token. May be omitted.
+        logo:
+          type: string
+          description: Token logo URL. May be omitted.
+        classification:
+          type: string
+          description: |-
+            `benign`: No risk signals found.
+            `spam`: Unsolicited or low-value token activity.
+            `scam`: Signals of harmful behavior, such as fake balances, phishing or restrictions on selling.
+            `unknown`: We couldn't determine a classification.
+          enum:
+            - benign
+            - spam
+            - scam
+            - unknown
+        riskFeatures:
+          type: array
+          description: |-
+            Features behind the classification. The list can be empty, and new features may be added.
+
+            | Feature | Meaning |
+            | --- | --- |
+            | `honeypot` | Signs that holders may be unable to sell. |
+            | `cannot_sell` | Signs that holders cannot sell their full balance. |
+            | `fake_balance` | The token reports balances for addresses that have not received it. |
+            | `owner_mint` | A privileged address can mint tokens without a fixed cap. |
+            | `owner_balance_control` | A privileged address can change or move holders' balances. |
+            | `sell_restriction` | The contract can stop or penalize selling or transfers. |
+            | `blacklist_or_pause` | A privileged address can block holders or pause transfers. |
+            | `fee_manipulation` | Fees are unusually high or can be raised without a bound. |
+            | `proxy_backdoor` | Contract changes or hidden controls may alter token behavior. |
+            | `phishing_lure` | Token metadata directs holders to an outside site or claim action. |
+            | `name_impersonation` | The token imitates the identity of a recognized token. |
+            | `airdrop_dust` | The token was distributed unsolicited to many wallets. |
+            | `spammy_metadata` | The name or symbol contains promotion, claim bait or impersonation. |
+            | `no_market` | Little or no evidence of an active market was found. |
+            | `verified_legit` | The token is recognized as legitimate. |
+            | `verified_factory` | The token was created by a recognized token factory. |
+          items:
+            type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: 0 to 1; higher means stronger evidence for the classification.
+        scannedAt:
+          type: string
+          format: date-time
+          description: When this result was produced.
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
