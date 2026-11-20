@@ -1,7 +1,7 @@
 ---
 title: Testnet faucets
-description: Get free testnet tokens from Alchemy faucets for Ethereum Sepolia, Base Sepolia, Arbitrum Sepolia, Polygon Amoy, and more.
-subtitle: Get free testnet tokens from Alchemy faucets for Ethereum Sepolia, Base Sepolia, Arbitrum Sepolia, Polygon Amoy, and more.
+description: Get free testnet tokens from Alchemy faucets for Ethereum Sepolia, Base Sepolia, Arbitrum Sepolia, Solana Devnet, Polygon Amoy, and more.
+subtitle: Get free testnet tokens from Alchemy faucets for Ethereum Sepolia, Base Sepolia, Arbitrum Sepolia, Solana Devnet, Polygon Amoy, and more.
 slug: docs/faucets
 ---
 
@@ -22,6 +22,7 @@ Each faucet accepts 1 request every 24 hours for each wallet address.
 | [Base Sepolia](https://www.alchemy.com/faucets/base-sepolia)                 | 0.1 ETH            |
 | [Optimism Sepolia](https://www.alchemy.com/faucets/optimism-sepolia)         | 0.1 ETH            |
 | [Polygon Amoy](https://www.alchemy.com/faucets/polygon-amoy)                 | 0.1 POL            |
+| [Solana Devnet](https://www.alchemy.com/faucets/solana-devnet)               | 0.1 SOL            |
 | [Abstract Testnet](https://www.alchemy.com/faucets/abstract-testnet)         | 0.1 ETH            |
 | [CrossFi Testnet](https://www.alchemy.com/faucets/crossfi-testnet)           | 0.1 XFI            |
 | [Gensyn Testnet](https://www.alchemy.com/faucets/gensyn-testnet)             | 0.1 ETH            |
@@ -45,6 +46,22 @@ Each faucet accepts 1 request every 24 hours for each wallet address.
 The [faucets page](https://www.alchemy.com/faucets) always shows the current
 list of networks and amounts.
 
+### Solana Devnet
+
+The [Alchemy Solana Devnet Faucet](https://www.alchemy.com/faucets/solana-devnet)
+sends 0.1 SOL to a Solana devnet address once every 24 hours. You do not need an
+Alchemy account. The receiving wallet must meet the
+[eligibility requirements](#eligibility-requirements), including a minimum
+mainnet SOL balance.
+
+#### Other ways to get devnet SOL
+
+If you need more devnet SOL, or your wallet does not meet the eligibility
+requirements, you can also:
+
+* Run `solana airdrop 1 <YOUR_ADDRESS> --url devnet` with the Solana CLI.
+* Use the official [Solana faucet](https://faucet.solana.com/).
+
 ## Eligibility requirements
 
 To prevent abuse, the wallet that receives the tokens must meet these
@@ -63,10 +80,15 @@ Some networks have different requirements:
   low testnet balance requirement still applies.
 * **Humanity Testnet:** there is no mainnet balance or mainnet activity
   requirement. The low testnet balance requirement still applies.
+* **Solana Devnet:** the wallet holds a minimum SOL balance on Solana mainnet
+  and has a history of transactions on Solana mainnet. There is no Ethereum
+  mainnet balance or activity requirement. The low testnet balance requirement
+  still applies.
 
-The faucet checks the address that you enter. The mainnet ETH and the mainnet
-transactions must be on that same address, not on a different wallet that you
-own. ETH on other networks, such as Base or Arbitrum One, does not count.
+The faucet checks the address that you enter. The mainnet balance and the
+mainnet transactions must be on that same address, not on a different wallet
+that you own. ETH on other networks, such as Base or Arbitrum One, does not
+count.
 
 ## Request testnet tokens
 
@@ -77,7 +99,8 @@ own. ETH on other networks, such as Base or Arbitrum One, does not count.
   </Step>
 
   <Step title="Enter your wallet address">
-    Enter the `0x` address of the wallet that will receive the tokens. The
+    Enter the address of the wallet that will receive the tokens: a `0x`
+    address for EVM networks, or a Solana address for Solana Devnet. The
     faucet does not accept ENS names.
   </Step>
 
@@ -108,7 +131,7 @@ own. ETH on other networks, such as Base or Arbitrum One, does not count.
 | Insufficient activity! Your wallet does not have enough Ethereum Mainnet activity.     | Use a wallet that has a history of transactions on Ethereum mainnet.                          |
 | Maximum balance exceeded! Your wallet already has a significant testnet token balance. | Use the tokens that you have.                                                                 |
 | Rate limit exceeded. You can request 1 time per 24 hour(s).                            | Try again after the time in the message.                                                      |
-| Enter a valid wallet address to get your test tokens                                   | Enter a `0x` address. ENS names are not supported.                                            |
+| Enter a valid wallet address to get your test tokens                                   | Enter a `0x` address, or a Solana address on Solana Devnet. ENS names are not supported.      |
 | CAPTCHA verification failed. Please try again.                                         | Complete the CAPTCHA again. If it fails again, refresh the page.                              |
 | Insufficient faucet balance                                                            | The faucet is temporarily empty. Try again later. This error does not use your request limit. |
 | Transaction is taking longer than expected. Please check the explorer for status.      | The testnet is congested. Open the transaction link in the block explorer.                    |
@@ -131,8 +154,6 @@ with the network, the amount, and the receiving address.
 
 ## Networks without an Alchemy faucet
 
-* **Solana devnet:** use the [Solana faucet](https://faucet.solana.com/), or run
-  `solana airdrop 1 <YOUR_ADDRESS> --url devnet` with the Solana CLI.
 * **Test USDC:** use the [Circle faucet](https://faucet.circle.com/).
 * **Other testnets:** see the faucet links in the FAQ for that chain in the
   Chains section of these docs. For some layer 2 testnets, you can also get
@@ -146,3 +167,5 @@ with the network, the amount, and the receiving address.
   and find chain IDs and RPC URLs.
 * [Deploy a smart contract to Sepolia](/docs/how-to-deploy-a-smart-contract-to-the-sepolia-testnet)
   with your testnet ETH.
+* [Build and deploy a Solana program](/docs/hello-world-solana-program) on
+  Solana devnet with your devnet SOL.
