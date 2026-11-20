@@ -140,15 +140,17 @@ Once connected, sign in with your Alchemy account when prompted. Then the typica
 
 ## Available tools
 
-The server exposes **168 tools** in three categories:
+The server exposes **166 tools** in three categories:
 
-### Admin — Account & App Management (8 tools)
+### Admin — Account, App & Product Management (24 tools)
 
-Manage your Alchemy account and apps. These tools do not interact with the blockchain.
+Manage your Alchemy account, apps, webhooks, gas policies, and usage. These tools do not interact with the blockchain.
 
 | Tool | Description |
 |------|-------------|
 | `ping` | Health check |
+| `list_teams` | List the teams you belong to and show the selected one |
+| `select_team` | Select the team that app tools act on |
 | `list_apps` | List your Alchemy apps |
 | `get_app` | Get app details |
 | `select_app` | Select an app and cache its API key for RPC/Data tools |
@@ -156,12 +158,26 @@ Manage your Alchemy account and apps. These tools do not interact with the block
 | `update_app` | Update app name or description |
 | `list_chains` | List all 100+ supported networks |
 | `update_allowlist` | Update app allowlists (network, address, origin, IP) |
+| `list_webhooks` | List Notify webhooks for an app |
+| `create_webhook` | Create a Notify webhook |
+| `update_webhook` | Update a Notify webhook |
+| `delete_webhook` | Delete a Notify webhook |
+| `get_webhook_addresses` | Get the address activity filters for a webhook |
+| `get_webhook_nft_filters` | Get the NFT activity filters for a webhook |
+| `list_gas_policies` | List Gas Manager policies for an app |
+| `get_gas_policy` | Get a Gas Manager policy by ID |
+| `create_gas_policy` | Create a Gas Manager sponsorship or Solana policy |
+| `set_gas_policy_status` | Activate or deactivate a Gas Manager policy |
+| `get_usage_summary` | Get compute unit (CU) usage for the current billing period, last 7 days, and last 30 days |
+| `get_usage_time_series` | Get usage over time, with filters and grouping by app, network, method, or request type |
+| `faucet_drip` | Request testnet funds for an address on a supported testnet |
+| `submit_feedback` | Send product feedback to Alchemy |
 
-### RPC — Onchain JSON-RPC (132 tools)
+### RPC — Onchain JSON-RPC (123 tools)
 
 Make JSON-RPC calls to blockchain nodes. All require `select_app` first.
 
-<Accordion title="Standard EVM RPC (32 tools)">
+<Accordion title="Standard EVM RPC (31 tools)">
 
 | Tool | Description |
 |------|-------------|
@@ -196,7 +212,6 @@ Make JSON-RPC calls to blockchain nodes. All require `select_app` first.
 | `netVersion` | Get the network ID |
 | `web3ClientVersion` | Get the client version |
 | `web3Sha3` | Compute a Keccak-256 hash |
-| `resolveEnsName` | Resolve an onchain mainnet ENS name to an Ethereum address |
 
 </Accordion>
 
@@ -268,21 +283,6 @@ Make JSON-RPC calls to blockchain nodes. All require `select_app` first.
 | `rundlerMaxPriorityFeePerGas` | Get bundler's max priority fee per gas |
 | `requestGasAndPaymasterAndData` | Request gas sponsorship + paymaster data |
 | `requestPaymasterAndData` | Request paymaster data only |
-
-</Accordion>
-
-<Accordion title="Smart Wallets (8 tools)">
-
-| Tool | Description |
-|------|-------------|
-| `walletPrepareCalls` | Prepare calls for smart wallet submission |
-| `walletSendPreparedCalls` | Submit signed prepared smart wallet calls |
-| `walletGetCallsStatus` | Get the status of submitted smart wallet calls |
-| `walletGetCapabilities` | Get smart wallet capabilities for specified chains |
-| `walletListAccounts` | List smart accounts associated with a signer address |
-| `walletCreateSession` | Create a smart wallet session with scoped permissions |
-| `walletGetCrossChainStatus` | Get same-chain or cross-chain transaction status |
-| `walletRequestQuote` | Request a swap quote for a token exchange |
 
 </Accordion>
 
@@ -358,14 +358,18 @@ Make JSON-RPC calls to blockchain nodes. All require `select_app` first.
 | `solana_getAssetsByCreator` | Get assets by creator address |
 | `solana_searchAssets` | Search for assets by criteria |
 | `solana_getAssetSignatures` | Get transaction signatures for an asset |
-| `solana_getNftEditions` | Get NFT editions for a master edition |
-| `solana_getTokenAccounts` | Get token accounts for a wallet |
+| `getNftEditions` | Get NFT editions for a master edition |
+| `getTokenAccounts` | Get token accounts for a wallet |
 
 </Accordion>
 
-### Data — REST APIs (28 tools)
+### Data — REST APIs (19 tools)
 
 Call Alchemy's REST APIs for enriched blockchain data. All require `select_app` first.
+
+<Note>
+The server also lists 9 NFT API tools whose endpoints were shut down on September 30, 2026: `computeRarity`, `getCollectionMetadata`, `getCollectionsForOwner`, `getNFTSales`, `getSpamContracts`, `isAirdropNFT`, `isHolderOfContract`, `searchContractMetadata`, and `summarizeNFTAttributes`. Don't use them. See the [NFT API Endpoints overview](docs/reference/nft-api-endpoints) for replacements.
+</Note>
 
 <Accordion title="NFT API (12 tools)">
 
