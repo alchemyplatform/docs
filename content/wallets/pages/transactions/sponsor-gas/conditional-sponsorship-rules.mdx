@@ -53,6 +53,17 @@ Basic spending and access limits are supported out of the box and you can combin
   * **Settings** — set the recipient address that receives the tokens.
 </Accordion>
 
+## Recommended limits for mainnet policies
+
+A per-transaction spend limit alone does not bound what a policy can spend. A sender can submit many transactions that each cost just under the per-transaction limit, and rotate to new addresses to keep going. Your policy keeps sponsoring them until it reaches another limit or you deactivate it.
+
+Before you activate a mainnet policy, set:
+
+* **A total spend limit** (`maxSpendUsd`). Gas Manager checks it on every sponsorship request, so it is the hard ceiling on what the policy can cost you. Set it to the most you are willing to spend before you review the policy.
+* **A per-sender spend limit** (`maxSpendPerSenderUsd`), a per-sender transaction limit (`maxCountPerSender`), or both. These cap how much a single address can use, so one sender cannot use your full budget.
+
+Use the per-transaction limit (`maxSpendPerUoUsd`) together with these limits, not in place of them. For tighter control, add a [webhook](#custom-rules-with-webhooks) or a sender allowlist. Monitor spend after launch with [sponsorship usage monitoring](/docs/wallets/transactions/sponsor-gas/monitor-sponsorship-usage).
+
 ## Custom rules with webhooks
 
 For advanced use cases, add a webhook so your server can approve or reject sponsorship requests in real time.
