@@ -14,9 +14,9 @@ The Alchemy CLI wraps Alchemy's node, Data API, wallet, transaction, webhook, an
 * Automate workflows in shell scripts, cron jobs, and CI pipelines
 
 ```bash
-alchemy evm data balance vitalik.eth
-alchemy evm tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
-alchemy evm block latest
+alchemy evm data balance vitalik.eth -n eth-mainnet
+alchemy evm tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b -n eth-mainnet
+alchemy evm block latest -n eth-mainnet
 ```
 
 ## Install
@@ -67,15 +67,15 @@ For other configuration changes, see [Configuration options](#configuration-opti
 Once you've signed in, try a few EVM queries.
 
 ```bash
-alchemy evm data balance vitalik.eth
-alchemy evm gas
-alchemy evm tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b
-alchemy evm data tokens balances vitalik.eth --metadata
-alchemy evm data nfts vitalik.eth --limit 5
+alchemy evm data balance vitalik.eth -n eth-mainnet
+alchemy evm gas -n eth-mainnet
+alchemy evm tx 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b -n eth-mainnet
+alchemy evm data tokens balances vitalik.eth -n eth-mainnet --metadata
+alchemy evm data nfts vitalik.eth -n eth-mainnet --limit 5
 alchemy evm data price symbol ETH,BTC,SOL
 ```
 
-Switch networks per-command with `--network`, or change the default with `alchemy config set network <id>`. List available EVM or Solana networks:
+Commands that query a chain need `-n, --network`. There is no default network. List available EVM or Solana networks:
 
 ```bash
 alchemy evm network list --search base
@@ -92,7 +92,7 @@ The CLI is designed to be a first-class tool surface for AI agents. Two flags ma
 Combine them in any automation:
 
 ```bash
-alchemy --json --no-interactive evm data balance vitalik.eth
+alchemy --json --no-interactive evm data balance vitalik.eth -n eth-mainnet
 ```
 
 For agents that need to learn the command surface, auth methods, error codes, recovery steps, and runnable examples, run:
@@ -127,6 +127,8 @@ Use `alchemy evm` for EVM JSON-RPC, Data API wrappers, simulation, and wallet-si
 | `alchemy evm approve <spender_address> --token-address <addr>` | Approve, revoke, or reset ERC-20 allowances |
 | `alchemy evm status [id]` | Check a smart wallet call ID or EVM transaction hash |
 | `alchemy evm network list` | List EVM network IDs |
+| `alchemy evm token [symbol]` | Look up known token addresses by symbol (e.g. `USDC`). Add `--address-only` to print only the address. |
+| `alchemy evm token list` | List known token symbols and addresses |
 | `alchemy evm tx [hash]` | Transaction details by hash; reads from stdin when omitted |
 | `alchemy evm receipt [hash]` | Transaction receipt; reads from stdin when omitted |
 | `alchemy evm block <number>` | Block details by number, hex, or tag (`latest`, `earliest`, `pending`) |
@@ -139,8 +141,8 @@ Use `alchemy evm` for EVM JSON-RPC, Data API wrappers, simulation, and wallet-si
 Example: pipe a tx hash from one command into another.
 
 ```bash
-alchemy evm logs --address 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --from-block 0x14a4400 --to-block latest
-echo 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b | alchemy evm receipt
+alchemy evm logs --address 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --from-block 0x14a4400 --to-block latest -n eth-mainnet
+echo 0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b | alchemy evm receipt -n eth-mainnet
 ```
 
 #### Data
@@ -186,7 +188,7 @@ To use the `session` signer, connect an [Agent Wallet session](docs/agent-wallet
 alchemy wallet connect
 alchemy wallet use session
 alchemy evm send vitalik.eth 0.01 -n base-mainnet
-alchemy evm status <call-id-or-tx-hash>
+alchemy evm status <call-id-or-tx-hash> -n base-mainnet
 ```
 
 Use `--gas-sponsored` and `--gas-policy-id <id>` on supported EVM actions to request gas sponsorship. You can persist defaults with `alchemy config set evm-gas-sponsored true` and `alchemy config set evm-gas-policy-id <id>`.
@@ -229,7 +231,7 @@ Solana send commands can use an Agent Wallet session or a local Solana wallet. U
 ```bash
 alchemy wallet connect --mode session
 alchemy solana send <recipient> 0.1 -n solana-mainnet
-alchemy solana status <signature>
+alchemy solana status <signature> -n solana-mainnet
 ```
 
 | Command | Description |
@@ -287,6 +289,26 @@ Requires a webhook API key. Pass `--webhook-api-key <key>` on the `webhook` comm
 | `alchemy webhook delete <webhookId>` | Delete a webhook. Supports `--dry-run` and `-y, --yes`. |
 | `alchemy webhook addresses <webhookId>` | List addresses tracked by an address-activity webhook |
 | `alchemy webhook nft-filters <webhookId>` | List NFT filters on an NFT-activity webhook |
+
+### Gas Manager
+
+Manage [Gas Manager](/docs/wallets/low-level-infra/gas-manager/policy-management/api-endpoints) sponsorship policies for the selected app. Uses your browser login.
+
+| Command | Description |
+|---|---|
+| `alchemy gas-manager policy list` | List gas policies. Filter with `--type`, `--network`, `--status`, or target another app with `--app-id`. |
+| `alchemy gas-manager policy get <policy-id>` | Show details for a single policy |
+| `alchemy gas-manager policy create` | Create a new gas policy interactively. Set the policy type with `--type`. |
+| `alchemy gas-manager policy activate <policy-id>` | Activate a policy so it can be used for sponsorship |
+
+### Team
+
+If you belong to more than one Alchemy team, select the team that `app` commands act on.
+
+| Command | Description |
+|---|---|
+| `alchemy team list` | List your teams |
+| `alchemy team select [id]` | Select the team that `app` commands act on |
 
 ### App (Admin API)
 
@@ -370,7 +392,6 @@ Filters are optional and combined with AND. `--group-by` accepts at most three u
 | `alchemy config status` | Show setup status and remediation commands |
 | `alchemy config set app [app-id]` | Select the default app interactively, or set it by ID |
 | `alchemy config set webhook-api-key <key>` | Save the Notify webhook API key |
-| `alchemy config set network <id>` | Set the default network |
 | `alchemy config set verbose <true\|false>` | Set default verbose output |
 | `alchemy config set wallet-key-file <path>` | Set the local EVM wallet key file used for x402 gateway auth to Alchemy APIs |
 | `alchemy config set x402 <true\|false>` | Enable or disable x402 gateway auth to Alchemy APIs by default |
@@ -386,6 +407,12 @@ Filters are optional and combined with AND. `--group-by` accepts at most three u
 
 | Command | Description |
 |---|---|
+| `alchemy init` | Sign in, install the Alchemy MCP server and Agent Skills, and add CLI instructions to `AGENTS.md`. Skip steps with `--no-login`, `--no-mcp`, `--no-skills`, or `--no-agents-md`. |
+| `alchemy faucet drip --address <address> -n <testnet>` | Send testnet funds to an address. Supports `sepolia`, `base-sepolia`, `polygon-amoy`, `arbitrum-sepolia`, `optimism-sepolia`, and `monad-testnet`. |
+| `alchemy feedback [message]` | Send product feedback to Alchemy |
+| `alchemy telemetry status` | Show whether usage telemetry is on |
+| `alchemy telemetry enable` | Turn on usage telemetry |
+| `alchemy telemetry disable` | Turn off usage telemetry and delete queued events |
 | `alchemy version` | Print the CLI version |
 | `alchemy update-check` | Check whether a newer CLI version is available |
 | `alchemy completions <shell>` | Generate completion scripts for `bash`, `zsh`, or `fish` |
@@ -401,7 +428,7 @@ These flags work on every command.
 | Flag | Description |
 |---|---|
 | `--api-key <key>` | API key for RPC and Data API requests (env: `ALCHEMY_API_KEY`) |
-| `-n, --network <id>` | Target network, defaults to `eth-mainnet` (env: `ALCHEMY_NETWORK`) |
+| `-n, --network <id>` | Target network. Required for commands that query a chain. |
 | `--x402` | Use x402 wallet-based gateway auth for Alchemy API requests |
 | `--wallet-key-file <path>` | Path to an EVM wallet private key file for x402 gateway auth |
 | `--solana-wallet-key-file <path>` | Path to a Solana wallet key file |
