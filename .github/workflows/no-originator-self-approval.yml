@@ -1,18 +1,23 @@
 name: Docs agent review guard
 
-# When the docs-agent (alchemy-bot) opens a PR on behalf of someone who
+# When the docs-agent opens a PR on behalf of someone who
 # requested the change via Slack, it includes a "Requested-by: @<github_username>"
 # trailer in the commit message. This workflow watches for approval submissions
 # and PR updates on those PRs, dismisses any approval submitted by that user,
 # and requires at least one non-originator approval in the PR review history.
 #
+# PR authors: the docs-agent opens PRs as its GitHub App
+# (docs-agent-alchemyplatform[bot] or docs-agent-omgwinning[bot]). Older PRs
+# were opened as alchemy-bot. DOCS_AGENT_AUTHORS below lists all of them.
+#
 # Note on shared bot identity: alchemy-bot is also used by other automation
 # (Daikon spec updates, weekly changelog, etc.). To avoid this workflow
 # falsely gating those non-docs-agent PRs, we additionally check whether the
-# PR contains commits signed by the docs-agent's pinned GPG key. Only PRs
-# with at least one pinned-key-signed commit are treated as docs-agent PRs;
-# everything else exits 0 (skip enforcement) so the other automation is
-# unaffected.
+# PR contains commits signed by the docs-agent's pinned GPG key. An
+# alchemy-bot PR without a pinned-key-signed commit exits 0 (skip
+# enforcement) so the other automation is unaffected. Only the docs-agent
+# uses the GitHub App identities, so an App PR without a pinned-key-signed
+# commit fails instead of skipping.
 #
 # Branch protection on main needs both "Require 1 approval" and this workflow
 # as a required check. The review requirement supplies an approval, and this
@@ -53,6 +58,8 @@ jobs:
   block-originator-self-approval:
     name: Self-approval guard
     runs-on: ubuntu-latest
+    env:
+      DOCS_AGENT_AUTHORS: '["alchemy-bot", "docs-agent-alchemyplatform[bot]", "docs-agent-omgwinning[bot]"]'
     permissions:
       pull-requests: write
       contents: read
@@ -87,8 +94,8 @@ jobs:
             IS_APPROVAL_REVIEW=true
           fi
 
-          if [ "$PR_AUTHOR" != "alchemy-bot" ]; then
-            echo "PR author is $PR_AUTHOR, not alchemy-bot. No docs-agent enforcement needed."
+          if ! jq -e --arg a "$PR_AUTHOR" 'index($a) != null' <<< "$DOCS_AGENT_AUTHORS" >/dev/null; then
+            echo "PR author is $PR_AUTHOR, not a docs-agent identity. No docs-agent enforcement needed."
             exit 0
           fi
 
@@ -295,6 +302,14 @@ jobs:
           ALL_REQUESTED_BY="$(sort -u "$TRAILERS_FILE" | grep -v '^$' || true)"
           APPROVER_LOWER="$(printf '%s' "$APPROVER" | tr '[:upper:]' '[:lower:]')"
 
+          if [ "$TRUSTED_COMMIT_COUNT" -eq 0 ] && [ "$PR_AUTHOR" != "alchemy-bot" ]; then
+            echo "ERROR: $PR_AUTHOR is a docs-agent GitHub App, but no commit in this PR is signed by the docs-agent's pinned GPG key." >&2
+            if [ "$IS_APPROVAL_REVIEW" = true ]; then
+              dismiss_current_review_with_retry ":warning: This docs-agent PR has no commits signed by the docs-agent's pinned GPG key, so the originator can't be verified. Approval dismissed by default per fail-closed policy." || true
+            fi
+            exit 1
+          fi
+
           if [ "$TRUSTED_COMMIT_COUNT" -eq 0 ]; then
             # alchemy-bot is shared with other automation (Daikon spec
             # updates, weekly changelog, etc.). Those PRs reach this
@@ -366,10 +381,10 @@ jobs:
         # conclusion for the gate. Re-running the pull_request run forces it to
         # re-evaluate with the review just submitted (a new approval added, or
         # an originator approval that the step above just dismissed). Scoped to
-        # docs-agent (alchemy-bot) PRs because every other PR already passes the
+        # docs-agent PRs because every other PR already passes the
         # pull_request run immediately, so there is nothing stale to refresh.
         # Best-effort: a failure here never fails the workflow.
-        if: ${{ always() && github.event_name == 'pull_request_review' && github.event.pull_request.user.login == 'alchemy-bot' }}
+        if: ${{ always() && github.event_name == 'pull_request_review' && contains(fromJSON(env.DOCS_AGENT_AUTHORS), github.event.pull_request.user.login) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
