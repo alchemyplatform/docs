@@ -9,6 +9,6 @@ The NFT API's [Is Spam Contract](/docs/reference/nft-api-endpoints/nft-api-endpo
 
 In a `200 OK` response, the `isSpamContract` result is `true` or `false`: `true` means the token is spam or a scam; `false` means it is not marked as spam or a scam.
 
-If the token hasn't been analyzed yet, the endpoint returns `202 Accepted` with `{"isSpamContract":null}`. The token is being analyzed. Retry the same request in a minute or two and honor a `Retry-After` header if present. Analysis time can vary.
+While the token is being analyzed, the endpoint returns `202 Accepted` with `{"isSpamContract":null}`. A `null` value means "still analyzing; retry". It does not mean "not spam". Wait for the time specified by the `Retry-After` response header, then retry the same request. If the retry also returns `202`, wait for that response's `Retry-After` value and retry again.
 
 See the linked reference for request parameters, supported networks and response details.
