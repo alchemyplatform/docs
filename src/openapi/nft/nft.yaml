@@ -379,7 +379,7 @@ paths:
 
         **ERC-20 tokens (beta)**
 
-        Pass `contractType=erc20` to check an ERC-20 token contract. In a `200 OK` response, `isSpamContract` is `true` if the token is classified as spam or a scam, and `false` if it isn't. The successful response format is the same as for NFT contracts. If you omit `contractType`, it defaults to `nft`, so existing callers are unaffected. `spamConfidenceLevel` is ignored for ERC-20 checks.
+        Pass `contractType=erc20` to check an ERC-20 token contract. In a `200 OK` response, `isSpamContract` is `true` if the token is classified as spam or a scam, and `false` if it isn't. The successful response format is the same as for NFT contracts. If you omit `contractType`, it defaults to `nft`, so existing callers are unaffected.
 
         ERC-20 spam detection is available on the Ethereum (`eth-mainnet`), Base (`base-mainnet`), Polygon PoS (`polygon-mainnet`), BNB Smart Chain (`bnb-mainnet`), Arbitrum (`arb-mainnet`), Optimism (`opt-mainnet`) and Robinhood Chain (`robinhood-mainnet`) mainnets. NFT spam coverage is unchanged.
 
@@ -403,7 +403,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - name: contractAddress
-          description: String - Token contract address to check. Supports NFT contracts (ERC-721 and ERC-1155) and ERC-20 token contracts (beta). The spam result does not validate that the address is a token contract.
+          description: String - Token contract address to check. Supports NFT contracts (ERC-721 and ERC-1155) and ERC-20 token contracts (beta). The endpoint doesn't check that the address is a token contract of the given `contractType`.
           in: query
           schema:
             type: string
@@ -419,13 +419,6 @@ paths:
               - nft
               - erc20
             default: nft
-          required: false
-        - name: spamConfidenceLevel
-          description: |-
-            The confidence level at which to filter NFT spam. Ignored when `contractType=erc20`.
-          in: query
-          schema:
-            $ref: "#/components/schemas/spamConfidenceLevel"
           required: false
       responses:
         "200":
