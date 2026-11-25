@@ -21,10 +21,10 @@ A gasless transaction can only be sent through Execute Gasless Order. Without Al
 
 * An Alchemy API key with access to Solana Mainnet. Create one in the [Alchemy Dashboard](https://dashboard.alchemy.com/apps).
 * A wallet that will hold **less than 0.005 SOL** after the trade and holds the input token. See [Who can use gasless orders](#who-can-use-gasless-orders).
-* Node.js 18 or later and `@solana/web3.js`:
+* Node.js 18 or later, `@solana/web3.js`, and `bs58`:
 
 ```bash
-npm install @solana/web3.js
+npm install @solana/web3.js bs58
 ```
 
 <Steps>
@@ -91,19 +91,29 @@ A ready gasless order has `gasless: true`, a base64 `transaction`, a `requestId`
 
 Deserialize the transaction, sign it with the taker's key, and serialize it back to base64. Don't change the transaction. Execute Gasless Order rejects any transaction that differs from the order.
 
+Also keep the taker's signature. The landed transaction carries it unchanged, so it's how you find this swap in the last step.
+
 ```typescript
 import { Keypair, VersionedTransaction } from "@solana/web3.js";
+import bs58 from "bs58";
 
-function signOrder(transactionBase64: string, taker: Keypair): string {
+async function signOrder(transactionBase64: string, taker: Keypair) {
   const tx = VersionedTransaction.deserialize(
     Buffer.from(transactionBase64, "base64"),
   );
-  tx.sign([taker]); // fills the taker's signature slot only
-  return Buffer.from(tx.serialize()).toString("base64");
+  await tx.sign([taker]); // fills the taker's signature slot only
+
+  const takerIndex = tx.message.staticAccountKeys.findIndex((key) =>
+    key.equals(taker.publicKey),
+  );
+  return {
+    signedTransaction: Buffer.from(tx.serialize()).toString("base64"),
+    takerSignature: bs58.encode(tx.signatures[takerIndex]),
+  };
 }
 ```
 
-In a browser app, use your wallet adapter's `signTransaction` instead of a `Keypair`. Use a sign-only method, not one that also sends the transaction.
+In a browser app, use your wallet adapter's `signTransaction` instead of a `Keypair`. Use a sign-only method, not one that also sends the transaction, and read the taker's signature from the signed transaction the same way.
 
 </Step>
 <Step title="Submit with Execute Gasless Order">
@@ -145,7 +155,7 @@ Calling Execute Gasless Order again with the same body after a `200` sends nothi
 </Step>
 <Step title="Track the result">
 
-The response doesn't include a signature, so watch the taker's address. Record the wallet's latest signature before you submit, then poll for newer signatures until one is signed by the taker or the current block height passes `lastValidBlockHeight`.
+The response doesn't include the transaction signature, so watch the taker's address for the transaction that carries `takerSignature` from the signing step. Record the wallet's latest signature before you submit, then poll for newer transactions until one includes `takerSignature` or the current block height passes `lastValidBlockHeight`. Matching on the taker's signature ignores any other transaction the wallet sends in the meantime.
 
 ```typescript
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -159,9 +169,11 @@ async function latestSignature(taker: PublicKey) {
 
 async function waitForSwap(
   taker: PublicKey,
+  takerSignature: string,
   lastValidBlockHeight: number,
   before: string | undefined,
 ) {
+  const checked = new Set<string>();
   while (true) {
     const sigs = await connection.getSignaturesForAddress(taker, {
       until: before,
@@ -169,13 +181,13 @@ async function waitForSwap(
     });
 
     for (const sig of sigs) {
-      const tx = await connection.getParsedTransaction(sig.signature, {
+      if (checked.has(sig.signature)) continue;
+      checked.add(sig.signature);
+
+      const tx = await connection.getTransaction(sig.signature, {
         maxSupportedTransactionVersion: 0,
       });
-      const signedByTaker = tx?.transaction.message.accountKeys.some(
-        (key) => key.signer && key.pubkey.equals(taker),
-      );
-      if (signedByTaker) {
+      if (tx?.transaction.signatures.includes(takerSignature)) {
         return { signature: sig.signature, failed: sig.err !== null };
       }
     }
@@ -194,13 +206,20 @@ Put the steps together:
 ```typescript
 async function swapWithoutSol(taker: Keypair) {
   const order = await getGaslessOrder(taker.publicKey.toBase58());
-  const signed = signOrder(order.transaction, taker);
+  const { signedTransaction, takerSignature } = await signOrder(
+    order.transaction,
+    taker,
+  );
 
   const before = await latestSignature(taker.publicKey);
-  const { lastValidBlockHeight } = await executeOrder(signed, order.requestId);
+  const { lastValidBlockHeight } = await executeOrder(
+    signedTransaction,
+    order.requestId,
+  );
 
   const result = await waitForSwap(
     taker.publicKey,
+    takerSignature,
     Number(lastValidBlockHeight),
     before,
   );
