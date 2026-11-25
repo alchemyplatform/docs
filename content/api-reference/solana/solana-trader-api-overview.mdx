@@ -13,15 +13,17 @@ address, either an unsigned transaction for that wallet to sign and
 broadcast or the instructions to build one yourself. Use it to price a swap
 ahead of time, present a route to a user, or hand a signable transaction to
 a wallet. Requests use the same Alchemy API key as your other Solana calls.
+With gasless orders, we pay the network costs for wallets that hold no SOL.
 
 The Solana Trader API is powered by [Metis](https://metis.builders/), a Solana swap routing engine. Requests and responses follow the Swap V2 `/order` format, so existing integrations need minimal changes. Two differences worth calling out:
 
 * Alchemy carries auth in the URL path (see [Endpoint](#endpoint)), not in an `x-api-key` header.
 * `/quote-multiple-output-mints` is an Alchemy-specific endpoint that returns quotes for one input mint against up to 32 candidate output mints in a single request.
 
-The API exposes three endpoints:
+The API exposes four endpoints:
 
-* `GET /swap/v2/order` returns a swap quote. Pass a `taker` to also receive an unsigned base64 transaction; omit `taker` for a quote-only response. Optional `payer` compiles a sponsor as the fee payer; optional `referralFee` + `referralAccount` charge an integrator fee.
+* `GET /swap/v2/order` returns a swap quote. Pass a `taker` to also receive an unsigned base64 transaction; omit `taker` for a quote-only response. Optional `payer` compiles a sponsor as the fee payer; optional `gasless=true` has Alchemy sponsor the network costs for a wallet with no SOL; optional `referralFee` + `referralAccount` charge an integrator fee.
+* `POST /swap/v2/execute` submits a signed gasless order (from `/swap/v2/order` with `gasless=true`) to the network.
 * `GET /swap/v2/build` returns raw swap instructions for composing into your own transaction (multi-leg flows, program deposits, cleanup steps). Optional `payer` rewrites rent and account-creation instructions onto a sponsor; optional `referralFee` + `referralAccount` charge an integrator fee.
 * `POST /quote-multiple-output-mints` returns quotes for a single input against up to 32 output mints in one call.
 
@@ -41,10 +43,15 @@ Use your Solana Mainnet API key from the [Alchemy Dashboard](https://dashboard.a
 | --- | --- | --- | --- |
 | [GET /swap/v2/order](/docs/chains/solana/solana-trader-api/get-swap-order) | Get a swap quote. Include a `taker` to also receive an unsigned base64 transaction; omit `taker` for quote fields only. | 100 | 80 |
 | [GET /swap/v2/build](/docs/chains/solana/solana-trader-api/build-swap-instructions) | Return raw swap instructions for composing into your own transaction. | 100 | 60 |
+| [POST /swap/v2/execute](/docs/chains/solana/solana-trader-api/execute-swap-order) | Submit a signed gasless order. Returns `Pending` right away; watch the wallet for the result. | TBD | TBD |
 | [POST /quote-multiple-output-mints](/docs/chains/solana/solana-trader-api/quote-multiple-output-mints) | Quote a single input mint against up to 32 candidate output mints in one call. | 100 | 100 |
+
+## Gasless swaps
+
+Set `gasless=true` on `/swap/v2/order` to let a wallet that holds no SOL swap any token. Alchemy's sponsor wallet pays the network costs, and the wallet pays them back inside the same transaction, together with a 0.5% fee taken from the input token. Submit the signed transaction with `/swap/v2/execute`. See [Swap without SOL](/docs/chains/solana/solana-trader-api/swap-without-sol) for the full flow, fee details, eligibility rules, and errors.
 
 ## Related
 
-* [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction) — submit the signed transaction returned by `/swap/v2/order` to the cluster.
+* [`sendTransaction`](/docs/chains/solana/solana-api-endpoints/send-transaction) — submit the signed transaction returned by `/swap/v2/order` to the cluster. Gasless orders must go through `/swap/v2/execute` instead.
 * [Solana Jito Bundles and Transactions](/docs/chains/solana/solana-jito-bundles-and-transactions) — pair a signed swap with a Jito tip for atomic, low-latency inclusion.
 * [Solana API Overview](/docs/solana/solana-api-overview) — the full Solana JSON-RPC surface.

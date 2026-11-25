@@ -6,7 +6,8 @@ info:
   title: 💱 Solana Trader API
   description: >
     Alchemy's Solana Trader API returns swap quotes and, on request, an assembled
-    signable transaction for routing token swaps on Solana. Requests are
+    signable transaction for routing token swaps on Solana, and can sponsor
+    network costs for wallets that hold no SOL (gasless). Requests are
     authenticated with your Alchemy API key in the URL path, the same key that
     powers your other Solana RPC calls. Powered by Metis.
   version: "1.0"
@@ -32,10 +33,26 @@ paths:
           description: >
             Public key of the wallet that will sign the transaction. When
             omitted, the response returns a quote only and `transaction` is
-            `null`.
+            `null`. Required to receive a gasless transaction with
+            `gasless=true`.
           schema:
             type: string
           example: GkwFnmMDvn3HGMpJpWBg8tgJxr3NxNvg3AXxvXVPbRGJ
+        - name: gasless
+          in: query
+          required: false
+          description: >
+            Set to `true` to have Alchemy pay the Solana network costs for a
+            `taker` that holds no SOL. The taker repays those costs plus a 0.5%
+            fee out of the input token, inside the same transaction. The
+            response includes a `requestId`; sign the transaction and submit it
+            with [Execute Gasless Order](/docs/chains/solana/solana-trader-api/execute-swap-order).
+            Gasless orders are `ExactIn` only, need `slippageBps` of at least
+            15, and can't be combined with `payer` or `jitoTipLamports`. See
+            [Swap without SOL](/docs/chains/solana/solana-trader-api/swap-without-sol).
+          schema:
+            type: boolean
+            default: false
         - name: receiver
           in: query
           required: false
@@ -48,7 +65,7 @@ paths:
         - name: swapMode
           in: query
           required: false
-          description: How `amount` is interpreted.
+          description: How `amount` is interpreted. `ExactOut` can't be combined with `gasless=true`.
           schema:
             type: string
             enum: [ExactIn, ExactOut]
@@ -63,7 +80,8 @@ paths:
           in: query
           required: false
           description: |
-            Slippage tolerance in basis points, 0–10000.
+            Slippage tolerance in basis points, 0–10000. With `gasless=true`,
+            the minimum is 15.
 
             `rtse` (automatic slippage) is not supported.
           schema:
@@ -79,7 +97,9 @@ paths:
             Custom priority fee, in lamports. Only used when `broadcastFeeType`
             is set; otherwise ignored and the fee is estimated automatically.
             Added to `jitoTipLamports` (if set) to form the fee total that
-            `broadcastFeeType` applies.
+            `broadcastFeeType` applies. With `gasless=true`, it can only lower
+            Alchemy's priority fee, never raise it, and the maximum is 400,000
+            lamports.
           schema:
             type: integer
         - name: jitoTipLamports
@@ -89,7 +109,8 @@ paths:
             Custom Jito tip, in lamports (minimum 1000). Only used when
             `broadcastFeeType` is set; otherwise ignored and the fee is
             estimated automatically. Added to `priorityFeeLamports` (if set)
-            to form the fee total that `broadcastFeeType` applies.
+            to form the fee total that `broadcastFeeType` applies. Can't be
+            combined with `gasless=true`.
           schema:
             type: integer
             minimum: 1000
@@ -132,6 +153,7 @@ paths:
             rent) for `taker`; the taker still signs and pays the trade
             amount. Any public key can be used; no effect if equal to `taker`.
             See `errorCode` for funding failures. Does not change `mode`.
+            Can't be combined with `gasless=true`.
           schema:
             type: string
         - name: referralFee
@@ -155,7 +177,7 @@ paths:
             type: string
       responses:
         "200":
-          description: "Quote, plus an unsigned transaction when a funded `taker` is supplied. Insufficient funding returns `200` with an empty transaction and error fields."
+          description: "Quote, plus an unsigned transaction when a funded `taker` is supplied. With `gasless=true`, also a `requestId` and `gaslessFee`. Insufficient funding or an ineligible gasless order returns `200` with an empty transaction and error fields."
           content:
             application/json:
               schema:
@@ -328,6 +350,241 @@ paths:
                     errorMessage: Insufficient funds
                     error: Insufficient funds
                     totalTime: 63
+                gaslessOrder:
+                  summary: Gasless order (gasless=true), ready to sign
+                  value:
+                    mode: manual
+                    inputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    outputMint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+                    inAmount: "1889362"
+                    outAmount: "8875286"
+                    otherAmountThreshold: "8830910"
+                    swapMode: ExactIn
+                    slippageBps: 50
+                    priceImpact: 0.0088
+                    priceImpactPct: "0.000088"
+                    inUsdValue: 1.889362
+                    outUsdValue: 1.889528
+                    swapUsdValue: 1.889362
+                    swapType: aggregator
+                    gasless: true
+                    router: metis
+                    routePlan:
+                      - swapInfo:
+                          ammKey: 4Ui9QdDNuUaAGqCPcDSp191QrixLzQiLxJ1Gnqvz3szP
+                          label: Whirlpool
+                          inputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                          outputMint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+                          inAmount: "1889362"
+                          outAmount: "8875286"
+                        percent: 100
+                        bps: 10000
+                        usdValue: 1.889362
+                    transaction: AgAAAA...base64-encoded-transaction-signed-by-neither-party...
+                    taker: CVgQqhVHsH9GtPhEaDVwgoKCsvH8aTder3dZkjmbiXYo
+                    lastValidBlockHeight: "451815799"
+                    signatureFeeLamports: 10000
+                    prioritizationFeeLamports: 799
+                    rentFeeLamports: 1488440
+                    signatureFeePayer: 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
+                    prioritizationFeePayer: 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
+                    rentFeePayer: 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
+                    gaslessFee:
+                      amount: "110638"
+                      feeMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                      feeBps: 50
+                    requestId: 1.451815799.cb38qqMuKzJgEkjr5Z8qYQzLAZpJntLbyPnteXDwD8A
+                    totalTime: 37.86
+                gaslessNotEligible:
+                  summary: Gasless rejected (taker holds enough SOL)
+                  value:
+                    mode: manual
+                    inputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                    outputMint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+                    inAmount: "1989296"
+                    outAmount: "9292649"
+                    otherAmountThreshold: "9246186"
+                    swapMode: ExactIn
+                    slippageBps: 50
+                    priceImpact: 0.0184
+                    priceImpactPct: "0.000184"
+                    inUsdValue: 1.989296
+                    outUsdValue: 1.989663
+                    swapUsdValue: 1.989296
+                    swapType: aggregator
+                    gasless: false
+                    router: metis
+                    routePlan:
+                      - swapInfo:
+                          ammKey: HrLmpzp8Nu5wkn9SGZYSS9Ms6deTvMgGc6BETp4161ZX
+                          label: Whirlpool
+                          inputMint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+                          outputMint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+                          inAmount: "1989296"
+                          outAmount: "9292649"
+                        percent: 100
+                        bps: 10000
+                        usdValue: 1.989296
+                    transaction: ""
+                    taker: 5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9
+                    signatureFeeLamports: 0
+                    prioritizationFeeLamports: 0
+                    rentFeeLamports: 0
+                    signatureFeePayer: null
+                    prioritizationFeePayer: null
+                    rentFeePayer: null
+                    errorCode: 3
+                    errorMessage: Taker holds enough SOL to pay for gas; order without gasless
+                    error: Taker holds enough SOL to pay for gas; order without gasless
+                    totalTime: 41.04
+        "400":
+          description: >
+            Invalid request. The body carries a single `error` message. With
+            `gasless=true`, this includes a `gasless` value other than `true`
+            or `false`, `payer` or `jitoTipLamports` combined with gasless,
+            `priorityFeeLamports` above 400,000, `slippageBps` below 15,
+            `swapMode=ExactOut`, an input token the gasless fee can't be
+            swapped from, or a route too large for one gasless transaction.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidGasless:
+                  summary: gasless is not true or false
+                  value:
+                    error: Invalid gasless
+                payerWithGasless:
+                  summary: payer combined with gasless
+                  value:
+                    error: payer and gasless cannot be used together
+                jitoTipWithGasless:
+                  summary: jitoTipLamports combined with gasless
+                  value:
+                    error: jitoTipLamports cannot be used with gasless
+                priorityFeeTooHigh:
+                  summary: priorityFeeLamports above the gasless maximum
+                  value:
+                    error: priorityFeeLamports above the gasless maximum of 400000
+                slippageTooLow:
+                  summary: slippageBps below the gasless minimum
+                  value:
+                    error: slippageBps below the gasless minimum of 15
+                exactOutWithGasless:
+                  summary: swapMode ExactOut combined with gasless
+                  value:
+                    error: swapMode ExactOut cannot be used with gasless
+                feeNotSwappable:
+                  summary: Gasless fee can't be swapped from the input token
+                  value:
+                    error: the gasless fee cannot be swapped from this token
+                routeTooLarge:
+                  summary: Route doesn't fit in a gasless transaction
+                  value:
+                    error: this route does not fit in a gasless transaction
+
+  "/{apiKey}/swap/v2/execute":
+    post:
+      summary: Execute Gasless Order
+      description: >
+        Submits a gasless order to Solana. Send the transaction from a
+        `gasless=true` [Get Order](/docs/chains/solana/solana-trader-api/get-swap-order)
+        response after the `taker` signs it, together with that response's
+        `requestId`. Alchemy checks the transaction, adds the sponsor's
+        signature, and sends it to the network. A gasless transaction can only
+        be sent through this endpoint, since it can't land without Alchemy's
+        signature.
+
+
+        The response returns `Pending` right away and doesn't include the
+        transaction signature. To see the result, watch the taker's wallet (for
+        example, its token balances or `getSignaturesForAddress`) until
+        `lastValidBlockHeight` has passed. After that height the transaction
+        can never land. Each wallet can have one gasless transaction in flight
+        at a time.
+      # TODO: add x-compute-units / x-rate-limit-cus once the CU cost for
+      # /swap/v2/execute is set in chain-config.
+      operationId: execute-swap-order
+      parameters:
+        - $ref: "#/components/parameters/apiKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecuteRequest"
+      responses:
+        "200":
+          description: >
+            The transaction was sent. Watch the taker's wallet until
+            `lastValidBlockHeight` has passed. Calling this endpoint again with
+            the same body sends nothing and returns `Pending` again, so don't
+            retry in a loop. If the order expires without landing, request a
+            new one from Get Order.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecuteResponse"
+              example:
+                status: Pending
+                lastValidBlockHeight: "451815799"
+        "400":
+          description: >
+            The request or the transaction was rejected. Nothing was sent or
+            charged. If the transaction would fail (for example, after a price
+            move or because the funds were moved), call Get Order again for a
+            new order.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingSignedTransaction:
+                  summary: signedTransaction missing
+                  value:
+                    error: signedTransaction is required
+                missingRequestId:
+                  summary: requestId missing
+                  value:
+                    error: requestId is required
+                invalidSignedTransaction:
+                  summary: signedTransaction malformed
+                  value:
+                    error: Invalid signedTransaction
+                invalidRequestId:
+                  summary: requestId malformed
+                  value:
+                    error: Invalid requestId
+                orderMismatch:
+                  summary: Transaction changed after Get Order, or requestId from another order
+                  value:
+                    error: signedTransaction does not match the order
+                missingSignature:
+                  summary: Taker signature missing or wrong
+                  value:
+                    error: signedTransaction is missing a valid signature
+                wouldFail:
+                  summary: Transaction failed simulation
+                  value:
+                    error: the transaction would fail; request a new order
+        "409":
+          description: >
+            Another gasless order from the same taker is still in flight. Wait
+            until it lands or its `lastValidBlockHeight` passes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: another gasless order from this taker is still in flight; retry once it lands
+        "502":
+          description: Temporary submission failure. You can retry the same body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: could not submit the transaction
 
   "/{apiKey}/swap/v2/build":
     get:
@@ -693,7 +950,10 @@ components:
           description: Mint of the output token, echoed back.
         inAmount:
           type: string
-          description: Input amount used for the quote, in base units of the input mint.
+          description: >
+            Input amount used for the quote, in base units of the input mint.
+            With `gasless=true`, this is the requested `amount` minus
+            `gaslessFee.amount`.
         outAmount:
           type: string
           description: >
@@ -744,8 +1004,9 @@ components:
         gasless:
           type: boolean
           description: >
-            `true` only when a ready transaction uses a `payer` different from
-            the `taker`; otherwise `false`.
+            `true` on a ready gasless transaction (`gasless=true`), or when a
+            ready transaction uses a `payer` different from the `taker`;
+            otherwise `false`.
         router:
           type: string
           description: Router that produced the quote. Always `metis`.
@@ -807,6 +1068,14 @@ components:
         totalTime:
           type: number
           description: Time in milliseconds spent producing the response.
+        requestId:
+          type: string
+          description: >
+            Identifier of a ready gasless order. Pass it to Execute Gasless
+            Order together with the signed transaction. Present only when
+            `gasless=true` returns a ready transaction.
+        gaslessFee:
+          $ref: "#/components/schemas/GaslessFee"
         feeBps:
           type: integer
           description: >
@@ -840,15 +1109,21 @@ components:
         errorCode:
           type: integer
           description: |
-            Present only when funding is insufficient and `transaction` is empty:
+            Present only when `transaction` is empty because the order can't be
+            filled. Branch on this code, not on the message text:
 
             * `1` — insufficient input funds
             * `2` — insufficient SOL for transaction costs
+            * `3` — gasless order refused: the taker holds enough SOL to pay
+              its own fees (retry without `gasless=true`), the swap is below
+              the gasless minimum (increase the amount), or the route costs
+              more to sponsor than the gasless fee covers (retry, or change the
+              amount or pair)
         errorMessage:
           type: string
           description: >
-            Human-readable funding error. Present with `errorCode`; match on
-            the code instead of this message.
+            Human-readable error. Present with `errorCode`; match on the code
+            instead of this message.
         error:
           type: string
           description: Duplicate of `errorMessage`, retained for compatibility.
@@ -876,6 +1151,89 @@ components:
         - prioritizationFeePayer
         - rentFeePayer
         - totalTime
+
+    GaslessFee:
+      type: object
+      description: >
+        Fee for a gasless order, taken out of the input token inside the same
+        transaction: 0.5% of `amount` plus the exact network costs (two
+        signatures, the priority fee, and rent for any token account the swap
+        opens). Present only on a ready gasless order.
+      properties:
+        amount:
+          type: string
+          description: Total fee, in base units of `feeMint`.
+        feeMint:
+          type: string
+          description: Mint the fee is taken in. Always the input token.
+        feeBps:
+          type: integer
+          description: >
+            Percentage part of the fee in basis points (`50` = 0.5%). The rest
+            of `amount` covers network costs.
+        swappedTo:
+          type: string
+          description: >
+            Present when the input token isn't SOL, USDC, or USDT. Part of the
+            input is swapped to this stablecoin inside the same transaction to
+            pay the fee.
+          enum:
+            - EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+            - Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
+        minSwapOut:
+          type: string
+          description: >
+            Present with `swappedTo`. Minimum amount of the stablecoin Alchemy
+            receives, in its base units.
+      required:
+        - amount
+        - feeMint
+        - feeBps
+
+    ExecuteRequest:
+      type: object
+      properties:
+        signedTransaction:
+          type: string
+          description: >
+            Base64-encoded transaction from the gasless Get Order response,
+            signed by the `taker`. Don't change the transaction after Get
+            Order.
+          example: AgAAAA...base64-encoded-transaction-signed-by-taker...
+        requestId:
+          type: string
+          description: "`requestId` from the same Get Order response."
+          example: 1.451815799.cb38qqMuKzJgEkjr5Z8qYQzLAZpJntLbyPnteXDwD8A
+      required:
+        - signedTransaction
+        - requestId
+
+    ExecuteResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: >
+            Always `Pending`. The response doesn't include the transaction
+            signature; watch the taker's wallet for the result.
+          enum: [Pending]
+        lastValidBlockHeight:
+          type: string
+          description: >
+            Block height after which the transaction can no longer land, as a
+            decimal string.
+      required:
+        - status
+        - lastValidBlockHeight
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message.
+      required:
+        - error
 
     BuildResponse:
       type: object

@@ -1,0 +1,304 @@
+---
+title: Swap without SOL
+description: Let a Solana wallet that holds no SOL swap any token with gasless orders on the Solana Trader API.
+subtitle: Gasless swaps for wallets that hold no SOL
+---
+
+Gasless orders let a wallet that holds **no SOL** swap any token. We pay the Solana network costs from Alchemy's sponsor wallet, and the wallet pays them back inside the same transaction, together with a 0.5% fee. The transaction is atomic: either the swap and the fee both happen, or neither does.
+
+Use gasless orders for wallets that can't pay their own fees, for example a new wallet, a wallet that received an airdrop, or a wallet that sold all its SOL.
+
+## How it works
+
+1. [Get Order](/docs/chains/solana/solana-trader-api/get-swap-order) with `gasless=true` returns a quote and an **unsigned** transaction. Alchemy's sponsor is the fee payer, the fee is already inside the transaction, and the response includes a `requestId`.
+2. The wallet (`taker`) **signs** the transaction. Alchemy's signature slot stays empty, because Get Order never signs.
+3. [Execute Gasless Order](/docs/chains/solana/solana-trader-api/execute-swap-order) receives the signed transaction and the `requestId`. Alchemy checks the transaction, adds the sponsor's signature, and sends it to the network.
+4. Execute Gasless Order answers right away with `{"status": "Pending", "lastValidBlockHeight": "..."}`. It **doesn't return the transaction signature**, so you watch the wallet until `lastValidBlockHeight` has passed. After that height, the transaction can never land.
+
+A gasless transaction can only be sent through Execute Gasless Order. Without Alchemy's signature, it can't land anywhere else.
+
+## Prerequisites
+
+* An Alchemy API key with access to Solana Mainnet. Create one in the [Alchemy Dashboard](https://dashboard.alchemy.com/apps).
+* A wallet that will hold **less than 0.005 SOL** after the trade and holds the input token. See [Who can use gasless orders](#who-can-use-gasless-orders).
+* Node.js 18 or later and `@solana/web3.js`:
+
+```bash
+npm install @solana/web3.js
+```
+
+<Steps>
+  <Step title="Request a gasless order">
+    Call Get Order with `gasless=true` and the wallet as `taker`. Gasless orders are `ExactIn` only, so `amount` is the exact amount of the input token the wallet spends.
+
+```typescript
+const API_KEY = process.env.ALCHEMY_API_KEY ?? "{apiKey}";
+const BASE_URL = `https://solana-mainnet.g.alchemy.com/v2/${API_KEY}`;
+
+const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
+
+async function getGaslessOrder(taker: string) {
+  const params = new URLSearchParams({
+    inputMint: USDC,
+    outputMint: JUP,
+    amount: "2000000", // 2 USDC, in base units
+    taker,
+    gasless: "true",
+  });
+
+  const res = await fetch(`${BASE_URL}/swap/v2/order?${params}`);
+  const order = await res.json();
+
+  if (!res.ok) {
+    // 400: invalid parameters, for example slippageBps below 15
+    throw new Error(`Get Order failed (${res.status}): ${order.error}`);
+  }
+  if (order.errorCode) {
+    // 200 with an empty transaction: the order can't be filled as gasless
+    throw new Error(`Order refused (errorCode ${order.errorCode}): ${order.errorMessage}`);
+  }
+  return order;
+}
+```
+
+    A ready gasless order has `gasless: true`, a base64 `transaction`, a `requestId`, and a `gaslessFee`:
+
+```json
+{
+  "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+  "inAmount": "1889362",
+  "outAmount": "8875286",
+  "swapMode": "ExactIn",
+  "gasless": true,
+  "transaction": "AgAAAA...",
+  "lastValidBlockHeight": "451815799",
+  "gaslessFee": {
+    "amount": "110638",
+    "feeMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "feeBps": 50
+  },
+  "requestId": "1.451815799.cb38qqMuKzJgEkjr5Z8qYQzLAZpJntLbyPnteXDwD8A"
+}
+```
+
+    `inAmount` is the requested `amount` minus `gaslessFee.amount`. The wallet spends exactly `amount` in total.
+
+  </Step>
+  <Step title="Sign the transaction">
+    Deserialize the transaction, sign it with the taker's key, and serialize it back to base64. Don't change the transaction. Execute Gasless Order rejects any transaction that differs from the order.
+
+```typescript
+import { Keypair, VersionedTransaction } from "@solana/web3.js";
+
+function signOrder(transactionBase64: string, taker: Keypair): string {
+  const tx = VersionedTransaction.deserialize(
+    Buffer.from(transactionBase64, "base64"),
+  );
+  tx.sign([taker]); // fills the taker's signature slot only
+  return Buffer.from(tx.serialize()).toString("base64");
+}
+```
+
+    In a browser app, use your wallet adapter's `signTransaction` instead of a `Keypair`. Use a sign-only method, not one that also sends the transaction.
+
+  </Step>
+  <Step title="Submit with Execute Gasless Order">
+    Send the signed transaction and the `requestId` from the same order.
+
+```typescript
+async function executeOrder(signedTransaction: string, requestId: string) {
+  const res = await fetch(`${BASE_URL}/swap/v2/execute`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ signedTransaction, requestId }),
+  });
+  const body = await res.json();
+
+  if (res.status === 502) {
+    // Temporary submission failure: the same body can be retried
+    throw new Error("Submission failed temporarily; retry the same request");
+  }
+  if (!res.ok) {
+    // 400: rejected, nothing charged. 409: another gasless order is in flight.
+    throw new Error(`Execute failed (${res.status}): ${body.error}`);
+  }
+  return body as { status: "Pending"; lastValidBlockHeight: string };
+}
+```
+
+    A `200` means the transaction was sent:
+
+```json
+{
+  "status": "Pending",
+  "lastValidBlockHeight": "451815799"
+}
+```
+
+    Calling Execute Gasless Order again with the same body after a `200` sends nothing and returns `Pending` again, so don't retry in a loop.
+
+  </Step>
+  <Step title="Track the result">
+    The response doesn't include a signature, so watch the taker's address. Record the wallet's latest signature before you submit, then poll for newer signatures until one is signed by the taker or the current block height passes `lastValidBlockHeight`.
+
+```typescript
+import { Connection, PublicKey } from "@solana/web3.js";
+
+const connection = new Connection(BASE_URL, "confirmed");
+
+async function latestSignature(taker: PublicKey) {
+  const [latest] = await connection.getSignaturesForAddress(taker, { limit: 1 });
+  return latest?.signature;
+}
+
+async function waitForSwap(
+  taker: PublicKey,
+  lastValidBlockHeight: number,
+  before: string | undefined,
+) {
+  while (true) {
+    const sigs = await connection.getSignaturesForAddress(taker, {
+      until: before,
+      limit: 10,
+    });
+
+    for (const sig of sigs) {
+      const tx = await connection.getParsedTransaction(sig.signature, {
+        maxSupportedTransactionVersion: 0,
+      });
+      const signedByTaker = tx?.transaction.message.accountKeys.some(
+        (key) => key.signer && key.pubkey.equals(taker),
+      );
+      if (signedByTaker) {
+        return { signature: sig.signature, failed: sig.err !== null };
+      }
+    }
+
+    // Expired: past this height the transaction can never land
+    if ((await connection.getBlockHeight()) > lastValidBlockHeight) {
+      return null;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+}
+```
+
+    Put the steps together:
+
+```typescript
+async function swapWithoutSol(taker: Keypair) {
+  const order = await getGaslessOrder(taker.publicKey.toBase58());
+  const signed = signOrder(order.transaction, taker);
+
+  const before = await latestSignature(taker.publicKey);
+  const { lastValidBlockHeight } = await executeOrder(signed, order.requestId);
+
+  const result = await waitForSwap(
+    taker.publicKey,
+    Number(lastValidBlockHeight),
+    before,
+  );
+  if (!result) {
+    console.log("Order expired without landing. Request a new order.");
+  } else if (result.failed) {
+    console.log(`Swap failed onchain: ${result.signature}`);
+  } else {
+    console.log(`Swap landed: ${result.signature}`);
+  }
+}
+```
+
+    If the order expires without landing, request a new one from Get Order.
+
+  </Step>
+</Steps>
+
+## Understand the fee
+
+The fee is **0.5% of `amount` plus the exact network costs**: two signatures, the priority fee, and the rent of any token account the swap has to open (for example, the wallet's first account for the output token).
+
+* The fee is always taken out of the **input token**. The wallet spends exactly `amount` and never needs to hold more than that.
+* We only collect the fee in SOL, USDC, or USDT. If the wallet sells SOL, USDC, or USDT, the fee is a plain transfer of that token. If it sells anything else, a small part of the input is swapped to USDC (sometimes USDT) inside the same transaction to pay the fee. In that case, `gaslessFee.swappedTo` and `gaslessFee.minSwapOut` are set.
+* The fee is fixed before the swap is quoted. If a route would cost more than the fee covers, the order is refused, never re-priced.
+
+`gaslessFee` reports the fee on every ready gasless order:
+
+| Field | Meaning |
+| --- | --- |
+| `amount` | Total fee, in base units of `feeMint` |
+| `feeMint` | Token the fee is taken in. Always the input token |
+| `feeBps` | Percentage part of the fee (`50` = 0.5%). The rest of `amount` covers network costs |
+| `swappedTo` | Present when the fee is swapped to a stablecoin: the USDC or USDT mint |
+| `minSwapOut` | With `swappedTo`: the minimum amount of the stablecoin Alchemy receives, in base units |
+
+**Illustrative example:** a wallet sells BONK worth 10 USDC for JUP and already has a JUP account. About 0.05 USDC worth of BONK (0.5%) plus a fraction of a cent of network costs goes to the fee. The remaining ~9.95 USDC worth of BONK is swapped to JUP. If the swap has to open a new JUP account, the fee also includes that account's rent (about 0.002 SOL). Actual amounts depend on the route and network conditions.
+
+## Who can use gasless orders
+
+* Only wallets left with **less than 0.005 SOL** after the trade. A wallet with enough SOL is told to pay its own fees (`errorCode` `3`).
+* **One gasless transaction in flight per wallet.** A second Execute Gasless Order call from the same wallet returns `409` until the first lands or expires.
+* Trades where the fee would be more than 10% of the amount are refused as too small.
+
+Gasless orders also have these parameter rules on Get Order:
+
+* `taker` is required. Without it, you get a quote only.
+* `swapMode=ExactOut` isn't supported.
+* `slippageBps` must be at least `15`.
+* `priorityFeeLamports` (with `broadcastFeeType`) can only lower Alchemy's priority fee, never raise it. The maximum is 400,000 lamports.
+* `payer` and `jitoTipLamports` can't be combined with `gasless=true`.
+
+## Handle errors
+
+### Get Order
+
+Errors that keep the quote return HTTP `200` with `transaction: ""`, plus `errorCode` and `errorMessage`. Branch on `errorCode`, not on the message text.
+
+| `errorCode` | `errorMessage` | What to do |
+| --- | --- | --- |
+| `1` | `Insufficient funds` | The wallet doesn't hold `amount` of the input token |
+| `3` | `Taker holds enough SOL to pay for gas; order without gasless` | Retry without `gasless=true` |
+| `3` | `Swap is below the gasless minimum` | Increase the amount |
+| `3` | `This route costs more to sponsor than the gasless fee covers` | Retry, or change the amount or pair |
+
+Invalid parameters return HTTP `400` with `{"error": "..."}`:
+
+| Cause | `error` |
+| --- | --- |
+| `gasless` isn't `true` or `false` | `Invalid gasless` |
+| Sent with `payer` | `payer and gasless cannot be used together` |
+| Sent with `jitoTipLamports` | `jitoTipLamports cannot be used with gasless` |
+| `priorityFeeLamports` above 400,000 | `priorityFeeLamports above the gasless maximum of 400000` |
+| `slippageBps` below 15 | `slippageBps below the gasless minimum of 15` |
+| `swapMode=ExactOut` | `swapMode ExactOut cannot be used with gasless` |
+| Input token can't be swapped to pay the fee | `the gasless fee cannot be swapped from this token` |
+| Route too large for one transaction | `this route does not fit in a gasless transaction` |
+
+### Execute Gasless Order
+
+| Status | `error` or body | Meaning |
+| --- | --- | --- |
+| `200` | `{"status": "Pending", "lastValidBlockHeight": "..."}` | Sent. Watch the wallet |
+| `400` | `signedTransaction is required` or `requestId is required` | A field is missing |
+| `400` | `Invalid signedTransaction` or `Invalid requestId` | A field is malformed |
+| `400` | `signedTransaction does not match the order` | The transaction changed after Get Order, or the `requestId` belongs to another order |
+| `400` | `signedTransaction is missing a valid signature` | The taker's signature is missing or wrong |
+| `400` | `the transaction would fail; request a new order` | It failed simulation (for example, after a price move or because the funds were moved). Nothing was charged. Call Get Order again |
+| `409` | `another gasless order from this taker is still in flight; retry once it lands` | Wait for the previous order to land or expire |
+| `502` | `could not submit the transaction` | Temporary. You can retry the same body |
+
+## Coming from Jupiter
+
+If you've used gasless swaps on Jupiter's Swap API, note these differences:
+
+* `gasless=true` is an explicit parameter on Alchemy. Jupiter decides whether to sponsor on its own.
+* Alchemy adds a 0.5% fee on top of network costs. Jupiter charges only costs, as part of its route fee.
+* Alchemy reports the fee in `gaslessFee`.
+* Alchemy's Execute Gasless Order returns `Pending` without a signature. Track the result through the wallet.
+
+## Next steps
+
+* [Get Order](/docs/chains/solana/solana-trader-api/get-swap-order): full parameter and response reference
+* [Execute Gasless Order](/docs/chains/solana/solana-trader-api/execute-swap-order): request body and every response
+* [Solana Trader API](/docs/chains/solana/solana-trader-api): overview of all Trader API endpoints
