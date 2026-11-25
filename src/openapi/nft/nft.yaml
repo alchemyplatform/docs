@@ -371,11 +371,26 @@ paths:
     get:
       summary: Is Spam Contract
       description: |
-        Determines whether a specific contract is marked as spam by Alchemy.
+        Determines whether a specific contract is marked as spam by Alchemy. Works for NFT contracts (ERC-721 and ERC-1155) and, in beta, for ERC-20 token contracts.
 
         <Note>Please note that this API endpoint is only available to paid tier customers. Upgrade your account [here](https://dashboard.alchemy.com/account).</Note>
 
         <Note>Spam NFT functionality is available on Mainnet for the following chains: Base, Arbitrum, Optimism, Ethereum, Polygon, Worldchain, Avax, BNB, Gnosis, Zksync, and Unichain. More to come soon!</Note>
+
+        **ERC-20 tokens (beta)**
+
+        Pass `contractType=erc20` to check an ERC-20 token contract. In a `200 OK` response, `isSpamContract` is `true` if the token is classified as spam or a scam, and `false` if it isn't. The successful response format is the same as for NFT contracts. If you omit `contractType`, it defaults to `nft`, so existing callers are unaffected.
+
+        ERC-20 spam detection is available on the Ethereum (`eth-mainnet`), Base (`base-mainnet`), Polygon PoS (`polygon-mainnet`), BNB Smart Chain (`bnb-mainnet`), Arbitrum (`arb-mainnet`), Optimism (`opt-mainnet`) and Robinhood Chain (`robinhood-mainnet`) mainnets. NFT spam coverage is unchanged.
+
+        <Warning>While an ERC-20 token is being analyzed, the endpoint returns `202 Accepted` with `{"isSpamContract":null}`. A `null` value means "still analyzing; retry". It does not mean "not spam". Wait for the time specified by the `Retry-After` response header, then retry the same request. If the retry also returns `202`, wait for that response's `Retry-After` value and retry again. A `200 OK` response provides the boolean result.</Warning>
+
+        ERC-20 request example (USDC on Ethereum):
+
+        ```bash
+        curl --request GET \
+          --url 'https://eth-mainnet.g.alchemy.com/nft/v3/YOUR_API_KEY/isSpamContract?contractAddress=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&contractType=erc20'
+        ```
       tags: ["NFT Spam Endpoints"]
       servers:
         - url: https://{network}.g.alchemy.com/nft
@@ -388,12 +403,23 @@ paths:
       parameters:
         - $ref: "#/components/parameters/apiKey"
         - name: contractAddress
-          description: String - Contract address for the NFT contract (ERC721 and ERC1155 supported).
+          description: String - Token contract address to check. Supports NFT contracts (ERC-721 and ERC-1155) and ERC-20 token contracts (beta). The endpoint doesn't check that the address is a token contract of the given `contractType`.
           in: query
           schema:
             type: string
             default: "0x495f947276749ce646f68ac8c248420045cb7b5e"
           required: true
+        - name: contractType
+          description: |-
+            The type of contract to check. Defaults to `nft`, so existing callers are unaffected. ERC-20 checks require `contractType=erc20`.
+          in: query
+          schema:
+            type: string
+            enum:
+              - nft
+              - erc20
+            default: nft
+          required: false
       responses:
         "200":
           description: "Returns whether the specified contract is marked as spam."
@@ -406,8 +432,58 @@ paths:
                   isSpamContract:
                     type: boolean
                     description: |
-                      True - if the queried contract is marked as spam.
-                      False - if the queried contract is considered valid.
+                      True - if the queried contract is marked as spam. For an ERC-20 token contract (beta), the token is classified as spam or a scam.
+                      False - if the queried contract is not marked as spam. For an ERC-20 token contract (beta), the token isn't classified as spam or a scam.
+        "202":
+          description: |-
+            Accepted. The ERC-20 token is still being analyzed; `isSpamContract: null` is a pending result, not a "not spam" result. Wait for the time specified by the `Retry-After` response header, then retry the same request. If the retry also returns `202`, use its `Retry-After` value before retrying again.
+          headers:
+            Retry-After:
+              description: The number of seconds to wait before retrying the same request. Use the value returned in each `202` response.
+              schema:
+                type: integer
+                minimum: 0
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - isSpamContract
+                properties:
+                  isSpamContract:
+                    type: "null"
+                    description: Still analyzing; wait for `Retry-After` and retry. This is not a "not spam" result.
+              example:
+                isSpamContract: null
+        "400":
+          description: |-
+            Invalid parameters or an unsupported network. An invalid `contractType` returns `contractType must be nft or erc20, got: <value>`, where `<value>` is the submitted value. A malformed address returns `contractAddress should be a valid address`. ERC-20 checks on an unsupported network return the network-not-enabled error shown below.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+              examples:
+                invalidContractType:
+                  summary: Invalid contractType
+                  value:
+                    error:
+                      message: "contractType must be nft or erc20, got: foo"
+                malformedAddress:
+                  summary: Malformed contract address
+                  value:
+                    error:
+                      message: "contractAddress should be a valid address"
+                unsupportedNetwork:
+                  summary: ERC-20 checks are not enabled on this network
+                  value:
+                    error:
+                      message: "This endpoint isn't enabled for that chain or network just yet - please contact the Alchemy team for support!"
       operationId: isSpamContract-v3
   "/v3/{apiKey}/getFloorPrice":
     get:
