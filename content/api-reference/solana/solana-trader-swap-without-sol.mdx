@@ -28,8 +28,9 @@ npm install @solana/web3.js
 ```
 
 <Steps>
-  <Step title="Request a gasless order">
-    Call Get Order with `gasless=true` and the wallet as `taker`. Gasless orders are `ExactIn` only, so `amount` is the exact amount of the input token the wallet spends.
+<Step title="Request a gasless order">
+
+Call Get Order with `gasless=true` and the wallet as `taker`. Gasless orders are `ExactIn` only, so `amount` is the exact amount of the input token the wallet spends.
 
 ```typescript
 const API_KEY = process.env.ALCHEMY_API_KEY ?? "{apiKey}";
@@ -62,7 +63,7 @@ async function getGaslessOrder(taker: string) {
 }
 ```
 
-    A ready gasless order has `gasless: true`, a base64 `transaction`, a `requestId`, and a `gaslessFee`:
+A ready gasless order has `gasless: true`, a base64 `transaction`, a `requestId`, and a `gaslessFee`:
 
 ```json
 {
@@ -83,11 +84,12 @@ async function getGaslessOrder(taker: string) {
 }
 ```
 
-    `inAmount` is the requested `amount` minus `gaslessFee.amount`. The wallet spends exactly `amount` in total.
+`inAmount` is the requested `amount` minus `gaslessFee.amount`. The wallet spends exactly `amount` in total.
 
-  </Step>
-  <Step title="Sign the transaction">
-    Deserialize the transaction, sign it with the taker's key, and serialize it back to base64. Don't change the transaction. Execute Gasless Order rejects any transaction that differs from the order.
+</Step>
+<Step title="Sign the transaction">
+
+Deserialize the transaction, sign it with the taker's key, and serialize it back to base64. Don't change the transaction. Execute Gasless Order rejects any transaction that differs from the order.
 
 ```typescript
 import { Keypair, VersionedTransaction } from "@solana/web3.js";
@@ -101,11 +103,12 @@ function signOrder(transactionBase64: string, taker: Keypair): string {
 }
 ```
 
-    In a browser app, use your wallet adapter's `signTransaction` instead of a `Keypair`. Use a sign-only method, not one that also sends the transaction.
+In a browser app, use your wallet adapter's `signTransaction` instead of a `Keypair`. Use a sign-only method, not one that also sends the transaction.
 
-  </Step>
-  <Step title="Submit with Execute Gasless Order">
-    Send the signed transaction and the `requestId` from the same order.
+</Step>
+<Step title="Submit with Execute Gasless Order">
+
+Send the signed transaction and the `requestId` from the same order.
 
 ```typescript
 async function executeOrder(signedTransaction: string, requestId: string) {
@@ -128,7 +131,7 @@ async function executeOrder(signedTransaction: string, requestId: string) {
 }
 ```
 
-    A `200` means the transaction was sent:
+A `200` means the transaction was sent:
 
 ```json
 {
@@ -137,11 +140,12 @@ async function executeOrder(signedTransaction: string, requestId: string) {
 }
 ```
 
-    Calling Execute Gasless Order again with the same body after a `200` sends nothing and returns `Pending` again, so don't retry in a loop.
+Calling Execute Gasless Order again with the same body after a `200` sends nothing and returns `Pending` again, so don't retry in a loop.
 
-  </Step>
-  <Step title="Track the result">
-    The response doesn't include a signature, so watch the taker's address. Record the wallet's latest signature before you submit, then poll for newer signatures until one is signed by the taker or the current block height passes `lastValidBlockHeight`.
+</Step>
+<Step title="Track the result">
+
+The response doesn't include a signature, so watch the taker's address. Record the wallet's latest signature before you submit, then poll for newer signatures until one is signed by the taker or the current block height passes `lastValidBlockHeight`.
 
 ```typescript
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -185,7 +189,7 @@ async function waitForSwap(
 }
 ```
 
-    Put the steps together:
+Put the steps together:
 
 ```typescript
 async function swapWithoutSol(taker: Keypair) {
@@ -210,9 +214,9 @@ async function swapWithoutSol(taker: Keypair) {
 }
 ```
 
-    If the order expires without landing, request a new one from Get Order.
+If the order expires without landing, request a new one from Get Order.
 
-  </Step>
+</Step>
 </Steps>
 
 ## Understand the fee
