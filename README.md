@@ -93,7 +93,7 @@ Certain operations (previewing, indexing) require environment variables for Redi
 Production OpenAPI and OpenRPC specs are generated using scripts from their definition files in the `src` directory.
 
 ```bash
-pnpm run generate
+pnpm generate
 ```
 
 This will generate all specs as dereferenced json files in the `content/api-specs` directory.
@@ -101,7 +101,7 @@ This will generate all specs as dereferenced json files in the `content/api-spec
 To watch for changes during development:
 
 ```bash
-pnpm run generate:watch
+pnpm generate:watch
 ```
 
 ### Validation
@@ -110,13 +110,13 @@ You can validate both OpenAPI and OpenRPC using these commands:
 
 ```bash
 # Validate REST API specs
-pnpm run validate:rest
+pnpm validate:rest
 
 # Validate RPC specs
-pnpm run validate:rpc
+pnpm validate:rpc
 
 # Or you can run them together with
-pnpm run validate
+pnpm validate
 ```
 
 ### Linting
@@ -130,13 +130,13 @@ The project uses several linting tools to ensure code quality and consistency:
 
 ```bash
 # Run all linters
-pnpm run lint
+pnpm lint
 
 # Auto-fix issues
-pnpm run lint:fix
+pnpm lint:fix
 
 # Check for broken links
-pnpm run lint:broken-links
+pnpm lint:broken-links
 ```
 
 #### Enforcement
