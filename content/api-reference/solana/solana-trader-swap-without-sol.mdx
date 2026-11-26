@@ -243,7 +243,7 @@ If the order expires without landing, request a new one from Get Order.
 The fee is **0.5% of `amount` plus the exact network costs**: two signatures, the priority fee, and the rent of any token account the swap has to open (for example, the wallet's first account for the output token).
 
 * The fee is always taken out of the **input token**. The wallet spends exactly `amount` and never needs to hold more than that.
-* We only collect the fee in SOL, USDC, or USDT. If the wallet sells SOL, USDC, or USDT, the fee is a plain transfer of that token. If it sells anything else, a small part of the input is swapped to USDC (sometimes USDT) inside the same transaction to pay the fee. In that case, `gaslessFee.swappedTo` and `gaslessFee.minSwapOut` are set.
+* We only collect the fee in SOL, USDC, or USDT. If the wallet sells SOL, USDC, or USDT, the fee is a plain transfer of that token. If it sells anything else, a small part of the input is swapped to USDC (sometimes USDT) inside the same transaction to pay the fee.
 * The fee is fixed before the swap is quoted. If a route would cost more than the fee covers, the order is refused, never re-priced.
 
 `gaslessFee` reports the fee on every ready gasless order:
@@ -253,8 +253,6 @@ The fee is **0.5% of `amount` plus the exact network costs**: two signatures, th
 | `amount` | Total fee, in base units of `feeMint` |
 | `feeMint` | Token the fee is taken in. Always the input token |
 | `feeBps` | Percentage part of the fee (`50` = 0.5%). The rest of `amount` covers network costs |
-| `swappedTo` | Present when the fee is swapped to a stablecoin: the USDC or USDT mint |
-| `minSwapOut` | With `swappedTo`: the minimum amount of the stablecoin Alchemy receives, in base units |
 
 **Illustrative example:** a wallet sells BONK worth 10 USDC for JUP and already has a JUP account. About 0.05 USDC worth of BONK (0.5%) plus a fraction of a cent of network costs goes to the fee. The remaining ~9.95 USDC worth of BONK is swapped to JUP. If the swap has to open a new JUP account, the fee also includes that account's rent (about 0.002 SOL). Actual amounts depend on the route and network conditions.
 
