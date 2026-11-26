@@ -9,11 +9,27 @@ slug: reference/solana-subscription-api-endpoints
 
 Solana exposes a PubSub WebSocket API alongside its standard HTTP JSON-RPC. Each subscription opens a long-lived stream that pushes notifications when on-chain state changes (account data, program-owned accounts, transaction logs, signature status, slots, blocks, votes, and roots).
 
-Connect to the PubSub endpoint using your Alchemy WebSocket URL:
+Connect to the PubSub endpoint using your Alchemy WebSocket URL. On Solana Mainnet, you can use the global endpoint or a region-specific endpoint. Select a region to see its URL:
 
 <CodeGroup>
-  ```text Mainnet
+  ```text Global
   wss://solana-mainnet.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+  ```
+
+  ```text Newark
+  wss://solana-mainnet-ewr.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+  ```
+
+  ```text title="Salt Lake City"
+  wss://solana-mainnet-slc.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+  ```
+
+  ```text Frankfurt
+  wss://solana-mainnet-fra.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
+  ```
+
+  ```text Tokyo
+  wss://solana-mainnet-tyo.streaming.alchemy.com/v2/<-- ALCHEMY APP API KEY -->
   ```
 
   ```text Devnet
@@ -21,8 +37,20 @@ Connect to the PubSub endpoint using your Alchemy WebSocket URL:
   ```
 </CodeGroup>
 
+## Regional endpoints
+
+Regional endpoints let you pin your connection to a specific location, for example the region closest to your servers. To build a regional URL, add the region code after `solana-mainnet`: `solana-mainnet-<region>.streaming.alchemy.com`. The global endpoint, `solana-mainnet.streaming.alchemy.com`, remains available.
+
+| Area          | Location                   | Region code | Host                                       |
+| ------------- | -------------------------- | ----------- | ------------------------------------------ |
+| Global        | n/a                        | n/a         | `solana-mainnet.streaming.alchemy.com`     |
+| North America | Newark, USA (East)         | `ewr`       | `solana-mainnet-ewr.streaming.alchemy.com` |
+| North America | Salt Lake City, USA (West) | `slc`       | `solana-mainnet-slc.streaming.alchemy.com` |
+| Europe        | Frankfurt, Germany         | `fra`       | `solana-mainnet-fra.streaming.alchemy.com` |
+| Asia Pacific  | Tokyo, Japan               | `tyo`       | `solana-mainnet-tyo.streaming.alchemy.com` |
+
 <Info>
-  Solana PubSub WebSocket subscriptions are supported on both Solana Mainnet and Solana Devnet, and pricing is the same on both networks. To switch networks, swap `solana-mainnet` for `solana-devnet` in the URL.
+  Solana PubSub WebSocket subscriptions are supported on both Solana Mainnet and Solana Devnet, and pricing is the same on both networks. Regional endpoints are available on Solana Mainnet. Solana Devnet uses the global endpoint, `solana-devnet.streaming.alchemy.com`.
 </Info>
 
 <Info>
