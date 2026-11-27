@@ -89,6 +89,7 @@ paths:
       summary: Historical Token Prices
       description: >
         Provides historical price data for a single token over a time range. You can identify the token by symbol or by network and contract address.
+        Each data point covers one `interval`, and its `value` is the opening price of that interval (the first price recorded in the interval). The only exception is the most recent data point, which is the current live price.
       tags: ["Prices API Endpoints"]
       parameters:
         - $ref: "#/components/parameters/apiKey"
@@ -429,7 +430,7 @@ components:
       properties:
         value:
           type: string
-          description: Price value as a string.
+          description: Opening price of the interval (the first price recorded in the interval), as a string. For the most recent data point, this is the current live price.
           example: "1900.00"
         timestamp:
           type: string
